@@ -1,0 +1,168 @@
+// grammar rules (EBNF-like)
+// to be theoretically parsed by
+//  an LL(2) parser
+// but it's going to use a handwritten
+//  recursize-descent parser
+
+language:
+	{toplevel}
+
+toplevel:
+	fn_decl
+	type_decl
+	let_decl
+	impl
+	iface
+
+fn_decl:
+	fn_sig fn_body
+
+fn_sig:
+	"fn" ID "(" [vars] ")"
+
+fn_body:
+	"=" exp
+	"extern" STRING ":" type
+	block_exp
+
+var:
+	ID ":" type
+
+vars:
+	var {"," var}
+
+type_decl:
+	"type" type "=" type
+	"type" type "{" {var} "}"
+
+impl:
+	"impl" ID ":" type "{" {fn_decl} "}"
+	"impl" type        "{" {fn_decl} "}"
+
+iface:
+	"iface" ID [POLYID] "{" {fn_iface} "}"
+
+fn_iface:
+	fn_sig ":" type
+
+type:
+	POLYID [type_ifaces]
+	ID [type_args]
+
+type_ifaces:
+	"(" ID {"," ID} ")"
+
+type_args:
+	"[" type {"," type} "]"
+
+op1:
+	"or"
+	"and"
+op2:
+	"<"
+	"<="
+	"=="
+	"!="
+	">="
+	">"
+op3:
+	"::"
+op4:
+	"+"
+	"-"
+op5:
+	"*"
+	"/"
+	"%"
+op_unary:
+	"not"
+	"-"
+assignment:
+	"=" exp
+
+
+exp:
+	exp1 {op1 exp1}
+exp1:
+	exp2 {op2 exp2}
+exp2:
+	exp3 [op3 exp2]
+exp3:
+	exp4 {op4 exp4}
+exp4:
+	term {op5 term}
+
+exps:
+	exp {"," exp}
+
+term:
+	op_unary term
+	prefix_term {term_suffix}
+
+term_suffix:
+	"(" [exps] ")"
+	"." ID
+	"[" exp "]"
+
+prefix_term:
+	ID
+	INT
+	REAL
+	LONG
+	STRING
+	bool_exp
+	tuple_exp
+	lambda_exp
+	object_exp
+	cond_exp
+	block_exp
+
+bool_exp:
+	"true"
+	"false"
+
+tuple_exp:
+	"(" [exps] ")"
+
+lambda_exp:
+	"fn" "(" [ID {"," ID}] ")" fn_body
+
+object_exp:
+	"new" ty "{" [init {"," init}] "}"
+
+init:
+	ID "=" exp
+
+block_exp:
+	"{" {stmt} [final_stmt] "}"
+
+stmt:
+	";"
+	let_decl
+	cond_if [cond_else]
+	loop
+	exp [assignment]
+
+final_stmt:
+	"return" [exp]
+	"break"
+	"continue"
+
+let_decl:
+	"let" ID ":" ty
+	"let" ID "=" exp
+
+cond_if:
+	"if" exp block
+cond_else:
+	"else" cond_if
+	"else" block
+cond_exp:
+	cond_if cond_else_exp
+cond_else_exp:
+	"else" cond_exp
+	"else" block
+
+loop:
+	"while" exp block_exp
+	"for" exp "in" exp block_exp
