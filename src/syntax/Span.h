@@ -2,13 +2,22 @@
 #include <opal.h>
 #include <exception>
 
+struct SpanFile
+{
+	std::string filename;
+	char* data;
+	size_t size;
+
+	~SpanFile ();
+};
+using SpanFilePtr = std::shared_ptr<SpanFile>;
+
 struct Span
 {
-	std::string file;
-	long int pos;
+	SpanFilePtr file;
+	size_t pos;
 
-	Span (const std::string& _file = "",
-			long int _pos = -1);
+	Span ();
 	~Span ();
 };
 

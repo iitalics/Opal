@@ -2,9 +2,14 @@
 #include <cstring>
 
 
-Span::Span (const std::string& _file, long int _pos)
-	: file(_file), pos(_pos) {}
+Span::Span ()
+	: file(nullptr), pos(0) {}
 Span::~Span () {}
+SpanFile::~SpanFile () 
+{
+	delete[] data;
+}
+
 
 
 
@@ -40,18 +45,14 @@ const char* SourceError::what () const throw()
 
 static void writeSpan (std::ostringstream& os, const Span& sp)
 {
-	size_t bol = 0, line = 0, col;
-
-	std::ifstream fs(sp.file);
-	if (!fs.good())
+	if (sp.file == nullptr)
 		return;
 
-	char c;
+	size_t bol = 0, line = 0, col;
 
 	for (size_t i = 0; i < sp.pos; i++)
 	{
-		fs.get(c);
-		if (c == '\n')
+		if (sp.file->data[i] == '\n')
 		{
 			bol = i + 1;
 			line++;
@@ -62,26 +63,25 @@ static void writeSpan (std::ostringstream& os, const Span& sp)
 	os << "in ";
 	if (SourceError::color)
 		os << COL_BOLD;
-	os << sp.file << ":"
+	os << sp.file->filename << ":"
 	   << (line + 1) << ":" // line #
 	   << (col + 1) << ":"; // collumn #
 	if (SourceError::color)
 		os << COL_OFF;
 	os << std::endl << " ";
 
-	fs.seekg(bol, std::ios_base::beg);
-	for (;;)
-	{
-		fs.get(c);
-		if (c == '\n')
-			break;
-		else if (c == '\r')
-			continue;
-		else if (c == '\t')
+	for (size_t i = bol; sp.file->data[i] != '\n'; i++)
+		switch (sp.file->data[i])
+		{
+		case '\t':
 			os << ' ';
-		else
-			os << c;
-	}
+			break;
+		case '\r':
+		case '\n':
+			break;
+		default:
+			os << sp.file->data[i];
+		}
 
 	os << std::endl << " ";
 	for (size_t i = 0; i < col; i++)
