@@ -2,6 +2,9 @@
 #include <opal.h>
 #include <syntax/Span.h>
 
+/*
+ tokens are namespaced as to not 
+ pollute the global namespace */
 namespace Tokens {
 enum
 {
@@ -45,11 +48,13 @@ enum
 };
 }
 
+/* a token of any kind */
 struct Token
 {
 	int kind;
 	Span span;
 
+	// token-specific value
 	std::string string;
 	union {
 		oint val_int;
@@ -58,41 +63,53 @@ struct Token
 		bool val_bool;
 	};
 
+	// string representation of token based on 'kind'
+	static std::string str (int kind);
+
 
 	inline Token ()
 		: kind(Tokens::END_OF_FILE) {}
 	inline Token (int _kind, 
 			const Span& _span)
 		: kind(_kind), span(_span) {}
-	inline Token (int _kind,
-			const std::string& str,
-			const Span& _span)
-		: kind(_kind), span(_span), string(str) {}
-	template <typename T>
-	inline Token (int _kind, T data, const Span& _span)
-		: kind(_kind), span(_span)
-	{
-		*((T*) &val_bool) = data;
-	}
 	~Token ();
 
-	bool operator== (int _kind);
+	// compare to a member of the above enum
+	//  for simplicity
+	bool operator== (int _kind) const;
+	bool operator!= (int _kind) const;
 
+	// string representation of token
+	std::string str () const;
+
+	// create an error located at this token
 	SourceError die (const std::string& msg,
-		const std::vector<std::string>& others = {});
+		const std::vector<std::string>& others = {}) const;
 };
 
 class Scanner
 {
 public:
 	enum {
+		// the Opal parser requires only LL(2) but
+		//  extra lookahead is provided just in case
 		Lookahead = 3
 	};
 
-	Scanner (char* buffer, size_t size, const std::string& _filename);
+	// construct scanner from input data
+	Scanner (const char* buffer, size_t size, const std::string& _filename);
+	inline Scanner (const std::string& data, const std::string& _filename)
+		: Scanner(data.c_str(), data.size(), _filename) {}
+
+	// construct scanner from file
 	explicit Scanner (const std::string& _filename);
 
+	// get token in buffer
+	// i = 0 is the leftmost token
 	const Token& get (int i = 0);
+
+	// discard and return the leftmost token
+	//  and advance the parser
 	Token shift ();
 
 private:
@@ -107,4 +124,6 @@ private:
 	void _readId (Token& out);
 	void _readNumber (Token& out);
 	void _readString (Token& out);
+	char _readChar ();
+	char _readEscape ();
 };

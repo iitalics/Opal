@@ -6,7 +6,13 @@ int main ()
 
 	try
 	{
-		Scanner scan("tests/simple.opal");
+		Scanner scan("tests/lex-tokens.txt");
+
+		while (scan.get() != Tokens::END_OF_FILE)
+		{
+			std::cout << scan.get().str() << std::endl;
+			scan.shift();
+		}
 	}
 	catch (SourceError& err)
 	{
