@@ -70,7 +70,7 @@ static void writeSpan (std::ostringstream& os, const Span& sp)
 		os << COL_OFF;
 	os << std::endl << " ";
 
-	for (size_t i = bol; sp.file->data[i] != '\n'; i++)
+	for (size_t i = bol; i < sp.file->size && sp.file->data[i] != '\n'; i++)
 		switch (sp.file->data[i])
 		{
 		case '\t':
