@@ -2,8 +2,8 @@
 
 namespace AST
 {
+
 Exp::~Exp () {}
-Type::~Type () {}
 VarExp::~VarExp () {}
 IntExp::~IntExp () {}
 RealExp::~RealExp () {}
@@ -16,6 +16,8 @@ CondExp::~CondExp () {}
 LetExp::~LetExp () {}
 LazyOpExp::~LazyOpExp () {}
 CompareExp::~CompareExp () {}
+ConsExp::~ConsExp () {}
+NilExp::~NilExp () {}
 FieldExp::~FieldExp () {}
 MemberExp::~MemberExp () {}
 CallExp::~CallExp () {}
@@ -25,7 +27,24 @@ AssignExp::~AssignExp () {}
 ReturnExp::~ReturnExp () {}
 GotoExp::~GotoExp () {}
 
+Type::~Type () {}
 ParamType::~ParamType () {}
 ConcreteType::~ConcreteType () {}
+
+Func::~Func () {}
+void Func::setImpl (const std::string& name, TypePtr type)
+{
+	impl = FuncArg { name, type };
+}
+Constant::~Constant () {}
+IFace::~IFace () {}
+void IFace::add (const std::string& name,
+		FuncArgs args, TypePtr ret)
+{
+	funcs.push_back({ name, args, ret });
+}
+
+Toplevel::Toplevel () {}
+Toplevel::~Toplevel () {}
 
 }

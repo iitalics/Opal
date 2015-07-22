@@ -8,12 +8,20 @@ language:
 	{toplevel}
 
 toplevel:
+	module
 	fn_decl
 	type_decl
 	let_decl
 	impl
 	iface
 
+module:
+	"module" ID
+	"use" ID
+
+name:
+	ID "::" ID
+	ID
 
 fn_decl:
 	fn_sig fn_body
@@ -33,9 +41,9 @@ type_decl:
 
 type:
 	POLYID [type_ifaces]
-	ID [type_args]
+	name [type_args]
 type_ifaces:
-	"(" ID {"," ID} ")"
+	"(" name {"," name} ")"
 type_args:
 	"[" type {"," type} "]"
 
@@ -96,7 +104,7 @@ term:
 	op_unary term
 	prefix_term {term_suffix}
 prefix_term:
-	ID
+	name
 	INT
 	REAL
 	LONG

@@ -6,10 +6,28 @@ namespace AST
 {
 class Exp;
 class Type;
+class Func;
+class IFace;
+class Constant;
 using ExpPtr = std::shared_ptr<Exp>;
 using ExpList = std::vector<ExpPtr>;
 using TypePtr = std::shared_ptr<Type>;
 using TypeList = list<TypePtr>;
+using FuncPtr = std::shared_ptr<Func>;
+using ConstantPtr = std::shared_ptr<Constant>;
+using IFacePtr = std::shared_ptr<IFace>;
+
+struct Name
+{
+	std::string name;
+	std::string module;
+
+	inline Name (const std::string& _name,
+			const std::string& _module = "")
+		: name(_name), module(_module) {}
+
+	bool hasModule () const;
+};
 
 class Exp
 {
@@ -28,11 +46,11 @@ public:
 class VarExp : public Exp
 {
 public:
-	std::string name;
+	Name name;
 	bool global;
 	int varID;
 
-	explicit inline VarExp (const std::string& _name) : name(_name) {}
+	explicit inline VarExp (const Name& _name) : name(_name) {}
 	virtual ~VarExp ();
 };
 class IntExp : public Exp
@@ -134,10 +152,16 @@ public:
 	Kind kind;
 	inline CompareExp (ExpPtr _a, Kind _kind, ExpPtr _b) // sugar
 		: Exp({ _a, _b }), kind(_kind) {}
-	inline CompareExp (ExpPtr _ab, Kind _kind) // compare to zero
-		: Exp({ _ab }), kind(_kind) {}
 	virtual ~CompareExp ();
 };
+class ConsExp : public Exp
+{
+public:
+	inline ConsExp (ExpPtr _hd, ExpPtr _tl)
+		: Exp({ _hd, _tl }) {}
+	virtual ~ConsExp ();
+};
+class NilExp : public Exp { public: virtual ~NilExp (); };
 class FieldExp : public Exp
 {
 public:
@@ -218,24 +242,98 @@ class ParamType
 {
 public:
 	std::string name;
-	std::vector<std::string> ifaces;
+	std::vector<Name> ifaces;
 	inline ParamType (const std::string& _name,
-			const std::vector<std::string>& _ifaces)
+			const std::vector<Name>& _ifaces)
 		: name(_name), ifaces(_ifaces) {}
 	virtual ~ParamType ();
 };
 class ConcreteType
 {
 public:
-	std::string name;
+	Name name;
 	TypeList subtypes;
-	inline ConcreteType (const std::string& _name,
+	inline ConcreteType (const Name& _name,
 			const TypeList& _subtypes)
 		: name(_name), subtypes(_subtypes) {}
 	virtual ~ConcreteType ();
 };
 
 
+struct FuncArg
+{
+	std::string name;
+	TypePtr type;
+};
+using FuncArgs = std::vector<FuncArg>;
+
+class Func
+{
+public:
+	std::string name;
+	FuncArgs args;
+	ExpPtr body;
+
+	FuncArg impl;
+
+	inline Func (const std::string& _name,
+			const FuncArgs& _args,
+			ExpPtr _body)
+		: name(_name), args(_args), body(_body),
+		  impl { "", nullptr } {}
+	~Func ();
+
+	void setImpl (const std::string& name, TypePtr type);
+};
+
+class Constant
+{
+public:
+	std::string name;
+	TypePtr type;
+	ExpPtr init;
+
+	inline Constant (const std::string& _name, TypePtr _type)
+		: name(_name), type(_type), init(nullptr) {}
+	inline Constant (const std::string& _name, ExpPtr _init)
+		: name(_name), type(nullptr), init(_init) {}
+	~Constant ();
+};
+
+struct IFaceFunc
+{
+	std::string name;
+	FuncArgs args;
+	TypePtr ret;
+};
+
+class IFace
+{
+public:
+	std::string name;
+	TypePtr poly;
+	std::vector<IFaceFunc> funcs;
+
+	inline IFace (const std::string& _name, TypePtr _poly)
+		: name(_name), poly(_poly) {}
+	~IFace ();
+
+	void add (const std::string& name, FuncArgs args, TypePtr ret);
+};
+
+
+class Toplevel
+{
+public:
+	Toplevel ();
+	~Toplevel ();
+
+	std::string module;
+	std::vector<std::string> uses;
+	std::vector<FuncPtr> funcs;
+	std::vector<IFacePtr> ifaces;
+	std::vector<ConstantPtr> constants;
+};
 
 
 }
