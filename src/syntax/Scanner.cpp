@@ -186,28 +186,6 @@ Scanner::Scanner (const std::string& filename)
 
 
 
-// get token at position
-const Token& Scanner::get (int i)
-{
-	if (i < 0 || i >= Lookahead)
-		throw SourceError("INTERNAL: trying to access token beyond lookahead");
-
-	return _buf[i];
-}
-// discards and returns leftmost token
-//  and parses the next token
-Token Scanner::shift ()
-{
-	auto gone = _buf[0];
-
-	for (size_t i = 0; i < Lookahead - 1; i++)
-		_buf[i] = _buf[i + 1];
-	
-	_read(_buf[Lookahead - 1]);
-	return gone;
-}
-
-
 // utilities
 // character at offset 'i'
 #define at(i)  (_file->data[_pos + i])
@@ -525,4 +503,59 @@ char Scanner::_readEscape ()
 
 bad_escape:
 	throw SourceError("invalid escape sequence", Span(_file, start));
+}
+
+
+
+
+
+
+
+const Token& Scanner::get (int i)
+{
+	if (i < 0 || i >= Lookahead)
+		throw SourceError("INTERNAL: trying to access token beyond lookahead");
+
+	return _buf[i];
+}
+Token Scanner::shift ()
+{
+	auto gone = _buf[0];
+
+	for (size_t i = 0; i < Lookahead - 1; i++)
+		_buf[i] = _buf[i + 1];
+
+	_read(_buf[Lookahead - 1]);
+	return gone;
+}
+
+void Scanner::expect (int kind)
+{
+	expect({ kind });
+}
+void Scanner::expect (const std::vector<int>& kinds)
+{
+	for (auto& k : kinds)
+		if (get().kind == k)
+			return;
+
+	std::ostringstream ss;
+	ss << "expected ";
+	for (size_t i = 0, len = kinds.size(); i < len; i++)
+	{
+		if (i > 0)
+		{
+			if (i == len - 1)
+				ss << " or ";
+			else
+				ss << ", ";
+		}
+		ss << Token::str(kinds[i]);
+	}
+	throw get().die(ss.str());
+}
+Token Scanner::eat (int kind)
+{
+	expect(kind);
+	return shift();
 }

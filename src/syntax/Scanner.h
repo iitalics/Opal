@@ -113,6 +113,16 @@ public:
 	//  and advance the parser
 	Token shift ();
 
+	// throw error if leftmost token is not of kind 'kind'
+	void expect (int kind);
+	void expect (const std::vector<int>& kinds);
+
+	// throws an error 'unexpected token'
+	void unexpect ();
+
+	// { expect(t); shift() }
+	Token eat (int kind);
+
 private:
 	SpanFilePtr _file;
 	long int _pos;
