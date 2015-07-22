@@ -31,17 +31,13 @@ Type::~Type () {}
 ParamType::~ParamType () {}
 ConcreteType::~ConcreteType () {}
 
-Func::~Func () {}
-void Func::setImpl (const std::string& name, TypePtr type)
+FuncDecl::~FuncDecl ();
+TypeDecl::~TypeDecl ();
+ConstDecl::~ConstDecl ();
+IFaceDecl::~IFaceDecl ();
+void IFaceDecl::add (const IFaceFunc& func)
 {
-	impl = FuncArg { name, type };
-}
-Constant::~Constant () {}
-IFace::~IFace () {}
-void IFace::add (const std::string& name,
-		FuncArgs args, TypePtr ret)
-{
-	funcs.push_back({ name, args, ret });
+	funcs.push_back(func);
 }
 
 Toplevel::Toplevel () {}

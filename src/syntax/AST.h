@@ -6,16 +6,18 @@ namespace AST
 {
 class Exp;
 class Type;
-class Func;
-class IFace;
-class Constant;
+class FuncDecl;
+class TypeDecl;
+class IFaceDecl;
+class ConstDecl;
 using ExpPtr = std::shared_ptr<Exp>;
 using ExpList = std::vector<ExpPtr>;
 using TypePtr = std::shared_ptr<Type>;
 using TypeList = list<TypePtr>;
-using FuncPtr = std::shared_ptr<Func>;
-using ConstantPtr = std::shared_ptr<Constant>;
-using IFacePtr = std::shared_ptr<IFace>;
+using FuncDeclPtr = std::shared_ptr<FuncDecl>;
+using TypeDeclPtr = std::shared_ptr<TypeDecl>;
+using ConstDeclPtr = std::shared_ptr<ConstDecl>;
+using IFaceDeclPtr = std::shared_ptr<IFaceDecl>;
 
 struct Name
 {
@@ -260,80 +262,100 @@ public:
 };
 
 
-struct FuncArg
+
+struct Var
 {
 	std::string name;
 	TypePtr type;
 };
-using FuncArgs = std::vector<FuncArg>;
 
-class Func
+class FuncDecl
 {
 public:
 	std::string name;
-	FuncArgs args;
-	ExpPtr body;
+	std::vector<Var> args;
+	Var impl;
 
-	FuncArg impl;
-
-	inline Func (const std::string& _name,
-			const FuncArgs& _args,
-			ExpPtr _body)
-		: name(_name), args(_args), body(_body),
+	inline FuncDecl (const std::string& _name, 
+			const std::vector<Var>& _args)
+		: name(_name), args(_args),
 		  impl { "", nullptr } {}
-	~Func ();
-
-	void setImpl (const std::string& name, TypePtr type);
+	~FuncDecl ();
 };
 
-class Constant
+class TypeDecl
+{
+public:
+	std::string name;
+	TypeList args;
+
+	TypePtr alias;
+	std::vector<Var> members;
+
+	inline TypeDecl (const std::string& _name,
+			const TypeList& _args,
+			TypePtr _alias)
+		: name(_name), args(_arg), alias(_alias) {}
+	inline TypeDecl (const std::string& _name,
+			const TypeList& _args,
+			const std::vector<Var>& _members)
+		: name(_name), args(_arg), members(_members) {}
+	~TypeDecl ();
+};
+
+class ConstDecl
 {
 public:
 	std::string name;
 	TypePtr type;
 	ExpPtr init;
 
-	inline Constant (const std::string& _name, TypePtr _type)
+	inline ConstDecl (const std::string& _name,
+			TypePtr _type)
 		: name(_name), type(_type), init(nullptr) {}
-	inline Constant (const std::string& _name, ExpPtr _init)
+	inline ConstDecl (const std::string& _name,
+			ExpPtr _init)
 		: name(_name), type(nullptr), init(_init) {}
-	~Constant ();
+	~ConstDecl ();
 };
 
 struct IFaceFunc
 {
 	std::string name;
-	FuncArgs args;
+	std::vector<Var> args;
 	TypePtr ret;
 };
 
-class IFace
+class IFaceDecl
 {
 public:
 	std::string name;
-	TypePtr poly;
+	TypePtr self;
 	std::vector<IFaceFunc> funcs;
 
-	inline IFace (const std::string& _name, TypePtr _poly)
-		: name(_name), poly(_poly) {}
-	~IFace ();
+	IFaceDecl (const std::string& _name, 
+			TypePtr _self)
+		: name(_name), self(_self) {}
+	~IFaceDecl ();
 
-	void add (const std::string& name, FuncArgs args, TypePtr ret);
+	void add (const IFaceFunc& func);
 };
 
 
 class Toplevel
 {
 public:
-	Toplevel ();
-	~Toplevel ();
-
 	std::string module;
 	std::vector<std::string> uses;
-	std::vector<FuncPtr> funcs;
-	std::vector<IFacePtr> ifaces;
-	std::vector<ConstantPtr> constants;
+	std::vector<FuncDeclPtr> funcs;
+	std::vector<ConstDeclPtr> consts;
+	std::vector<TypeDeclPtr> types;
+	std::vector<IFaceDeclPtr> ifaces;
+
+	Toplevel ();
+	~Toplevel ();
 };
+
 
 
 }
