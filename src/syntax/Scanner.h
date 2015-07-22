@@ -20,7 +20,7 @@ enum
 	LPAREN, RPAREN,
 	EQUAL, COLON,
 	COMMA, DOT,
-	SEMICOLON,
+	SEMICOLON, DOUBLECOLON,
 	PLUS, MINUS,
 	TIMES, DIVIDE,
 	MODULO, CONS,
@@ -44,6 +44,7 @@ enum
 	KW_return,
 	KW_true,
 	KW_type,
+	KW_use,
 	KW_while,
 };
 }

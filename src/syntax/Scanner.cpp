@@ -27,7 +27,7 @@ static bool is_ident (char c) {
 		   (c >= 'A' && c <= 'Z') ||
 		   (c >= '0' && c <= '9') ||
 		   c == '_' || c == '?' ||
-		   c == '$';
+		   c == '@';
 }
 
 
@@ -40,7 +40,7 @@ static std::vector<Seq> seqs {
 	Seq(")",  RPAREN),
 	Seq("{",  LCURL),
 	Seq("}",  RCURL),
-	Seq("::", CONS),
+	Seq("::", DOUBLECOLON),
 	Seq(":",  COLON),
 	Seq(",",  COMMA),
 	Seq(".",  DOT),
@@ -50,6 +50,7 @@ static std::vector<Seq> seqs {
 	Seq("*",  TIMES),
 	Seq("/",  DIVIDE),
 	Seq("%",  MODULO),
+	Seq("$",  CONS),
 	Seq("<=", LE),
 	Seq("<",  LT),
 	Seq(">=", GE),
@@ -78,6 +79,7 @@ static std::vector<Seq> keywords {
 	Seq("return",   KW_return),
 	Seq("true",     KW_true),
 	Seq("type",     KW_type),
+	Seq("use",      KW_use),
 	Seq("while",    KW_while),
 };
 
