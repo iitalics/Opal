@@ -2,8 +2,8 @@
 #include <syntax/Span.h>
 #include <list.h>
 
-namespace AST
-{
+namespace AST {
+;
 class Exp;
 class Type;
 class FuncDecl;
@@ -29,6 +29,7 @@ struct Name
 		: name(_name), module(_module) {}
 
 	bool hasModule () const;
+	std::string str () const;
 };
 
 class Exp
@@ -39,7 +40,9 @@ public:
 	virtual ~Exp () = 0;
 
 	template <typename T>
-	inline bool is () const { return dynamic_cast<T*>(this) != nullptr; }
+	inline bool is () const {
+		return dynamic_cast<T*>(this) != nullptr;
+	}
 
 	ExpList children;
 	Span span;
@@ -235,12 +238,19 @@ public:
 class Type
 {
 public:
+	Type ();
 	virtual ~Type () = 0;
 
+	Span span;
+
 	template <typename T>
-	inline bool is () const { return dynamic_cast<T*>(this) != nullptr; }
+	inline bool is () const {
+		return dynamic_cast<const T*>(this) != nullptr;
+	}
+
+	virtual std::string str () const;
 };
-class ParamType
+class ParamType : public Type
 {
 public:
 	std::string name;
@@ -249,8 +259,10 @@ public:
 			const std::vector<Name>& _ifaces)
 		: name(_name), ifaces(_ifaces) {}
 	virtual ~ParamType ();
+
+	virtual std::string str () const;
 };
-class ConcreteType
+class ConcreteType : public Type
 {
 public:
 	Name name;
@@ -259,6 +271,8 @@ public:
 			const TypeList& _subtypes)
 		: name(_name), subtypes(_subtypes) {}
 	virtual ~ConcreteType ();
+
+	virtual std::string str () const;
 };
 
 
@@ -274,12 +288,16 @@ class FuncDecl
 public:
 	std::string name;
 	std::vector<Var> args;
+	ExpPtr body;
 	Var impl;
 
+	Span span;
+
 	inline FuncDecl (const std::string& _name, 
-			const std::vector<Var>& _args)
+			const std::vector<Var>& _args, 
+			ExpPtr _body)
 		: name(_name), args(_args),
-		  impl { "", nullptr } {}
+		  body(_body), impl { "", nullptr } {}
 	~FuncDecl ();
 };
 
@@ -292,14 +310,16 @@ public:
 	TypePtr alias;
 	std::vector<Var> members;
 
+	Span span;
+
 	inline TypeDecl (const std::string& _name,
 			const TypeList& _args,
 			TypePtr _alias)
-		: name(_name), args(_arg), alias(_alias) {}
+		: name(_name), args(_args), alias(_alias) {}
 	inline TypeDecl (const std::string& _name,
 			const TypeList& _args,
 			const std::vector<Var>& _members)
-		: name(_name), args(_arg), members(_members) {}
+		: name(_name), args(_args), members(_members) {}
 	~TypeDecl ();
 };
 
@@ -309,6 +329,8 @@ public:
 	std::string name;
 	TypePtr type;
 	ExpPtr init;
+
+	Span span;
 
 	inline ConstDecl (const std::string& _name,
 			TypePtr _type)
@@ -324,6 +346,7 @@ struct IFaceFunc
 	std::string name;
 	std::vector<Var> args;
 	TypePtr ret;
+	Span span;
 };
 
 class IFaceDecl
@@ -332,6 +355,8 @@ public:
 	std::string name;
 	TypePtr self;
 	std::vector<IFaceFunc> funcs;
+
+	Span span;
 
 	IFaceDecl (const std::string& _name, 
 			TypePtr _self)
