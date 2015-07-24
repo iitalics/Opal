@@ -37,7 +37,7 @@ var:
 
 type_decl:
 	"type" type "=" type
-	"type" type "{" {var} "}"
+	"type" type "{" [var {"," var}] "}"
 
 type:
 	POLYID [type_ifaces]
