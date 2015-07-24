@@ -15,6 +15,24 @@ static void parseImpl (Toplevel& top, Scanner& scan);
 
 
 
+// utility to easily create
+//  obj.method(a, b, c, ...)
+static inline ExpPtr methodCall (const Span& span,
+		ExpPtr obj, const std::string& method,
+		const ExpList& args)
+{
+	ExpPtr mem(new FieldExp(obj, method));
+	ExpPtr call(new CallExp(mem, args));
+	mem->span = span;
+	call->span = span;
+	return call;
+}
+
+static ExpPtr parseBlockExp (Scanner& scan);
+
+
+
+
 /*
 given <T>, <L>, <R>, Opt
 
@@ -128,8 +146,15 @@ fn_body:
 */
 static ExpPtr parseFuncBody (Scanner& scan)
 {
-	// TODO
-	return ExpPtr(new NilExp());
+	scan.expect({ EQUAL, LCURL });
+
+	if (scan.get() == EQUAL)
+	{
+		scan.shift();
+		return parseExp(scan);
+	}
+	else
+		return parseBlockExp(scan);
 }
 static FuncDeclPtr parseFuncDecl (Scanner& scan)
 {
@@ -370,12 +395,281 @@ TypePtr parseType (Scanner& scan)
 
 
 
+static ExpPtr parseTerm (Scanner& scan);
+static ExpPtr parseExp (Scanner& scan, int prec);
 
-/* IMMEDIATELY TODO:
 
-ExpPtr parseExp (Scanner& scan);
+/*
+	operator precedence parser
 */
+struct Op
+{
+	int token;
+	int precedence;
+	int order;
+	int kind;
+	std::string str;
+};
+enum {
+	Left = 0, Right,
+	MaxPrec = 5,
+
+	Compare = 0, Cons, Lazy, Standard
+};
+static std::vector<Op> operators {
+	{ KW_and,  0, Left, Lazy },
+	{ KW_or,   0, Left, Lazy },
+	{ LT,      1, Left, Compare },
+	{ LE,      1, Left, Compare },
+	{ EQ,      1, Left, Compare },
+	{ NE,      1, Left, Compare },
+	{ GE,      1, Left, Compare },
+	{ GR,      1, Left, Compare },
+	{ CONS,    2, Right, Cons },
+	{ PLUS,    3, Left, Standard, "add" },
+	{ MINUS,   3, Left, Standard, "sub" },
+	{ TIMES,   4, Left, Standard, "mul" },
+	{ DIVIDE,  4, Left, Standard, "div" },
+	{ MODULO,  4, Left, Standard, "mod" },
+};
+
+static Op getOp (int k)
+{
+	for (auto& op : operators)
+		if (op.token == k)
+			return op;
+
+	return Op { END_OF_FILE, -1, Left };
+}
+
+static inline CompareExp::Kind compareOp (int token)
+{
+	switch (token)
+	{
+	case LT: return CompareExp::Kind::Lt;
+	case LE: return CompareExp::Kind::LtEq;
+	case NE: return CompareExp::Kind::NotEq;
+	case GE: return CompareExp::Kind::GrEq;
+	case GR: return CompareExp::Kind::Gr;
+	case EQ:
+	default: return CompareExp::Kind::Eq;
+	}
+}
+static inline LazyOpExp::Kind lazyOp (int token)
+{
+	if (token == KW_and)
+		return LazyOpExp::Kind::And;
+	else
+		return LazyOpExp::Kind::Or;
+}
+static ExpPtr combine (ExpPtr lh, ExpPtr rh, const Op& op, const Span& span)
+{
+	ExpPtr res;
+	switch (op.kind)
+	{
+	case Lazy:
+		res = ExpPtr(new LazyOpExp(lh, lazyOp(op.token), rh));
+		break;
+	case Compare:
+		res = ExpPtr(new CompareExp(lh, compareOp(op.token), rh));
+		break;
+	case Cons:
+		res = ExpPtr(new ConsExp(lh, rh));
+		break;
+	case Standard:
+		res = methodCall(span, lh, op.str, { rh });
+		break;
+	default:
+		res = nullptr;
+	}
+	res->span = span;
+	return res;
+}
+
+ExpPtr parseExp (Scanner& scan)
+{
+	return parseExp(scan, 0);
+}
+static ExpPtr parseExp (Scanner& scan, int prec)
+{
+	if (prec >= MaxPrec)
+		return parseTerm(scan);
+
+	auto lh = parseExp(scan, prec + 1);
+	Op oper;
+
+	for (;;)
+	{
+		oper = getOp(scan.get().kind);
+		if (oper.precedence != prec)
+			break;
+
+		auto span = scan.shift().span;
+
+		if (oper.order == Right)
+		{
+			auto rh = parseExp(scan, prec);
+			lh = combine(lh, rh, oper, span);
+			break;
+		}
+		else
+		{
+			auto rh = parseExp(scan, prec + 1);
+			lh = combine(lh, rh, oper, span);
+		}
+	}
+
+	return lh;
+}
 
 
+/*
+term:
+	op_unary term
+	prefix_term {term_suffix}
+prefix_term:
+	name
+	INT
+	REAL
+	LONG
+	STRING
+	bool_exp
+	tuple_exp
+	lambda_exp
+	object_exp
+	cond_exp
+	block_exp
+term_suffix:
+	"(" [exp {"," exp}] ")"
+	"." ID
+	"[" exp "]"
+*/
+static ExpPtr parseTerm (Scanner& scan)
+{
+	ExpPtr res;
+	auto span = scan.get().span;
+	switch (scan.get().kind)
+	{
+	case ID:
+		res = ExpPtr(new VarExp(parseName(scan)));
+		break;
+	case INT:
+		res = ExpPtr(new IntExp(scan.shift().val_int));
+		break;
+	case REAL:
+		res = ExpPtr(new RealExp(scan.shift().val_real));
+		break;
+	case STRING:
+		res = ExpPtr(new StringExp(scan.shift().string));
+		break;
+	case KW_true:
+		scan.shift();
+		res = ExpPtr(new BoolExp(true));
+		break;
+	case KW_false:
+		scan.shift();
+		res = ExpPtr(new BoolExp(false));
+		break;
+	case LPAREN:
+		{
+			auto exps = commaList(scan, parseExp, LPAREN, RPAREN, true);
+			if (exps.size() == 1)
+			{
+				res = exps[0];
+				span = res->span;
+			}
+			else
+				res = ExpPtr(new TupleExp(exps));
+			break;
+		}
+	case LCURL:
+		res = parseBlockExp(scan);
+		break;
+	default:
+		throw SourceError("expected expression", span);
+	}
+
+	res->span = span;
+	return res;
+}
+
+/*
+block_exp:
+	"{" {stmt} [final_stmt] "}"
+stmt:
+	";"
+	let_decl
+	cond_if [cond_else]
+	loop
+	exp [assignment]
+final_stmt:
+	"return" [exp]
+	"break"
+	"continue"
+*/
+static bool parseFinalStmt (Scanner& scan, ExpList& exps)
+{
+	ExpPtr res;
+	auto span = scan.get().span;
+
+	switch (scan.get().kind)
+	{
+	case KW_return:
+		{
+			scan.shift();
+			ExpPtr ret;
+			if (scan.get() != LCURL)
+				ret = parseExp(scan);
+			else
+				ret = ExpPtr(new TupleExp({}));
+			res = ExpPtr(new ReturnExp(ret));
+			break;
+		}
+
+	case KW_break:
+		scan.shift();
+		res = ExpPtr(new GotoExp(GotoExp::Break));
+		break;
+	case KW_continue:
+		scan.shift();
+		res = ExpPtr(new GotoExp(GotoExp::Continue));
+		break;
+	default:
+		return false;
+	}
+	res->span = span;
+	exps.push_back(res);
+	return true;
+}
+static ExpPtr parseBlockExp (Scanner& scan)
+{
+	auto span = scan.eat(LCURL).span;
+	ExpList exps;
+	bool unit = false;
+
+	while (scan.get() != RCURL)
+	{
+		if (scan.get() == SEMICOLON)
+		{
+			unit = true;
+			scan.shift();
+		}
+		else if (parseFinalStmt(scan, exps))
+		{
+			break;
+		}
+		else
+		{
+			unit = false;
+			exps.push_back(parseExp(scan));
+		}
+	}
+
+	scan.eat(RCURL);
+
+	ExpPtr res(new BlockExp(exps, unit));
+	res->span = span;
+	return res;
+}
 
 }

@@ -1,6 +1,5 @@
 module List
 use Util
-module Foo
 
 iface Show {
 	fn str () : string
@@ -9,11 +8,8 @@ iface Ord #t {
 	fn cmp (other : #t) : int
 }
 
-impl a : list[#e] {
-	fn foldl (z : #e', f : func[#e', #e, #e']) // ...
+fn foo (x : int) {
+	(1 + 2) * 3 
+	1 + 2 * 3
+	1 + 4 == 5 * 1 and 0 == 5 - x
 }
-impl list[#e(Show)] {
-	fn str () // ...
-}
-
-fn max (a : #t(Ord), b : #t(Ord)) // ...

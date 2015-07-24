@@ -38,6 +38,7 @@ int main ()
 			              << fn->impl.type->str() << std::endl;
 
 			show_fn(fn->name, fn->args, true);
+			std::cout << "  " << fn->body->str(2) << std::endl;
 			std::cout << std::endl;
 		}
 
