@@ -38,6 +38,8 @@ public:
 	explicit inline Exp (const ExpList& _children = {})
 		: children(_children) {}
 	virtual ~Exp () = 0;
+	virtual std::string str (int ident) const;
+	inline std::string str () const { return str(0); }
 
 	template <typename T>
 	inline bool is () const {
@@ -57,6 +59,7 @@ public:
 
 	explicit inline VarExp (const Name& _name) : name(_name) {}
 	virtual ~VarExp ();
+	virtual std::string str (int ident) const;
 };
 class IntExp : public Exp
 {
@@ -64,6 +67,7 @@ public:
 	int value;
 	explicit inline IntExp (int _value) : value(_value) {}
 	virtual ~IntExp();
+	virtual std::string str (int ident) const;
 };
 class RealExp : public Exp
 {
@@ -71,6 +75,7 @@ public:
 	float value;
 	explicit inline RealExp (float _value) : value(_value) {}
 	virtual ~RealExp ();
+	virtual std::string str (int ident) const;
 };
 class StringExp : public Exp
 {
@@ -78,6 +83,7 @@ public:
 	std::string value;
 	explicit inline StringExp (const std::string& _value) : value(_value) {}
 	virtual ~StringExp ();
+	virtual std::string str (int ident) const;
 };
 class BoolExp : public Exp
 {
@@ -85,6 +91,7 @@ public:
 	bool value;
 	explicit inline BoolExp (bool _value) : value(_value) {}
 	virtual ~BoolExp ();
+	virtual std::string str (int ident) const;
 };
 class TupleExp : public Exp
 {
@@ -148,6 +155,7 @@ public:
 	inline LazyOpExp (ExpPtr _a, Kind _kind, ExpPtr _b)
 		: Exp({ _a, _b }), kind(_kind) {}
 	virtual ~LazyOpExp ();
+	virtual std::string str (int ident) const;
 };
 class CompareExp : public Exp
 {
@@ -158,6 +166,7 @@ public:
 	inline CompareExp (ExpPtr _a, Kind _kind, ExpPtr _b) // sugar
 		: Exp({ _a, _b }), kind(_kind) {}
 	virtual ~CompareExp ();
+	virtual std::string str (int ident) const;
 };
 class ConsExp : public Exp
 {
@@ -165,8 +174,14 @@ public:
 	inline ConsExp (ExpPtr _hd, ExpPtr _tl)
 		: Exp({ _hd, _tl }) {}
 	virtual ~ConsExp ();
+	virtual std::string str (int ident) const;
 };
-class NilExp : public Exp { public: virtual ~NilExp (); };
+class NilExp : public Exp
+{
+public:
+	virtual ~NilExp ();
+	virtual std::string str (int ident) const;
+};
 class FieldExp : public Exp
 {
 public:
@@ -174,6 +189,7 @@ public:
 	inline FieldExp (ExpPtr _a, const std::string& _name)
 		: Exp({ _a }), name(_name) {}
 	virtual ~FieldExp ();
+	virtual std::string str (int ident) const;
 };
 class MemberExp : public Exp
 {
@@ -192,6 +208,7 @@ public:
 			_args.begin(), _args.end());
 	}
 	virtual ~CallExp ();
+	virtual std::string str (int ident) const;
 };
 class BlockExp : public Exp
 {
@@ -200,6 +217,7 @@ public:
 	inline BlockExp (const ExpList& stmts, bool _unitResult)
 		: Exp(stmts), unitResult(_unitResult) {}
 	virtual ~BlockExp ();
+	virtual std::string str (int ident) const;
 };
 class WhileExp : public Exp
 {
