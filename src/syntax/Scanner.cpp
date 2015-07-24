@@ -73,6 +73,7 @@ static std::vector<Seq> keywords {
 	Seq("impl",     KW_impl),
 	Seq("in",       KW_in),
 	Seq("let",      KW_let),
+	Seq("module",   KW_module),
 	Seq("new",      KW_new),
 	Seq("not",      KW_not),
 	Seq("or",       KW_or),
@@ -531,12 +532,13 @@ Token Scanner::shift ()
 
 void Scanner::expect (int kind)
 {
-	expect({ kind });
+	expect(std::vector<int> { kind });
 }
 void Scanner::expect (const std::vector<int>& kinds)
 {
+	auto cur = get().kind;
 	for (auto& k : kinds)
-		if (get().kind == k)
+		if (cur == k)
 			return;
 
 	std::ostringstream ss;
@@ -556,6 +558,6 @@ void Scanner::expect (const std::vector<int>& kinds)
 }
 Token Scanner::eat (int kind)
 {
-	expect(kind);
+	expect({ kind });
 	return shift();
 }

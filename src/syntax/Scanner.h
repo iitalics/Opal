@@ -6,6 +6,7 @@
  tokens are namespaced as to not 
  pollute the global namespace */
 namespace Tokens {
+;
 enum
 {
 	END_OF_FILE,
@@ -38,6 +39,7 @@ enum
 	KW_impl,
 	KW_in,
 	KW_let,
+	KW_module,
 	KW_new,
 	KW_not,
 	KW_or,
