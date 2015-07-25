@@ -38,6 +38,19 @@ std::string StringExp::str (int ind) const { return "\"" + value + "\""; }
 BoolExp::~BoolExp () {}
 std::string BoolExp::str (int ind) const { return value ? "true" : "false"; }
 TupleExp::~TupleExp () {}
+std::string TupleExp::str (int ind) const
+{
+	std::ostringstream ss;
+	ss << "(";
+	for (size_t i = 0, len = children.size(); i < len; i++)
+	{
+		if (i > 0)
+			ss << ", ";
+		ss << children[i]->str(ind);
+	}
+	ss << ")";
+	return ss.str();
+}
 LambdaExp::~LambdaExp () {}
 ObjectExp::~ObjectExp () {}
 CondExp::~CondExp () {}
@@ -88,6 +101,13 @@ std::string FieldExp::str (int ind) const
 	return children[0]->str(ind) + "." + name;
 }
 MemberExp::~MemberExp () {}
+std::string MemberExp::str (int ind) const
+{
+	std::ostringstream ss;
+	ss << children[0]->str(ind) << "["
+	   << children[1]->str(ind + 2) << "]";
+	return ss.str();
+}
 CallExp::~CallExp () {}
 std::string CallExp::str (int ind) const
 {
@@ -118,8 +138,26 @@ std::string BlockExp::str (int ind) const
 }
 WhileExp::~WhileExp () {}
 AssignExp::~AssignExp () {}
+std::string AssignExp::str (int ind) const
+{
+	std::ostringstream ss;
+	ss << children[0]->str(ind)
+	   << " = " << children[1]->str(ind);
+	return ss.str();
+}
 ReturnExp::~ReturnExp () {}
+std::string ReturnExp::str (int ind) const
+{
+	return "return " + children[0]->str(ind + 2);
+}
 GotoExp::~GotoExp () {}
+std::string GotoExp::str (int ind) const
+{
+	if (kind == Break)
+		return "break";
+	else
+		return "continue";
+}
 
 Type::Type () {}
 Type::~Type () {}

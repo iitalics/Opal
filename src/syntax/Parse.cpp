@@ -13,6 +13,14 @@ static void parseTypeDecl (Toplevel& top, Scanner& scan);
 static void parseIFaceDecl (Toplevel& top, Scanner& scan);
 static void parseImpl (Toplevel& top, Scanner& scan);
 
+static ExpPtr parseExp (Scanner& scan, int prec);
+static ExpPtr parseTerm (Scanner& scan);
+static ExpPtr parseSuffix (Scanner& scan, ExpPtr e);
+static ExpPtr parseBlockExp (Scanner& scan);
+static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit);
+static bool parseFinalStmt (Scanner& scan, ExpList& exps);
+static ExpPtr parseAssign (Scanner& scan);
+
 
 
 // utility to easily create
@@ -28,7 +36,6 @@ static inline ExpPtr methodCall (const Span& span,
 	return call;
 }
 
-static ExpPtr parseBlockExp (Scanner& scan);
 
 
 
@@ -395,9 +402,6 @@ TypePtr parseType (Scanner& scan)
 
 
 
-static ExpPtr parseTerm (Scanner& scan);
-static ExpPtr parseExp (Scanner& scan, int prec);
-
 
 /*
 	operator precedence parser
@@ -485,11 +489,6 @@ static ExpPtr combine (ExpPtr lh, ExpPtr rh, const Op& op, const Span& span)
 	res->span = span;
 	return res;
 }
-
-ExpPtr parseExp (Scanner& scan)
-{
-	return parseExp(scan, 0);
-}
 static ExpPtr parseExp (Scanner& scan, int prec)
 {
 	if (prec >= MaxPrec)
@@ -521,6 +520,10 @@ static ExpPtr parseExp (Scanner& scan, int prec)
 
 	return lh;
 }
+ExpPtr parseExp (Scanner& scan)
+{
+	return parseExp(scan, 0);
+}
 
 
 /*
@@ -539,10 +542,6 @@ prefix_term:
 	object_exp
 	cond_exp
 	block_exp
-term_suffix:
-	"(" [exp {"," exp}] ")"
-	"." ID
-	"[" exp "]"
 */
 static ExpPtr parseTerm (Scanner& scan)
 {
@@ -585,12 +584,62 @@ static ExpPtr parseTerm (Scanner& scan)
 	case LCURL:
 		res = parseBlockExp(scan);
 		break;
+	case MINUS:
+		scan.shift();
+		return methodCall(span, 
+			parseTerm(scan), "neg", {});
+	case KW_not:
+		scan.shift();
+		return methodCall(span, 
+			parseTerm(scan), "inv", {});
 	default:
-		throw SourceError("expected expression", span);
+		throw SourceError("invalid expression", span);
 	}
-
 	res->span = span;
+	res = parseSuffix(scan, res);
 	return res;
+}
+
+/*
+term_suffix:
+	"(" [exp {"," exp}] ")"
+	"." ID
+	"[" exp "]"
+*/
+static ExpPtr parseSuffix (Scanner& scan, ExpPtr e)
+{
+	switch (scan.get().kind)
+	{
+	case LPAREN:
+		{
+			auto span = e->span;
+			auto args = commaList(scan, parseExp, LPAREN, RPAREN, true);
+			e = ExpPtr(new CallExp(e, args));
+			e->span = span;
+			break;
+		}
+	case DOT:
+		{
+			scan.shift();
+			auto span = scan.get().span;
+			auto field = scan.eat(ID).string;
+			e = ExpPtr(new FieldExp(e, field));
+			e->span = span;
+			break;
+		}
+	case LBRACK:
+		{
+			auto span = scan.shift().span;
+			auto mem = parseExp(scan);
+			scan.eat(RBRACK);
+			e = ExpPtr(new MemberExp(e, mem));
+			e->span = span;
+			break;
+		}
+	default:
+		return e;
+	}
+	return parseSuffix(scan, e);
 }
 
 /*
@@ -607,6 +656,55 @@ final_stmt:
 	"break"
 	"continue"
 */
+static ExpPtr parseBlockExp (Scanner& scan)
+{
+	auto span = scan.eat(LCURL).span;
+	bool unit = false;
+	ExpList exps;
+
+	while (parseStmt(scan, exps, unit))
+		;
+
+	scan.eat(RCURL);
+
+	ExpPtr res(new BlockExp(exps, unit));
+	res->span = span;
+	return res;
+}
+static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit)
+{
+	if (parseFinalStmt(scan, exps))
+		return false;
+
+	switch (scan.get().kind)
+	{
+	case RCURL:
+		return false;
+	case SEMICOLON:
+		unit = true;
+		scan.shift();
+		break;
+	default:
+		unit = false;
+		exps.push_back(parseAssign(scan));
+		break;
+	}
+	return true;
+}
+static ExpPtr parseAssign (Scanner& scan)
+{
+	auto lh = parseExp(scan);
+	if (scan.get() == EQUAL)
+	{
+		auto span = scan.shift().span;
+		auto rh = parseExp(scan);
+		auto res = ExpPtr(new AssignExp(lh, rh));
+		res->span = span;
+		return res;
+	}
+	else
+		return lh;
+}
 static bool parseFinalStmt (Scanner& scan, ExpList& exps)
 {
 	ExpPtr res;
@@ -641,35 +739,8 @@ static bool parseFinalStmt (Scanner& scan, ExpList& exps)
 	exps.push_back(res);
 	return true;
 }
-static ExpPtr parseBlockExp (Scanner& scan)
-{
-	auto span = scan.eat(LCURL).span;
-	ExpList exps;
-	bool unit = false;
 
-	while (scan.get() != RCURL)
-	{
-		if (scan.get() == SEMICOLON)
-		{
-			unit = true;
-			scan.shift();
-		}
-		else if (parseFinalStmt(scan, exps))
-		{
-			break;
-		}
-		else
-		{
-			unit = false;
-			exps.push_back(parseExp(scan));
-		}
-	}
 
-	scan.eat(RCURL);
 
-	ExpPtr res(new BlockExp(exps, unit));
-	res->span = span;
-	return res;
-}
 
 }

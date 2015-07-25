@@ -98,6 +98,7 @@ class TupleExp : public Exp
 public:
 	explicit inline TupleExp (const ExpList& ch) : Exp(ch) {}
 	virtual ~TupleExp ();
+	virtual std::string str (int ident) const;
 };
 class LambdaExp : public Exp
 {
@@ -197,6 +198,7 @@ public:
 	inline MemberExp (ExpPtr _a, ExpPtr _mem)
 		: Exp({ _a, _mem }) {}
 	virtual ~MemberExp ();
+	virtual std::string str (int ident) const;
 };
 class CallExp : public Exp
 {
@@ -232,6 +234,7 @@ public:
 	inline AssignExp (ExpPtr _lh, ExpPtr _rh)
 		: Exp({ _lh, _rh }) {}
 	virtual ~AssignExp ();
+	virtual std::string str (int ident) const;
 };
 class ReturnExp : public Exp
 {
@@ -240,6 +243,7 @@ public:
 		: Exp({ _what }) {}
 	inline ReturnExp () {}
 	virtual ~ReturnExp ();
+	virtual std::string str (int ident) const;
 };
 class GotoExp : public Exp
 {
@@ -249,6 +253,7 @@ public:
 	explicit inline GotoExp (Kind _kind)
 		: kind(_kind) {}
 	virtual ~GotoExp ();
+	virtual std::string str (int ident) const;
 };
 
 
