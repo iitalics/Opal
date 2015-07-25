@@ -14,6 +14,6 @@
 
 
 
-typedef int32_t oint;
-typedef int64_t olong;
-typedef float oreal;
+typedef int32_t Int_t;
+typedef int64_t Long_t;
+typedef float   Real_t;

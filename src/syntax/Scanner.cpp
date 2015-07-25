@@ -405,13 +405,14 @@ void Scanner::_readNumber (Token& out)
 	}
 
 	// we're done here
+	// TODO: check bounds
 	out.kind = kind;
 	if (kind == INT)
-		out.val_int = oint(num);
+		out.val_int = num;
 	else if (kind == LONG)
-		out.val_long = olong(num);
+		out.val_long = num;
 	else if (kind == REAL)
-		out.val_real = oreal(fp + num);
+		out.val_real = fp + num;
 
 	return;
 bad_digit:

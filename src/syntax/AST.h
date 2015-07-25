@@ -64,16 +64,16 @@ public:
 class IntExp : public Exp
 {
 public:
-	int value;
-	explicit inline IntExp (int _value) : value(_value) {}
+	Int_t value;
+	explicit inline IntExp (Int_t _value) : value(_value) {}
 	virtual ~IntExp();
 	virtual std::string str (int ident) const;
 };
 class RealExp : public Exp
 {
 public:
-	float value;
-	explicit inline RealExp (float _value) : value(_value) {}
+	Real_t value;
+	explicit inline RealExp (Real_t _value) : value(_value) {}
 	virtual ~RealExp ();
 	virtual std::string str (int ident) const;
 };

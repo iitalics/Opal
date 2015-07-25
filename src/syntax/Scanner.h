@@ -59,9 +59,9 @@ struct Token
 	// token-specific value
 	std::string string;
 	union {
-		oint val_int;
-		olong val_long;
-		oreal val_real;
+		Int_t val_int;
+		Long_t val_long;
+		Real_t val_real;
 		bool val_bool;
 	};
 
