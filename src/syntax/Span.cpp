@@ -1,4 +1,4 @@
-#include <syntax/Span.h>
+#include "Span.h"
 #include <cstring>
 
 

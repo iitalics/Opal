@@ -1,6 +1,6 @@
 #pragma once
-#include <syntax/AST.h>
-#include <syntax/Scanner.h>
+#include "AST.h"
+#include "Scanner.h"
 
 namespace Parse {
 ;

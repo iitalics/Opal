@@ -1,5 +1,5 @@
 #pragma once
-#include <opal.h>
+#include "../opal.h"
 #include <exception>
 
 /*

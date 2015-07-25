@@ -1,5 +1,5 @@
 #pragma once
-#include <syntax/Span.h>
+#include "Span.h"
 #include <list.h>
 
 namespace AST {

@@ -1,6 +1,5 @@
 #pragma once
-#include <opal.h>
-#include <syntax/Span.h>
+#include "Span.h"
 
 /*
  tokens are namespaced as to not 

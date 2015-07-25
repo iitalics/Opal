@@ -1,5 +1,5 @@
-#include <syntax/Scanner.h>
-#include <syntax/Parse.h>
+#include "syntax/Scanner.h"
+#include "syntax/Parse.h"
 
 static void show_fn (
 	const std::string& name,

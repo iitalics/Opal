@@ -1,4 +1,4 @@
-#include <syntax/Scanner.h>
+#include "Scanner.h"
 #include <cstring>
 
 using namespace Tokens;

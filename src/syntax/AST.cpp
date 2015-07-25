@@ -1,4 +1,4 @@
-#include <syntax/AST.h>
+#include "AST.h"
 
 namespace AST
 {

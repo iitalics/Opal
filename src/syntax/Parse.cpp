@@ -1,4 +1,4 @@
-#include <syntax/Parse.h>
+#include "Parse.h"
 
 using namespace AST;
 using namespace Tokens;
