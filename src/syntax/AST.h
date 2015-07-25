@@ -43,7 +43,7 @@ public:
 
 	template <typename T>
 	inline bool is () const {
-		return dynamic_cast<T*>(this) != nullptr;
+		return dynamic_cast<const T*>(this) != nullptr;
 	}
 
 	ExpList children;
@@ -100,6 +100,13 @@ public:
 	virtual ~TupleExp ();
 	virtual std::string str (int ident) const;
 };
+class ListExp : public Exp
+{
+public:
+	explicit inline ListExp (const ExpList& ch) : Exp(ch) {}
+	virtual ~ListExp ();
+	virtual std::string str (int ident) const;
+};
 class LambdaExp : public Exp
 {
 public:
@@ -111,6 +118,7 @@ public:
 		: Exp({ body }),
 		  args(_args) {}
 	virtual ~LambdaExp ();
+	virtual std::string str (int ident) const;
 };
 class ObjectExp : public Exp
 {
@@ -120,10 +128,11 @@ public:
 	TypePtr objType;
 	std::vector<std::string> inits;
 
-	inline ObjectExp (
+	ObjectExp (
 		TypePtr _objType,
 		const std::vector<Init>& _inits);
 	virtual ~ObjectExp ();
+	virtual std::string str (int ident) const;
 };
 class CondExp : public Exp
 {
@@ -133,6 +142,7 @@ public:
 	inline CondExp (ExpPtr _cond, ExpPtr _then)
 		: Exp({ _cond, _then }) {}
 	virtual ~CondExp ();
+	virtual std::string str (int ident) const;
 };
 class LetExp : public Exp
 {
@@ -146,6 +156,7 @@ public:
 	inline LetExp (const std::string& _name, TypePtr _type)
 		: name(_name), varType(_type) {}
 	virtual ~LetExp ();
+	virtual std::string str (int ident) const;
 };
 class LazyOpExp : public Exp
 {

@@ -51,10 +51,84 @@ std::string TupleExp::str (int ind) const
 	ss << ")";
 	return ss.str();
 }
+ListExp::~ListExp () {}
+std::string ListExp::str (int ind) const
+{
+	std::ostringstream ss;
+	ss << "[";
+	for (size_t i = 0, len = children.size(); i < len; i++)
+	{
+		if (i > 0)
+			ss << ", ";
+		ss << children[i]->str(ind);
+	}
+	ss << "]";
+	return ss.str();
+}
 LambdaExp::~LambdaExp () {}
+std::string LambdaExp::str (int ind) const
+{
+	std::ostringstream ss;
+	ss << "fn (";
+	for (size_t i = 0, len = args.size(); i < len; i++)
+	{
+		if (i > 0)
+			ss << ", ";
+		ss << args[i];
+	}
+	ss << ") ";
+	if (!children[0]->is<BlockExp>())
+		ss << "= ";
+	ss << children[0]->str(ind);
+	return ss.str();
+}
+ObjectExp::ObjectExp (TypePtr _objType,
+		const std::vector<Init>& _inits)
+	: objType(_objType)
+{
+	children.reserve(_inits.size());
+	for (auto& init : _inits)
+	{
+		inits.push_back(init.first);
+		children.push_back(init.second);
+	}
+}
 ObjectExp::~ObjectExp () {}
+std::string ObjectExp::str (int ind) const
+{
+	std::ostringstream ss;
+	ss << "new " << objType->str() << " {" << std::endl;
+	for (size_t i = 0, len = inits.size(); i < len; i++)
+	{
+		ss << spaces(ind + 2) << inits[i] << " = "
+		   << children[i]->str(ind + 2) << std::endl;
+	}
+	ss << spaces(ind) << "}";
+	return ss.str();
+}
 CondExp::~CondExp () {}
+std::string CondExp::str (int ind) const
+{
+	std::ostringstream ss;
+	ss << "if " << children[0]->str(ind + 2) << " "
+	   << children[1]->str(ind);
+	if (children.size() > 2)
+	{
+		ss << " else " << children[2]->str(ind);
+	}
+	return ss.str();
+}
 LetExp::~LetExp () {}
+std::string LetExp::str (int ind) const
+{
+	std::ostringstream ss;
+	ss << "let " << name;
+	if (varType == nullptr)
+		ss << " = " << children[0]->str(ind);
+	else
+		ss << " : " << varType->str();
+	return ss.str();
+}
 LazyOpExp::~LazyOpExp () {}
 std::string LazyOpExp::str (int ind) const
 {
@@ -133,6 +207,8 @@ std::string BlockExp::str (int ind) const
 		   << e->str(ind + 2)
 		   << std::endl;
 	}
+	if (unitResult)
+		ss << spaces(ind + 2) << "()" << std::endl;
 	ss << spaces(ind) << "}";
 	return ss.str();
 }

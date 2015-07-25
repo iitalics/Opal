@@ -17,9 +17,13 @@ static ExpPtr parseExp (Scanner& scan, int prec);
 static ExpPtr parseTerm (Scanner& scan);
 static ExpPtr parseSuffix (Scanner& scan, ExpPtr e);
 static ExpPtr parseBlockExp (Scanner& scan);
+static ExpPtr parseCond (Scanner& scan, bool req_else);
+static ExpPtr parseLambda (Scanner& scan);
+static ExpPtr parseObject (Scanner& scan);
 static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit);
-static bool parseFinalStmt (Scanner& scan, ExpList& exps);
+static bool parseFinalStmt (Scanner& scan, ExpList& exps, bool& unit);
 static ExpPtr parseAssign (Scanner& scan);
+static ExpPtr parseLet (Scanner& scan);
 
 
 
@@ -551,36 +555,58 @@ static ExpPtr parseTerm (Scanner& scan)
 	{
 	case ID:
 		res = ExpPtr(new VarExp(parseName(scan)));
+		res->span = span;
 		break;
 	case INT:
 		res = ExpPtr(new IntExp(scan.shift().val_int));
+		res->span = span;
 		break;
 	case REAL:
 		res = ExpPtr(new RealExp(scan.shift().val_real));
+		res->span = span;
 		break;
 	case STRING:
 		res = ExpPtr(new StringExp(scan.shift().string));
+		res->span = span;
 		break;
 	case KW_true:
 		scan.shift();
 		res = ExpPtr(new BoolExp(true));
+		res->span = span;
 		break;
 	case KW_false:
 		scan.shift();
 		res = ExpPtr(new BoolExp(false));
+		res->span = span;
 		break;
 	case LPAREN:
 		{
 			auto exps = commaList(scan, parseExp, LPAREN, RPAREN, true);
 			if (exps.size() == 1)
-			{
 				res = exps[0];
-				span = res->span;
-			}
 			else
+			{
 				res = ExpPtr(new TupleExp(exps));
+				res->span = span;
+			}
 			break;
 		}
+	case LBRACK:
+		{
+			auto exps = commaList(scan, parseExp, LBRACK, RBRACK);
+			res = ExpPtr(new ListExp(exps));
+			res->span = span;
+			break;
+		}
+	case KW_fn:
+		res = parseLambda(scan);
+		break;
+	case KW_new:
+		res = parseObject(scan);
+		break;
+	case KW_if:
+		res = parseCond(scan, true);
+		break;
 	case LCURL:
 		res = parseBlockExp(scan);
 		break;
@@ -595,7 +621,6 @@ static ExpPtr parseTerm (Scanner& scan)
 	default:
 		throw SourceError("invalid expression", span);
 	}
-	res->span = span;
 	res = parseSuffix(scan, res);
 	return res;
 }
@@ -673,7 +698,7 @@ static ExpPtr parseBlockExp (Scanner& scan)
 }
 static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit)
 {
-	if (parseFinalStmt(scan, exps))
+	if (parseFinalStmt(scan, exps, unit))
 		return false;
 
 	switch (scan.get().kind)
@@ -683,6 +708,17 @@ static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit)
 	case SEMICOLON:
 		unit = true;
 		scan.shift();
+		break;
+	case KW_if:
+		{
+			auto cond = parseCond(scan, false);
+			unit = cond->children.size() == 2;
+			exps.push_back(cond);
+			break;
+		}
+	case KW_let:
+		unit = true;
+		exps.push_back(parseLet(scan));
 		break;
 	default:
 		unit = false;
@@ -705,7 +741,7 @@ static ExpPtr parseAssign (Scanner& scan)
 	else
 		return lh;
 }
-static bool parseFinalStmt (Scanner& scan, ExpList& exps)
+static bool parseFinalStmt (Scanner& scan, ExpList& exps, bool& unit)
 {
 	ExpPtr res;
 	auto span = scan.get().span;
@@ -716,21 +752,24 @@ static bool parseFinalStmt (Scanner& scan, ExpList& exps)
 		{
 			scan.shift();
 			ExpPtr ret;
-			if (scan.get() != LCURL)
+			if (scan.get() != RCURL)
 				ret = parseExp(scan);
 			else
 				ret = ExpPtr(new TupleExp({}));
 			res = ExpPtr(new ReturnExp(ret));
+			unit = false;
 			break;
 		}
 
 	case KW_break:
 		scan.shift();
 		res = ExpPtr(new GotoExp(GotoExp::Break));
+		unit = true;
 		break;
 	case KW_continue:
 		scan.shift();
 		res = ExpPtr(new GotoExp(GotoExp::Continue));
+		unit = true;
 		break;
 	default:
 		return false;
@@ -740,7 +779,115 @@ static bool parseFinalStmt (Scanner& scan, ExpList& exps)
 	return true;
 }
 
+/*
+cond_if:
+	"if" exp block
+cond_else:
+	"else" cond_if
+	"else" block
+*/
+static ExpPtr parseCond (Scanner& scan, bool req_else)
+{
+	auto span = scan.eat(KW_if).span;
+	auto cond = parseExp(scan);
+	auto if_body = parseBlockExp(scan);
+	ExpPtr res;
 
+	if (req_else)
+		scan.expect(KW_else);
+
+	if (req_else || scan.get() == KW_else)
+	{
+		ExpPtr else_body = nullptr;
+
+		scan.shift();
+		if (scan.get() == KW_if)
+			else_body = parseCond(scan, req_else);
+		else if (scan.get() == LCURL)
+			else_body = parseBlockExp(scan);
+		else
+			scan.expect({ KW_if, LCURL });
+
+		res = ExpPtr(new CondExp(cond, if_body, else_body));
+	}
+	else
+		res = ExpPtr(new CondExp(cond, if_body));
+
+	res->span = span;
+	return res;
+}
+
+
+/*
+let_decl:
+	"let" ID ":" type
+	"let" ID "=" exp
+*/
+static ExpPtr parseLet (Scanner& scan)
+{
+	auto span = scan.shift().span;
+	ExpPtr res;
+
+	if (scan.get(1) == COLON)
+	{
+		auto name = scan.eat(ID).string;
+		scan.shift();
+		auto type = parseType(scan);
+		res = ExpPtr(new LetExp(name, type));
+	}
+	else //if (scan.get(1) == EQUAL)
+	{
+		auto name = scan.eat(ID).string;
+		scan.eat(EQUAL);
+		auto init = parseExp(scan);
+		res = ExpPtr(new LetExp(name, init));
+	}
+
+	res->span = span;
+	return res;
+}
+
+
+/*
+lambda_exp:
+	"fn" "(" [ID {"," ID}] ")" fn_body
+*/
+static std::string parseLambdaArg (Scanner& scan)
+{
+	return scan.eat(ID).string;
+}
+static ExpPtr parseLambda (Scanner& scan)
+{
+	auto span = scan.shift().span;
+	auto args = commaList(scan, parseLambdaArg, LPAREN, RPAREN);
+	auto body = parseFuncBody(scan);
+	auto res = ExpPtr(new LambdaExp(args, body));
+	res->span = span;
+	return res;
+}
+
+/*
+object_exp:
+	"new" type "{" [init {"," init}] "}"
+init:
+	ID "=" exp
+*/
+static ObjectExp::Init parseInit (Scanner& scan)
+{
+	auto name = scan.eat(ID).string;
+	scan.eat(EQUAL);
+	auto val = parseExp(scan);
+	return ObjectExp::Init(name, val);
+}
+static ExpPtr parseObject (Scanner& scan)
+{
+	auto span = scan.shift().span;
+	auto type = parseType(scan);
+	auto inits = commaList(scan, parseInit, LCURL, RCURL);
+	auto res = ExpPtr(new ObjectExp(type, inits));
+	res->span = span;
+	return res;
+}
 
 
 }
