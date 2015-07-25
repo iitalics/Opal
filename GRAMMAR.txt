@@ -111,6 +111,7 @@ prefix_term:
 	STRING
 	bool_exp
 	tuple_exp
+	list_exp
 	lambda_exp
 	object_exp
 	cond_exp
@@ -127,6 +128,9 @@ bool_exp:
 
 tuple_exp:
 	"(" [exp {"," exp}] ")"
+
+list_exp:
+	"[" [exp {"," exp}] "]"
 
 lambda_exp:
 	"fn" "(" [ID {"," ID}] ")" fn_body
