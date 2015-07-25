@@ -387,14 +387,14 @@ class IFaceDecl
 {
 public:
 	std::string name;
-	TypePtr self;
+	std::string selfParam;
 	std::vector<IFaceFunc> funcs;
 
 	Span span;
 
 	IFaceDecl (const std::string& _name, 
-			TypePtr _self)
-		: name(_name), self(_self) {}
+			const std::string& _self)
+		: name(_name), selfParam(_self) {}
 	~IFaceDecl ();
 
 	void add (const IFaceFunc& func);

@@ -46,8 +46,8 @@ int main ()
 		for (auto& iface : top.ifaces)
 		{
 			std::cout << "  " << iface->name;
-			if (iface->self != nullptr)
-				std::cout << " " << iface->self->str() << std::endl;
+			if (!iface->selfParam.empty())
+				std::cout << " #" << iface->selfParam << std::endl;
 			else
 				std::cout << std::endl;
 

@@ -247,17 +247,11 @@ static void parseIFaceDecl (Toplevel& top, Scanner& scan)
 {
 	auto span = scan.shift().span;
 	auto name = scan.eat(ID).string;
-	TypePtr self = nullptr;
+	std::string self = "";
 
 	scan.expect({ POLYID, LCURL });
 	if (scan.get() == POLYID)
-	{
-		self = parseType(scan);
-		if (!((ParamType*) self.get())->ifaces.empty())
-			throw SourceError("invalid self type",
-				{"expected param-type with no ifaces"},
-				self->span);
-	}
+		self = scan.shift().string;
 
 	IFaceDeclPtr iface(new IFaceDecl(name, self));
 	iface->span = span;

@@ -119,9 +119,6 @@ public:
 	void expect (int kind);
 	void expect (const std::vector<int>& kinds);
 
-	// throws an error 'unexpected token'
-	void unexpect ();
-
 	// { expect(t); shift() }
 	Token eat (int kind);
 
