@@ -1,8 +1,9 @@
 #include "Scanner.h"
 #include <cstring>
+namespace Opal {
+;
 
 using namespace Tokens;
-
 
 // syntax constants
 #define POLY_ID_CHAR  '#'
@@ -561,4 +562,7 @@ Token Scanner::eat (int kind)
 {
 	expect({ kind });
 	return shift();
+}
+
+
 }

@@ -1,10 +1,9 @@
 #include "Parse.h"
+namespace Opal { namespace Parse {
+;
 
 using namespace AST;
 using namespace Tokens;
-
-namespace Parse {
-;
 
 static void parseUse (Toplevel& top, Scanner& scan);
 static void parseModule (Toplevel& top, Scanner& scan);
@@ -884,4 +883,4 @@ static ExpPtr parseObject (Scanner& scan)
 }
 
 
-}
+}}

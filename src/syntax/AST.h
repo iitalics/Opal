@@ -1,9 +1,10 @@
 #pragma once
 #include "Span.h"
 #include <list.h>
-
-namespace AST {
+namespace Opal { namespace AST {
 ;
+
+
 class Exp;
 class Type;
 class FuncDecl;
@@ -416,5 +417,4 @@ public:
 };
 
 
-
-}
+}}

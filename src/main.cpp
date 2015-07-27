@@ -1,5 +1,7 @@
 #include "syntax/Scanner.h"
 #include "syntax/Parse.h"
+using namespace Opal;
+
 
 static void show_fn (
 	const std::string& name,

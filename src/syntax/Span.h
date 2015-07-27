@@ -1,6 +1,8 @@
 #pragma once
 #include "../opal.h"
 #include <exception>
+namespace Opal {
+;
 
 /*
  struct for representing the contents of a file
@@ -86,3 +88,6 @@ private:
 	void generate ();
 	char* str;
 };
+
+
+}

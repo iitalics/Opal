@@ -1,7 +1,6 @@
 #include "AST.h"
-
-namespace AST
-{
+namespace Opal { namespace AST {
+;
 
 bool Name::hasModule () const { return !module.empty(); }
 std::string Name::str () const
@@ -291,4 +290,4 @@ Toplevel::Toplevel ()
 Toplevel::~Toplevel () {}
 
 
-}
+}}

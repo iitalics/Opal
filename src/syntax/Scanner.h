@@ -1,5 +1,7 @@
 #pragma once
 #include "Span.h"
+namespace Opal {
+;
 
 /*
  tokens are namespaced as to not 
@@ -136,3 +138,6 @@ private:
 	char _readChar ();
 	char _readEscape ();
 };
+
+
+}

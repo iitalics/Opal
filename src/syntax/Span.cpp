@@ -1,6 +1,7 @@
 #include "Span.h"
 #include <cstring>
-
+namespace Opal {
+;
 
 Span::Span ()
 	: file(nullptr), pos(0) {}
@@ -117,4 +118,7 @@ void SourceError::generate ()
 	str = new char[res.size() + 1];
 	memcpy(str, res.c_str(), res.size());
 	str[res.size()] = '\0';
+}
+
+
 }
