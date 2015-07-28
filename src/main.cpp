@@ -32,34 +32,36 @@ int main ()
 
 		auto top = Parse::parseToplevel(scan);
 
-		std::cout << "functions: " << std::endl;
-		for (auto& fn : top.funcs)
+		for (auto decl : top.decls)
 		{
-			if (fn->impl.type != nullptr)
-				std::cout << "  impl  " << fn->impl.name << " : "
-			              << fn->impl.type->str() << std::endl;
-
-			show_fn(fn->name, fn->args, true);
-			std::cout << "  " << fn->body->str(2) << std::endl;
-			std::cout << std::endl;
-		}
-
-		std::cout << "ifaces:" << std::endl;
-		for (auto& iface : top.ifaces)
-		{
-			std::cout << "  " << iface->name;
-			if (!iface->selfParam.empty())
-				std::cout << " #" << iface->selfParam << std::endl;
-			else
-				std::cout << std::endl;
-
-			for (auto& fn : iface->funcs)
+			auto fn = dynamic_cast<AST::FuncDecl*>(decl.get());
+			auto iface = dynamic_cast<AST::IFaceDecl*>(decl.get());
+			if (fn != nullptr)
 			{
-				std::cout << "  ";
-				show_fn(fn.name, fn.args, false);
-				std::cout << " : " << fn.ret->str() << std::endl;
+				if (fn->impl.type != nullptr)
+					std::cout << "  impl  " << fn->impl.name << " : "
+				              << fn->impl.type->str() << std::endl;
+
+				show_fn(fn->name, fn->args, true);
+				std::cout << "  " << fn->body->str(2) << std::endl;
+				std::cout << std::endl;
 			}
-			std::cout << std::endl;
+			else if (iface != nullptr)
+			{
+				std::cout << "  iface " << iface->name;
+				if (!iface->selfParam.empty())
+					std::cout << " #" << iface->selfParam << std::endl;
+				else
+					std::cout << std::endl;
+
+				for (auto& fn : iface->funcs)
+				{
+					std::cout << "  ";
+					show_fn(fn.name, fn.args, false);
+					std::cout << " : " << fn.ret->str() << std::endl;
+				}
+				std::cout << std::endl;
+			}
 		}
 	}
 	catch (SourceError& err)

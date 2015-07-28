@@ -86,7 +86,8 @@ ObjectExp::ObjectExp (TypePtr _objType,
 	: objType(_objType)
 {
 	children.reserve(_inits.size());
-	for (auto& init : _inits)
+	inits.reserve(_inits.size());
+	for (auto init : _inits)
 	{
 		inits.push_back(init.first);
 		children.push_back(init.second);
@@ -200,7 +201,7 @@ std::string BlockExp::str (int ind) const
 {
 	std::ostringstream ss;
 	ss << "{" << std::endl;
-	for (auto& e : children)
+	for (auto e : children)
 	{
 		ss << spaces(ind + 2)
 		   << e->str(ind + 2)
@@ -276,6 +277,7 @@ std::string ConcreteType::str () const
 	return ss.str();
 }
 
+Decl::~Decl () {}
 FuncDecl::~FuncDecl () {}
 TypeDecl::~TypeDecl () {}
 ConstDecl::~ConstDecl () {}

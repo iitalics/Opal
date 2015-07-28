@@ -166,20 +166,20 @@ static ExpPtr parseFuncBody (Scanner& scan)
 	else
 		return parseBlockExp(scan);
 }
-static FuncDeclPtr parseFuncDecl (Scanner& scan)
+static FuncDecl* parseFuncDecl (Scanner& scan)
 {
 	auto span = scan.shift().span;
 	auto name = scan.eat(ID).string;
 	auto args = commaList<Var>(scan, parseVar, LPAREN, RPAREN);
 	auto body = parseFuncBody(scan);
 
-	FuncDeclPtr fn(new FuncDecl(name, args, body));
+	auto fn = new FuncDecl(name, args, body);
 	fn->span = span;
 	return fn;
 }
 static void parseFuncDecl (Toplevel& top, Scanner& scan)
 {
-	top.funcs.push_back(parseFuncDecl(scan));
+	top.decls.push_back(DeclPtr(parseFuncDecl(scan)));
 }
 
 /*
@@ -215,13 +215,13 @@ static void parseTypeDecl (Toplevel& top, Scanner& scan)
 	if (scan.get() == LCURL)
 	{
 		auto mems = commaList(scan, parseVar, LCURL, RCURL);
-		top.types.push_back(std::make_shared<TypeDecl>(name, args, mems));
+		top.decls.push_back(DeclPtr(new TypeDecl(name, args, mems)));
 	}
 	else if (scan.get() == EQUAL)
 	{
 		scan.shift();
 		auto alias = parseType(scan);
-		top.types.push_back(std::make_shared<TypeDecl>(name, args, alias));
+		top.decls.push_back(DeclPtr(new TypeDecl(name, args, alias)));
 	}
 	else
 		scan.expect({ LCURL, EQUAL });
@@ -233,7 +233,7 @@ iface:
 fn_iface:
 	"fn" ID "(" [var {"," var}] ")" ":" type
 */
-static void parseIFaceFunc (IFaceDeclPtr iface, Scanner& scan)
+static void parseIFaceFunc (IFaceDecl* iface, Scanner& scan)
 {
 	auto span = scan.shift().span;
 	auto name = scan.eat(ID).string;
@@ -252,9 +252,9 @@ static void parseIFaceDecl (Toplevel& top, Scanner& scan)
 	if (scan.get() == POLYID)
 		self = scan.shift().string;
 
-	IFaceDeclPtr iface(new IFaceDecl(name, self));
+	auto iface = new IFaceDecl(name, self);
 	iface->span = span;
-	top.ifaces.push_back(iface);
+	top.decls.push_back(DeclPtr(iface));
 
 	scan.eat(LCURL);
 	while (scan.get() != RCURL)
@@ -287,7 +287,7 @@ static void parseImpl (Toplevel& top, Scanner& scan)
 		scan.expect({ RCURL, KW_fn });
 		auto fn = parseFuncDecl(scan);
 		fn->impl = impl;
-		top.funcs.push_back(fn);
+		top.decls.push_back(DeclPtr(fn));
 	}
 
 	scan.shift();

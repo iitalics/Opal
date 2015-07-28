@@ -7,18 +7,12 @@ namespace Opal { namespace AST {
 
 class Exp;
 class Type;
-class FuncDecl;
-class TypeDecl;
-class IFaceDecl;
-class ConstDecl;
+class Decl;
 using ExpPtr = std::shared_ptr<Exp>;
 using ExpList = std::vector<ExpPtr>;
 using TypePtr = std::shared_ptr<Type>;
-using TypeList = list<TypePtr>;
-using FuncDeclPtr = std::shared_ptr<FuncDecl>;
-using TypeDeclPtr = std::shared_ptr<TypeDecl>;
-using ConstDeclPtr = std::shared_ptr<ConstDecl>;
-using IFaceDeclPtr = std::shared_ptr<IFaceDecl>;
+using TypeList = std::vector<TypePtr>;
+using DeclPtr = std::shared_ptr<Decl>;
 
 struct Name
 {
@@ -318,7 +312,18 @@ struct Var
 	TypePtr type;
 };
 
-class FuncDecl
+class Decl
+{
+public:
+	virtual ~Decl () = 0;
+
+	template <typename T>
+	inline bool is () const {
+		return dynamic_cast<const T*>(this) != nullptr;
+	}
+};
+
+class FuncDecl : public Decl
 {
 public:
 	std::string name;
@@ -333,10 +338,10 @@ public:
 			ExpPtr _body)
 		: name(_name), args(_args),
 		  body(_body), impl { "", nullptr } {}
-	~FuncDecl ();
+	virtual ~FuncDecl ();
 };
 
-class TypeDecl
+class TypeDecl : public Decl
 {
 public:
 	std::string name;
@@ -355,10 +360,10 @@ public:
 			const TypeList& _args,
 			const std::vector<Var>& _members)
 		: name(_name), args(_args), members(_members) {}
-	~TypeDecl ();
+	virtual ~TypeDecl ();
 };
 
-class ConstDecl
+class ConstDecl : public Decl
 {
 public:
 	std::string name;
@@ -373,7 +378,7 @@ public:
 	inline ConstDecl (const std::string& _name,
 			ExpPtr _init)
 		: name(_name), type(nullptr), init(_init) {}
-	~ConstDecl ();
+	virtual ~ConstDecl ();
 };
 
 struct IFaceFunc
@@ -384,7 +389,7 @@ struct IFaceFunc
 	Span span;
 };
 
-class IFaceDecl
+class IFaceDecl : public Decl
 {
 public:
 	std::string name;
@@ -396,7 +401,7 @@ public:
 	IFaceDecl (const std::string& _name, 
 			const std::string& _self)
 		: name(_name), selfParam(_self) {}
-	~IFaceDecl ();
+	virtual ~IFaceDecl ();
 
 	void add (const IFaceFunc& func);
 };
@@ -407,10 +412,7 @@ class Toplevel
 public:
 	std::string module;
 	std::vector<std::string> uses;
-	std::vector<FuncDeclPtr> funcs;
-	std::vector<ConstDeclPtr> consts;
-	std::vector<TypeDeclPtr> types;
-	std::vector<IFaceDeclPtr> ifaces;
+	std::vector<DeclPtr> decls;
 
 	Toplevel ();
 	~Toplevel ();
