@@ -316,8 +316,11 @@ class Decl
 {
 public:
 	virtual ~Decl () = 0;
+	inline Decl ()
+		: isPublic(false) {}
 
 	Span span;
+	bool isPublic;
 
 	template <typename T>
 	inline bool is () const {

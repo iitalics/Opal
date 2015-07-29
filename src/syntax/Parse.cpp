@@ -7,10 +7,12 @@ using namespace Tokens;
 
 static void parseUse (Toplevel& top, Scanner& scan);
 static void parseModule (Toplevel& top, Scanner& scan);
-static void parseFuncDecl (Toplevel& top, Scanner& scan);
-static void parseTypeDecl (Toplevel& top, Scanner& scan);
-static void parseIFaceDecl (Toplevel& top, Scanner& scan);
 static void parseImpl (Toplevel& top, Scanner& scan);
+
+static DeclPtr parseFuncDecl (Scanner& scan, const Var& impl = {"", nullptr});
+static DeclPtr parseTypeDecl (Scanner& scan);
+static DeclPtr parseIFaceDecl (Scanner& scan);
+static DeclPtr parsePublic (Scanner& scan);
 
 static ExpPtr parseExp (Scanner& scan, int prec);
 static ExpPtr parseTerm (Scanner& scan);
@@ -166,7 +168,7 @@ static ExpPtr parseFuncBody (Scanner& scan)
 	else
 		return parseBlockExp(scan);
 }
-static FuncDecl* parseFuncDecl (Scanner& scan)
+static DeclPtr parseFuncDecl (Scanner& scan, const Var& impl)
 {
 	auto span = scan.shift().span;
 	auto name = scan.eat(ID).string;
@@ -174,12 +176,9 @@ static FuncDecl* parseFuncDecl (Scanner& scan)
 	auto body = parseFuncBody(scan);
 
 	auto fn = new FuncDecl(name, args, body);
+	fn->impl = impl;
 	fn->span = span;
-	return fn;
-}
-static void parseFuncDecl (Toplevel& top, Scanner& scan)
-{
-	top.decls.push_back(DeclPtr(parseFuncDecl(scan)));
+	return DeclPtr(fn);
 }
 
 /*
@@ -200,7 +199,7 @@ static bool validSignatureType (TypePtr ty)
 
 	return true;
 }
-static void parseTypeDecl (Toplevel& top, Scanner& scan)
+static DeclPtr parseTypeDecl (Scanner& scan)
 {
 	auto span = scan.shift().span;
 	auto sig = parseType(scan);
@@ -227,11 +226,11 @@ static void parseTypeDecl (Toplevel& top, Scanner& scan)
 	else
 	{
 		scan.expect({ LCURL, EQUAL });
-		return;
+		return nullptr;
 	}
 
 	res->span = span;
-	top.decls.push_back(DeclPtr(res));
+	return DeclPtr(res);
 }
 
 /*
@@ -249,7 +248,7 @@ static void parseIFaceFunc (IFaceDecl* iface, Scanner& scan)
 	auto ret = parseType(scan);
 	iface->funcs.push_back({ name, args, ret, span });
 }
-static void parseIFaceDecl (Toplevel& top, Scanner& scan)
+static DeclPtr parseIFaceDecl (Scanner& scan)
 {
 	auto span = scan.shift().span;
 	auto name = scan.eat(ID).string;
@@ -261,7 +260,6 @@ static void parseIFaceDecl (Toplevel& top, Scanner& scan)
 
 	auto iface = new IFaceDecl(name, self);
 	iface->span = span;
-	top.decls.push_back(DeclPtr(iface));
 
 	scan.eat(LCURL);
 	while (scan.get() != RCURL)
@@ -270,6 +268,8 @@ static void parseIFaceDecl (Toplevel& top, Scanner& scan)
 		parseIFaceFunc(iface, scan);
 	}
 	scan.shift();
+
+	return DeclPtr(iface);
 }
 
 /*
@@ -292,9 +292,8 @@ static void parseImpl (Toplevel& top, Scanner& scan)
 	while (scan.get() != RCURL)
 	{
 		scan.expect({ RCURL, KW_fn });
-		auto fn = parseFuncDecl(scan);
-		fn->impl = impl;
-		top.decls.push_back(DeclPtr(fn));
+		auto fn = parseFuncDecl(scan, impl);
+		top.decls.push_back(fn);
 	}
 
 	scan.shift();
@@ -306,11 +305,11 @@ language:
 
 toplevel:
 	module
-	fn_decl
-	type_decl
-	let_decl
 	impl
-	iface
+	["pub"] fn_decl
+	["pub"] type_decl
+	["pub"] let_decl
+	["pub"] iface
 */
 static bool parseToplevel (Toplevel& top, Scanner& scan)
 {
@@ -322,21 +321,50 @@ static bool parseToplevel (Toplevel& top, Scanner& scan)
 	case KW_module:
 		parseModule(top, scan);
 		return true;
-	case KW_type:
-		parseTypeDecl(top, scan);
-		return true;
-	case KW_fn:
-		parseFuncDecl(top, scan);
-		return true;
 	case KW_impl:
 		parseImpl(top, scan);
 		return true;
-	case KW_iface:
-		parseIFaceDecl(top, scan);
+	case KW_type:
+		top.decls.push_back(parseTypeDecl(scan));
 		return true;
+	case KW_fn:
+		top.decls.push_back(parseFuncDecl(scan));
+		return true;
+	case KW_iface:
+		top.decls.push_back(parseIFaceDecl(scan));
+		return true;
+	case KW_pub:
+		top.decls.push_back(parsePublic(scan));
+		return true;
+	// case KW_let:
 	default:
 		return false;
 	}
+}
+static DeclPtr parsePublic (Scanner& scan)
+{
+	auto span = scan.shift().span;
+	DeclPtr res;
+
+	switch (scan.get().kind)
+	{
+	case KW_type:
+		res = parseTypeDecl(scan);
+		break;
+	case KW_fn:
+		res = parseFuncDecl(scan);
+		break;
+	case KW_iface:
+		res = parseIFaceDecl(scan);
+		break;
+	// case KW_let:
+	default:
+		scan.expect({KW_type, KW_fn, KW_iface});
+		return nullptr;
+	}
+	res->span = span;
+	res->isPublic = true;
+	return res;
 }
 Toplevel parseToplevel (Scanner& scan)
 {

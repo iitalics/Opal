@@ -44,6 +44,7 @@ enum
 	KW_new,
 	KW_not,
 	KW_or,
+	KW_pub,
 	KW_return,
 	KW_true,
 	KW_type,

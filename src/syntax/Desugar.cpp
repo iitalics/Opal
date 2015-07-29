@@ -5,7 +5,7 @@ namespace Opal { namespace Desugar {
 
 static void desugarName (const AST::Name& name)
 {
-	if (!name.module.empty())
+	if (name.hasModule())
 		Env::loadModule(name.module);
 }
 

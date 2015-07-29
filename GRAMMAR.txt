@@ -9,11 +9,11 @@ language:
 
 toplevel:
 	module
-	fn_decl
-	type_decl
-	let_decl
 	impl
-	iface
+	["pub"] fn_decl
+	["pub"] type_decl
+	["pub"] let_decl
+	["pub"] iface
 
 module:
 	"module" ID

@@ -78,6 +78,7 @@ static std::vector<Seq> keywords {
 	Seq("new",      KW_new),
 	Seq("not",      KW_not),
 	Seq("or",       KW_or),
+	Seq("pub",      KW_pub),
 	Seq("return",   KW_return),
 	Seq("true",     KW_true),
 	Seq("type",     KW_type),
