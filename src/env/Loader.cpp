@@ -35,10 +35,7 @@ void loadSource (const std::string& path)
 		mod->importing.push_back(loadModule(name));
 	}
 	for (auto decl : toplevel.decls)
-	{
 		Desugar::desugar(decl);
-		preDeclare(mod, decl);
-	}
 }
 
 
