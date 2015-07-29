@@ -202,7 +202,7 @@ static bool validSignatureType (TypePtr ty)
 }
 static void parseTypeDecl (Toplevel& top, Scanner& scan)
 {
-	scan.shift();
+	auto span = scan.shift().span;
 	auto sig = parseType(scan);
 
 	if (!validSignatureType(sig))
@@ -211,20 +211,27 @@ static void parseTypeDecl (Toplevel& top, Scanner& scan)
 
 	auto name = ((ConcreteType*) sig.get())->name.name;
 	auto args = ((ConcreteType*) sig.get())->subtypes;
+	TypeDecl* res;
 
 	if (scan.get() == LCURL)
 	{
 		auto mems = commaList(scan, parseVar, LCURL, RCURL);
-		top.decls.push_back(DeclPtr(new TypeDecl(name, args, mems)));
+		res = new TypeDecl(name, args, mems);
 	}
 	else if (scan.get() == EQUAL)
 	{
 		scan.shift();
 		auto alias = parseType(scan);
-		top.decls.push_back(DeclPtr(new TypeDecl(name, args, alias)));
+		res = new TypeDecl(name, args, alias);
 	}
 	else
+	{
 		scan.expect({ LCURL, EQUAL });
+		return;
+	}
+
+	res->span = span;
+	top.decls.push_back(DeclPtr(res));
 }
 
 /*

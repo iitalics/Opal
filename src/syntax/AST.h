@@ -317,6 +317,8 @@ class Decl
 public:
 	virtual ~Decl () = 0;
 
+	Span span;
+
 	template <typename T>
 	inline bool is () const {
 		return dynamic_cast<const T*>(this) != nullptr;
@@ -330,8 +332,6 @@ public:
 	std::vector<Var> args;
 	ExpPtr body;
 	Var impl;
-
-	Span span;
 
 	inline FuncDecl (const std::string& _name, 
 			const std::vector<Var>& _args, 
@@ -350,8 +350,6 @@ public:
 	TypePtr alias;
 	std::vector<Var> members;
 
-	Span span;
-
 	inline TypeDecl (const std::string& _name,
 			const TypeList& _args,
 			TypePtr _alias)
@@ -369,8 +367,6 @@ public:
 	std::string name;
 	TypePtr type;
 	ExpPtr init;
-
-	Span span;
 
 	inline ConstDecl (const std::string& _name,
 			TypePtr _type)
