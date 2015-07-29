@@ -40,6 +40,13 @@ Type* Module::getType (const std::string& name) const
 
 	return nullptr;
 }
+Type* Module::getType (const AST::Name& name) const
+{
+	if (name.hasModule())
+		return get(name.module)->getType(name.name);
+	else
+		return getType(name.name);
+}
 Global* Module::getGlobal (const std::string& name) const
 {
 	for (auto& g : globals)
@@ -48,7 +55,18 @@ Global* Module::getGlobal (const std::string& name) const
 
 	return nullptr;
 }
+Global* Module::getGlobal (const AST::Name& name) const
+{
+	if (name.hasModule())
+		return get(name.module)->getGlobal(name.name);
+	else
+		return getGlobal(name.name);
+}
 
+
+AST::Name Type::fullname () const { return AST::Name(name, module->name); }
+AST::Name Global::fullname () const { return AST::Name(name, module->name); }
+AST::Name Function::fullname () const { return AST::Name(name, module->name); }
 
 
 

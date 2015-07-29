@@ -26,11 +26,13 @@ public:
 	std::vector<Type*> types;
 	std::vector<Global*> globals;
 
-	std::vector<Module*> importing;
+	std::set<Module*> importing;
 	std::vector<AST::DeclPtr> decls;
 
 	Type* getType (const std::string& name) const;
+	Type* getType (const AST::Name& name) const;
 	Global* getGlobal (const std::string& name) const;
+	Global* getGlobal (const AST::Name& name) const;
 
 	bool loaded;
 protected:
@@ -76,6 +78,7 @@ public:
 	std::string name;
 	Module* module;
 	Span declSpan;
+	AST::Name fullname () const;
 
 	bool isIFace;
 
@@ -101,6 +104,7 @@ public:
 	std::string name;
 	Module* module;
 	Span declSpan;
+	AST::Name fullname () const;
 
 	bool isFunc;
 	Infer::TypePtr type;
@@ -121,6 +125,7 @@ public:
 	std::string name;
 	Module* module;
 	Span declSpan;
+	AST::Name fullname () const;
 
 	std::vector<Infer::Var> args;
 	Infer::TypePtr ret;

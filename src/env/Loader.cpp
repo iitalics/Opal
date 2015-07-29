@@ -31,18 +31,29 @@ void loadSource (const std::string& path)
 	Scanner scan(path);
 	auto toplevel = Parse::parseToplevel(scan);
 
-	Module* mod;
+	Module* mod_priv = Module::make();
+	Module* mod_pub;
+
 	if (toplevel.module.empty())
-		mod = Module::make();
+		mod_pub = mod_priv;
 	else
-		mod = loadModule(toplevel.module);
+	{
+		mod_pub = loadModule(toplevel.module);
+		mod_priv->importing.insert(mod_pub);
+	}
 
 	for (auto& name : toplevel.uses)
-		mod->importing.push_back(loadModule(name));
+	{
+		mod_priv->importing.insert(loadModule(name));
+	}
 	for (auto decl : toplevel.decls)
 	{
 		Desugar::desugar(decl);
-		mod->decls.push_back(decl);
+
+		if (decl->isPublic)
+			mod_pub->decls.push_back(decl);
+		else
+			mod_priv->decls.push_back(decl);
 	}
 }
 
@@ -88,17 +99,14 @@ static void declareType (Module* mod, AST::DeclPtr decl)
 	res->data.nparams = nparams;
 	mod->types.push_back(res);
 
-	std::cout << "declared type " << name << std::endl;
+	std::cout << "declared type " << res->fullname().str() << std::endl;
 }
 static void declareTypes ()
 {
 	for (auto mod = Module::all(); mod != nullptr; mod = mod->next())
-	{
 		for (auto& decl : mod->decls)
 			declareType(mod, decl);
-	}
 }
-
 static void importTypes (Module* dest, Module* src)
 {
 	for (auto& ty : src->types)
@@ -112,6 +120,18 @@ static void importTypes ()
 	for (auto mod = Module::all(); mod != nullptr; mod = mod->next())
 		for (auto& use : mod->importing)
 			importTypes(mod, use);
+}
+
+
+
+static void create (Module* mod, AST::DeclPtr decl)
+{
+}
+static void createAll ()
+{
+	for (auto mod = Module::all(); mod != nullptr; mod = mod->next())
+		for (auto& decl : mod->decls)
+			create(mod, decl);
 }
 
 void finishModuleLoad ()
