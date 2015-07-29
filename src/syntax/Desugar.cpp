@@ -3,20 +3,26 @@
 namespace Opal { namespace Desugar {
 ;
 
+static void desugarName (const AST::Name& name)
+{
+	if (!name.module.empty())
+		Env::loadModule(name.module);
+}
+
 void desugar (AST::TypePtr& ty)
 {
 	auto param = dynamic_cast<AST::ParamType*>(ty.get());
 	if (param != nullptr)
 	{
 		for (auto& name : param->ifaces)
-			Env::loadModule(name.module);
+			desugarName(name);
 		return;
 	}
 
 	auto conc = dynamic_cast<AST::ConcreteType*>(ty.get());
 	if (conc != nullptr)
 	{
-		Env::loadModule(conc->name.module);
+		desugarName(conc->name);
 		for (auto& ty2 : conc->subtypes)
 			desugar(ty2);
 	}
@@ -28,7 +34,7 @@ void desugar (AST::ExpPtr& e)
 
 	if (auto var = dynamic_cast<AST::VarExp*>(e.get()))
 	{
-		Env::loadModule(var->name.module);
+		desugarName(var->name);
 	}
 	else if (auto let = dynamic_cast<AST::LetExp*>(e.get()))
 	{

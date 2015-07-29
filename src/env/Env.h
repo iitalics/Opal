@@ -16,6 +16,8 @@ public:
 	static Module* get (const std::string& name);
 	static Module* make (const std::string& name);
 	static Module* make ();
+	static inline Module* all () { return _all; }
+	inline Module* next () { return _next; }
 	~Module ();
 
 	std::string name;

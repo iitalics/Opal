@@ -1,34 +1,20 @@
-type someObj {
-	x : int,
-	y : float,
-	z : string
+module Geom
+use Core
+
+type vec2 {
+	x : float,
+	y : float
 }
 
-impl someObject {
-	fn transform (f : func[int, float, string, int]) {
-		self.x = f(self.x, self.y, self.z)
-	}
+fn vec2 (x : float, y : float) {
+	new vec2 {x = x, y = y}
 }
 
-fn main () {
-	not not true;
-	( 1, 2, 3 );
-	- 4 + 5 * 3 - - 1;
-
-	println("Hello, world!")
-	foo(1, 2, 3)
-
-	let list = [1, 2, 3, 4]
-	let array : array[int]
-	array[0] = list.head
-
-	let obj = new someObj {
-		x = 4,
-		y = 4.5,
-		z = "Test"
+impl a : vec2 {
+	fn add (b : vec2) {
+		new vec2 {
+			x = a.x + b.x,
+			y = a.y + b.y
+		}
 	}
-
-	obj.transform(fn (x, y, z) {
-		x + 1
-	})
 }

@@ -8,7 +8,6 @@ static int unnamed = 0;
 Module::Module (const std::string& _name)
 	: name(_name), _next(_all)
 {}
-
 Module::~Module ()
 {
 	// delete things or nah?
@@ -16,7 +15,7 @@ Module::~Module ()
 
 Module* Module::get (const std::string& name)
 {
-	for (auto& mod = _all; mod != nullptr; mod = mod->_next)
+	for (auto mod = _all; mod != nullptr; mod = mod->_next)
 		if (mod->name == name)
 			return mod;
 
@@ -24,9 +23,7 @@ Module* Module::get (const std::string& name)
 }
 Module* Module::make (const std::string& name)
 {
-	auto mod = new Module(name);
-	_all = mod;
-	return mod;
+	return (_all = new Module(name));
 }
 Module* Module::make ()
 {
@@ -34,6 +31,25 @@ Module* Module::make ()
 	ss << "@mod_" << (unnamed++);
 	return make(ss.str());
 }
+
+Type* Module::getType (const std::string& name) const
+{
+	for (auto& ty : types)
+		if (ty->name == name)
+			return ty;
+
+	return nullptr;
+}
+Global* Module::getGlobal (const std::string& name) const
+{
+	for (auto& g : globals)
+		if (g->name == name)
+			return g;
+
+	return nullptr;
+}
+
+
 
 
 // deconstructors
