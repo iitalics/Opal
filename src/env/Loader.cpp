@@ -1,4 +1,5 @@
 #include "Loader.h"
+#include "Namespace.h"
 #include "../syntax/Parse.h"
 #include "../syntax/Desugar.h"
 namespace Opal { namespace Env {
@@ -23,46 +24,45 @@ Module* loadModule (const std::string& name)
 		return mod;
 	mod->loaded = true;
 
+	// search through paths to find sources
+	//  for module
+
 	return mod;
 }
 
-void loadSource (const std::string& path)
+Namespace* loadSource (const std::string& path)
 {
 	Scanner scan(path);
 	auto toplevel = Parse::parseToplevel(scan);
 
-	Module* mod_priv = Module::make();
+	Module* mod_priv = new Module();
 	Module* mod_pub;
 
 	if (toplevel.module.empty())
 		mod_pub = mod_priv;
 	else
-	{
 		mod_pub = loadModule(toplevel.module);
-		mod_priv->importing.insert(mod_pub);
-	}
+
+	auto nm = new Namespace(mod_priv, mod_pub);
 
 	for (auto& name : toplevel.uses)
-	{
-		mod_priv->importing.insert(loadModule(name));
-	}
+		nm->imports.insert(loadModule(name));
+
 	for (auto decl : toplevel.decls)
-	{
 		Desugar::desugar(decl);
 
-		if (decl->isPublic)
-			mod_pub->decls.push_back(decl);
-		else
-			mod_priv->decls.push_back(decl);
-	}
+	nm->decls = toplevel.decls;
+	return nm;
 }
 
 
 
 
 
-static void declareType (Module* mod, AST::DeclPtr decl)
+static void declareType (Namespace* nm, AST::DeclPtr decl)
 {
+	auto mod = decl->isPublic ? nm->modPublic : nm->modPrivate;
+
 	std::string name;
 	Span span;
 	size_t nparams;
@@ -103,48 +103,21 @@ static void declareType (Module* mod, AST::DeclPtr decl)
 }
 static void declareTypes ()
 {
-	for (auto mod = Module::all(); mod != nullptr; mod = mod->next())
-		for (auto& decl : mod->decls)
-			declareType(mod, decl);
-}
-static void importTypes (Module* dest, Module* src)
-{
-	for (auto& ty : src->types)
-		if (ty->module == src)
-			dest->types.push_back(ty);
-		else
-			break;
-}
-static void importTypes ()
-{
-	for (auto mod = Module::all(); mod != nullptr; mod = mod->next())
-		for (auto& use : mod->importing)
-			importTypes(mod, use);
+	for (auto nm = Namespace::all(); nm != nullptr; nm = nm->next())
+		for (auto decl : nm->decls)
+			declareType(nm, decl);
 }
 
 
-
-static void create (Module* mod, AST::DeclPtr decl)
-{
-}
-static void createAll ()
-{
-	for (auto mod = Module::all(); mod != nullptr; mod = mod->next())
-		for (auto& decl : mod->decls)
-			create(mod, decl);
-}
 
 void finishModuleLoad ()
 {
 	// declare Types from TypeDecls and IFaceDecls
 	//   (check for duplicates)
 	declareTypes();
-	// import Types
-	importTypes();
 	// create Types and Globals
-	//   (check for duplicates)
+	//   (check for duplicate globals/methods)
 	//   (check that referenced types exist and are used properly)
-	// import Globals
 	// infer functions
 	// generate code
 	// find entry point and execute

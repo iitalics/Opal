@@ -3,15 +3,37 @@ namespace Opal { namespace Env {
 ;
 
 Module* Module::_all = nullptr;
+
 static int unnamed = 0;
+static std::string unname ()
+{
+	std::ostringstream ss;
+	ss << "@mod_" << (unnamed++);
+	return ss.str();
+}
+
 
 Module::Module (const std::string& _name)
 	: name(_name), _next(_all)
-{}
+{
+	_all = this;
+}
+Module::Module ()
+	: Module(unname()) {}
+
 Module::~Module ()
 {
-	// delete things or nah?
+	if (_all == this)
+		_all = _next;
+
+	for (auto& ty : types)
+		delete ty;
+	for (auto& g : globals)
+		delete g;
 }
+
+
+
 
 Module* Module::get (const std::string& name)
 {
@@ -19,19 +41,8 @@ Module* Module::get (const std::string& name)
 		if (mod->name == name)
 			return mod;
 
-	return make(name);
+	return new Module(name);
 }
-Module* Module::make (const std::string& name)
-{
-	return (_all = new Module(name));
-}
-Module* Module::make ()
-{
-	std::ostringstream ss;
-	ss << "@mod_" << (unnamed++);
-	return make(ss.str());
-}
-
 Type* Module::getType (const std::string& name) const
 {
 	for (auto& ty : types)
@@ -40,13 +51,6 @@ Type* Module::getType (const std::string& name) const
 
 	return nullptr;
 }
-Type* Module::getType (const AST::Name& name) const
-{
-	if (name.hasModule())
-		return get(name.module)->getType(name.name);
-	else
-		return getType(name.name);
-}
 Global* Module::getGlobal (const std::string& name) const
 {
 	for (auto& g : globals)
@@ -54,13 +58,6 @@ Global* Module::getGlobal (const std::string& name) const
 			return g;
 
 	return nullptr;
-}
-Global* Module::getGlobal (const AST::Name& name) const
-{
-	if (name.hasModule())
-		return get(name.module)->getGlobal(name.name);
-	else
-		return getGlobal(name.name);
 }
 
 

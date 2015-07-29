@@ -3,11 +3,15 @@
 namespace Opal { namespace Env {
 ;
 
+class Namespace;
+
+
+
 static std::set<std::string> searchPaths;
 
 
 Module* loadModule (const std::string& name);
-void loadSource (const std::string& path);
+Namespace* loadSource (const std::string& path);
 
 
 void finishModuleLoad ();

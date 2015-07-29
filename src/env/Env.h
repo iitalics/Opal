@@ -14,10 +14,11 @@ class Module
 {
 public:
 	static Module* get (const std::string& name);
-	static Module* make (const std::string& name);
-	static Module* make ();
 	static inline Module* all () { return _all; }
-	inline Module* next () { return _next; }
+	inline Module* next () const { return _next; }
+
+	Module (const std::string& _name);
+	Module ();
 	~Module ();
 
 	std::string name;
@@ -26,19 +27,12 @@ public:
 	std::vector<Type*> types;
 	std::vector<Global*> globals;
 
-	std::set<Module*> importing;
-	std::vector<AST::DeclPtr> decls;
-
 	Type* getType (const std::string& name) const;
-	Type* getType (const AST::Name& name) const;
 	Global* getGlobal (const std::string& name) const;
-	Global* getGlobal (const AST::Name& name) const;
 
 	bool loaded;
 protected:
-	Module (const std::string& _name);
 	Module* _next;
-
 	static Module* _all;
 };
 
