@@ -389,6 +389,13 @@ type_ifaces:
 type_args:
 	"[" type {"," type} "]"
 */
+static Name parseIFaceName (Scanner& scan)
+{
+	if (scan.get() != ID)
+		throw SourceError("expected iface", scan.get().span);
+	else
+		return parseName(scan);
+}
 TypePtr parseType (Scanner& scan)
 {
 	auto span = scan.get().span;
@@ -412,7 +419,7 @@ TypePtr parseType (Scanner& scan)
 		std::vector<Name> ifaces;
 
 		if (scan.get() == LPAREN)
-			ifaces = commaList(scan, parseName, LPAREN, RPAREN, false);
+			ifaces = commaList(scan, parseIFaceName, LPAREN, RPAREN, false);
 		else if (scan.get() == LBRACK) // (b)
 			scan.expect(LPAREN);
 
