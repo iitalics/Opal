@@ -206,7 +206,7 @@ static DeclPtr parseTypeDecl (Scanner& scan)
 
 	if (!validSignatureType(sig))
 		throw SourceError("invalid signature type",
-			{"expected concrete-type with param-type arguments"}, sig->span);
+			{"expected concrete-type with parameter-type arguments"}, sig->span);
 
 	auto name = ((ConcreteType*) sig.get())->name.name;
 	auto args = ((ConcreteType*) sig.get())->subtypes;

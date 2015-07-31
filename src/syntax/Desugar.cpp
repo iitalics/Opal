@@ -59,7 +59,7 @@ void desugar (AST::DeclPtr& decl)
 	{
 		if (tydecl->alias != nullptr)
 			desugar(tydecl->alias);
-		for (auto& m : tydecl->members)
+		for (auto& m : tydecl->fields)
 			desugar(m.type);
 	}
 	else if (auto constdecl = dynamic_cast<AST::ConstDecl*>(decl.get()))

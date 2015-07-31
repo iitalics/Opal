@@ -351,7 +351,7 @@ public:
 	TypeList args;
 
 	TypePtr alias;
-	std::vector<Var> members;
+	std::vector<Var> fields;
 
 	inline TypeDecl (const std::string& _name,
 			const TypeList& _args,
@@ -359,8 +359,8 @@ public:
 		: name(_name), args(_args), alias(_alias) {}
 	inline TypeDecl (const std::string& _name,
 			const TypeList& _args,
-			const std::vector<Var>& _members)
-		: name(_name), args(_args), members(_members) {}
+			const std::vector<Var>& _fields)
+		: name(_name), args(_args), fields(_fields) {}
 	virtual ~TypeDecl ();
 };
 
