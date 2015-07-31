@@ -119,7 +119,7 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 
 	// find parameters
 	for (auto& arg : tydecl->args)
-		ctx.createParam(arg, {}, tydecl->span);
+		ctx.createParam(arg, {});
 
 	// new parameters may not be declared in fields
 	ctx.allowNewTypes = false;
