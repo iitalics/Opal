@@ -40,7 +40,6 @@ struct DataType
 {
 	Infer::Var* fields;
 	size_t nfields;
-	size_t nparams;
 
 	void destroy ();
 };
@@ -72,6 +71,7 @@ public:
 	Span declSpan;
 	AST::Name fullname () const;
 
+	size_t nparams;
 	bool isIFace;
 
 	union
@@ -79,13 +79,6 @@ public:
 		DataType data;
 		IFaceType iface;
 	};
-
-	inline int args () const {
-		if (isIFace)
-			return 0;
-		else
-			return data.nparams;
-	}
 
 	std::vector<Function*> methods;
 };

@@ -16,6 +16,7 @@ namespace Infer {
 
 struct Type;
 using TypePtr = std::shared_ptr<Type>;
+using TypeList = list<TypePtr>;
 
 
 struct Type
@@ -37,21 +38,18 @@ struct Type
 
 	// construct type
 	static TypePtr concrete (Env::Type* base,
-	                           const list<TypePtr>& args);
+	                           const TypeList& args);
 	static TypePtr param (int id, const std::string& name,
-	                           const list<Env::Type*>& ifaces =
-	                               list<Env::Type*>());
-	static TypePtr poly (int id, const list<Env::Type*>& ifaces =
-	                          list<Env::Type*>());
+	                           const TypeList& ifaces = {});
+	static TypePtr poly (int id, const TypeList& ifaces = {});
 	
 	inline Type (Kind _kind)
 		: kind(_kind) {}
 	~Type ();
 
 	Kind kind;
-	list<TypePtr> args;
+	TypeList args;
 	std::string paramName;
-	list<Env::Type*> ifaces;
 	union {
 		Env::Type* base;
 		int id;
@@ -59,6 +57,9 @@ struct Type
 
 	std::string str () const;
 	void set (TypePtr other);
+
+	bool containsParam (const std::string& name);
+	bool containsParam (int id);
 };
 
 

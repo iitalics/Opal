@@ -13,7 +13,7 @@ toplevel:
 	["pub"] fn_decl
 	["pub"] type_decl
 	["pub"] let_decl
-	["pub"] iface
+	["pub"] iface_decl
 
 module:
 	"module" ID
@@ -36,14 +36,13 @@ var:
 
 
 type_decl:
-	"type" type "=" type
 	"type" type "{" [var {"," var}] "}"
 
 type:
 	POLYID [type_ifaces]
 	name [type_args]
 type_ifaces:
-	"(" name {"," name} ")"
+	"(" type {"," type} ")"
 type_args:
 	"[" type {"," type} "]"
 
@@ -54,13 +53,12 @@ let_decl:
 
 
 impl:
-	"impl" ID ":" type "{" {fn_decl} "}"
-	"impl" type        "{" {fn_decl} "}"
+	"impl" [ID ":"] type "{" {fn_decl} "}"
 
 
-iface:
-	"iface" ID [POLYID] "{" {fn_iface} "}"
-fn_iface:
+iface_decl:
+	"iface" [POLYID ":"] type "{" {iface_fn} "}"
+iface_fn:
 	fn_sig ":" type
 
 

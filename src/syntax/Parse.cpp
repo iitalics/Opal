@@ -181,54 +181,60 @@ static DeclPtr parseFuncDecl (Scanner& scan, const Var& impl)
 	return DeclPtr(fn);
 }
 
+
+static std::pair<Span, std::string> parsePOLYID (Scanner& scan)
+{
+	auto span = scan.get().span;
+	auto id = scan.eat(POLYID).string;
+	return std::pair<Span, std::string>(span, id);
+}
+static std::vector<Span> parseTypeSig (Scanner& scan,
+		std::string& name, std::vector<std::string>& args)
+{
+	name = scan.eat(ID).string;
+	if (scan.get() == LBRACK)
+	{
+		auto parsed = commaList(scan, parsePOLYID, LBRACK, RBRACK);
+		std::vector<Span> spans;
+
+		// prevent duplicates
+		args.reserve(args.size() + parsed.size());
+		spans.reserve(parsed.size());
+		for (size_t i = 0; i < parsed.size(); i++)
+		{
+			for (size_t j = 0; j < i; j++)
+				if (parsed[i].second == parsed[j].second)
+					throw SourceError("duplicate parameter names",
+						{ parsed[j].first, parsed[i].first });
+
+			spans.push_back(parsed[i].first);
+			args.push_back(parsed[i].second);
+		}
+
+		return spans;
+	}
+	else
+		return {};
+}
+
 /*
 type_decl:
 	"type" type "=" type
 	"type" type "{" [var {"," var}] "}"
 */
-static bool validSignatureType (TypePtr ty)
-{
-	// TODO: not this?
-	//  better error reporting here?
-	auto conc = dynamic_cast<ConcreteType*>(ty.get());
-
-	if (conc == nullptr)
-		return false;
-
-	for (auto sub : conc->subtypes)
-		if (auto p = dynamic_cast<ParamType*>(sub.get()))
-		{
-			if (!p->ifaces.empty())
-				return false;
-		}
-		else
-			return false;
-
-	return true;
-}
 static DeclPtr parseTypeDecl (Scanner& scan)
 {
-	auto span = scan.shift().span;
-	auto sig = parseType(scan);
-
-	if (!validSignatureType(sig))
-		throw SourceError("invalid type signature",
-			{"expected concrete-type with parameter-type arguments"}, sig->span);
-
-	auto name = ((ConcreteType*) sig.get())->name.name;
-	auto args = ((ConcreteType*) sig.get())->subtypes;
 	TypeDecl* res;
+	auto span = scan.shift().span;
+
+	std::string name;
+	std::vector<std::string> args;
+	parseTypeSig(scan, name, args);
 
 	if (scan.get() == LCURL)
 	{
 		auto mems = commaList(scan, parseVar, LCURL, RCURL);
 		res = new TypeDecl(name, args, mems);
-	}
-	else if (scan.get() == EQUAL)
-	{
-		scan.shift();
-		auto alias = parseType(scan);
-		res = new TypeDecl(name, args, alias);
 	}
 	else
 	{
@@ -241,9 +247,9 @@ static DeclPtr parseTypeDecl (Scanner& scan)
 }
 
 /*
-iface:
-	"iface" ID [POLYID] "{" {fn_iface} "}"
-fn_iface:
+iface_decl:
+	"iface" [POLYID ":"] type "{" {iface_fn} "}"
+iface_fn:
 	"fn" ID "(" [var {"," var}] ")" ":" type
 */
 static void parseIFaceFunc (IFaceDecl* iface, Scanner& scan)
@@ -258,14 +264,28 @@ static void parseIFaceFunc (IFaceDecl* iface, Scanner& scan)
 static DeclPtr parseIFaceDecl (Scanner& scan)
 {
 	auto span = scan.shift().span;
-	auto name = scan.eat(ID).string;
+
 	std::string self = "";
+	Span selfSpan;
+	if (scan.get(1) == COLON)
+	{
+		selfSpan = scan.get().span;
+		self = scan.eat(POLYID).string;
+		scan.shift();
+	}
 
-	scan.expect({ POLYID, LCURL });
-	if (scan.get() == POLYID)
-		self = scan.shift().string;
+	std::string name;
+	std::vector<std::string> args;
+	auto argSpans = parseTypeSig(scan, name, args);
 
-	auto iface = new IFaceDecl(name, self);
+	// argument with same name as 'self'?
+	if (!self.empty())
+		for (size_t i = 0, len = args.size(); i < len; i++)
+			if (args[i] == self)
+				throw SourceError("duplicate parameter names",
+					{ selfSpan, argSpans[i] });
+
+	auto iface = new IFaceDecl(self, name, args);
 	iface->span = span;
 
 	scan.eat(LCURL);
@@ -396,13 +416,6 @@ type_ifaces:
 type_args:
 	"[" type {"," type} "]"
 */
-static Name parseIFaceName (Scanner& scan)
-{
-	if (scan.get() != ID)
-		throw SourceError("expected iface", scan.get().span);
-	else
-		return parseName(scan);
-}
 TypePtr parseType (Scanner& scan)
 {
 	auto span = scan.get().span;
@@ -423,10 +436,10 @@ TypePtr parseType (Scanner& scan)
 	else if (scan.get() == POLYID)
 	{
 		auto name = scan.eat(POLYID).string;
-		std::vector<Name> ifaces;
+		TypeList ifaces;
 
 		if (scan.get() == LPAREN)
-			ifaces = commaList(scan, parseIFaceName, LPAREN, RPAREN, false);
+			ifaces = commaList(scan, parseType, LPAREN, RPAREN, false);
 		else if (scan.get() == LBRACK) // (b)
 			scan.expect(LPAREN);
 

@@ -11,16 +11,13 @@ static void desugarName (const AST::Name& name)
 
 void desugar (AST::TypePtr& ty)
 {
-	auto param = dynamic_cast<AST::ParamType*>(ty.get());
-	if (param != nullptr)
+	if (auto param = dynamic_cast<AST::ParamType*>(ty.get()))
 	{
-		for (auto& name : param->ifaces)
-			desugarName(name);
+		for (auto& ty2 : param->ifaces)
+			desugar(ty2);
 		return;
 	}
-
-	auto conc = dynamic_cast<AST::ConcreteType*>(ty.get());
-	if (conc != nullptr)
+	else if (auto conc = dynamic_cast<AST::ConcreteType*>(ty.get()))
 	{
 		desugarName(conc->name);
 		for (auto& ty2 : conc->subtypes)
@@ -57,8 +54,6 @@ void desugar (AST::DeclPtr& decl)
 	}
 	else if (auto tydecl = dynamic_cast<AST::TypeDecl*>(decl.get()))
 	{
-		if (tydecl->alias != nullptr)
-			desugar(tydecl->alias);
 		for (auto& m : tydecl->fields)
 			desugar(m.type);
 	}

@@ -250,7 +250,7 @@ std::string ParamType::str () const
 		{
 			if (i > 0)
 				ss << ", ";
-			ss << ifaces[i].str();
+			ss << ifaces[i]->str();
 		}
 		ss << ")";
 	}

@@ -4,7 +4,7 @@
 namespace Opal { namespace Infer {
 ;
 
-TypePtr Type::concrete (Env::Type* base, const list<TypePtr>& args)
+TypePtr Type::concrete (Env::Type* base, const TypeList& args)
 {
 	auto ty = std::make_shared<Type>(Concrete);
 	ty->base = base;
@@ -12,19 +12,19 @@ TypePtr Type::concrete (Env::Type* base, const list<TypePtr>& args)
 	return ty;
 }
 TypePtr Type::param (int id, const std::string& name,
-		const list<Env::Type*>& ifaces)
+		const TypeList& ifaces)
 {
 	auto ty = std::make_shared<Type>(Param);
 	ty->id = id;
 	ty->paramName = name;
-	ty->ifaces = ifaces;
+	ty->args = ifaces;
 	return ty;
 }
-TypePtr Type::poly (int id, const list<Env::Type*>& ifaces)
+TypePtr Type::poly (int id, const TypeList& ifaces)
 {
 	auto ty = std::make_shared<Type>(Poly);
 	ty->id = id;
-	ty->ifaces = ifaces;
+	ty->args = ifaces;
 	return ty;
 }
 
@@ -50,10 +50,10 @@ std::string Type::str() const
 		else
 			ss << "_";
 
-		if (!ifaces.nil())
+		if (!args.nil())
 			ss << "("
-			   << ifaces.map<std::string>([] (Env::Type* t) {
-			   		return t->fullname().str();
+			   << args.map<std::string>([] (TypePtr t) {
+			   		return t->str();
 			   }) << ")";
 	}
 
@@ -62,10 +62,10 @@ std::string Type::str() const
 void Type::set (TypePtr other)
 {
 	kind = other->kind;
+	args = other->args;
 	if (other->kind == Concrete)
 	{
 		base = other->base;
-		args = other->args;
 	}
 	else
 	{
@@ -73,10 +73,30 @@ void Type::set (TypePtr other)
 			paramName = other->paramName;
 		
 		id = other->id;
-		ifaces = other->ifaces;
-		args = list<TypePtr>();
 	}
 }
+
+bool Type::containsParam (const std::string& name)
+{
+	if (kind == Param && paramName == name)
+		return true;
+
+	for (auto ty : args)
+		if (ty->containsParam(name))
+			return true;
+	return false;
+}
+bool Type::containsParam (int _id)
+{
+	if (kind == Param && id == _id)
+		return true;
+
+	for (auto ty : args)
+		if (ty->containsParam(_id))
+			return true;
+	return false;
+}
+
 
 
 static SourceError UndefinedType (const AST::Name& name, const Span& span)
@@ -94,14 +114,21 @@ TypePtr Type::fromAST (AST::TypePtr ty, Type::Ctx& ctx)
 		if (base == nullptr)
 			throw UndefinedType(ct->name, ty->span);
 
-		if (ct->subtypes.size() != base->args())
-			throw SourceError("invalid number of arguments to type", ty->span);
+		if (ct->subtypes.size() != base->nparams)
+		{
+			std::ostringstream ss;
+			ss << "expected " << base->nparams << " argument"
+			   << (base->nparams == 1 ? "" : "s");
+			throw SourceError("wrong number of arguments to type",
+				{ ss.str() },
+				ty->span);
+		}
 
-		list<TypePtr> args;
+		TypeList args;
 		for (auto it = ct->subtypes.rbegin(); it != ct->subtypes.rend(); ++it)
 		{
 			auto ty2 = fromAST(*it, ctx);
-			args = list<TypePtr>(ty2, args);
+			args = TypeList(ty2, args);
 		}
 
 		return concrete(base, args);
@@ -119,26 +146,25 @@ TypePtr Type::fromAST (AST::TypePtr ty, Type::Ctx& ctx)
 				return ctx.params[i];
 		}
 
-	list<Env::Type*> ifaces;
+	TypeList ifaces;
 	for (auto it = pt->ifaces.rbegin(); it != pt->ifaces.rend(); ++it)
 	{
-		auto iface = ctx.nm->getType(*it);
-		if (iface == nullptr)
-			throw UndefinedType(*it, ty->span);
-		if (!iface->isIFace)
-		{
-			std::ostringstream ss;
-			ss << iface->fullname().str() << " is not an iface";
-			throw SourceError(ss.str(), ty->span);
-		}
+		auto ty2 = fromAST(*it, ctx);
+		ifaces = TypeList(ty2, ifaces);
 
-		ifaces = list<Env::Type*>(iface, ifaces);
+		if (ty2->kind != Concrete ||
+				!ty2->base->isIFace)
+			throw SourceError("invalid iface type", (*it)->span);
+
+		if (ty2->containsParam(pt->name))
+			throw SourceError("parameter-type references self in ifaces",
+				{ ty->span });
 	}
 
 	if (!ctx.allowNewTypes)
 	{
 		std::ostringstream ss;
-		ss << "undefined parameter '#" << pt->name << "'";
+		ss << "undefined parameter-type '#" << pt->name << "'";
 		throw SourceError(ss.str(), ty->span);
 	}
 

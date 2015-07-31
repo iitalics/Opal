@@ -79,7 +79,7 @@ static void declareType (Namespace* nm, AST::DeclPtr decl)
 	{
 		name = iface->name;
 		span = iface->span;
-		nparams = 0;
+		nparams = iface->args.size();
 		isIFace = true;
 	}
 	else
@@ -94,9 +94,9 @@ static void declareType (Namespace* nm, AST::DeclPtr decl)
 		name,
 		mod,
 		span,
+		nparams,
 		isIFace
 	};
-	res->data.nparams = nparams;
 	mod->types.push_back(res);
 
 	std::cout << "declared type " << res->fullname().str() << std::endl;
@@ -120,12 +120,9 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 	// find parameters
 	for (auto& arg : tydecl->args)
 	{
-		size_t expectedId = ctx.params.size();
-		auto ty = Infer::Type::fromAST(arg, ctx);
-
-		if (ty->id != expectedId)
-			throw SourceError("duplicate parameter names",
-				{ ctx.spans[ty->id], arg->span });
+		ctx.params.push_back(
+			Infer::Type::param(ctx.params.size(), arg, {}));
+		ctx.spans.push_back(tydecl->span);
 	}
 
 	// new parameters may not be declared in fields

@@ -283,9 +283,10 @@ class ParamType : public Type
 {
 public:
 	std::string name;
-	std::vector<Name> ifaces;
+	TypeList ifaces;
+	
 	inline ParamType (const std::string& _name,
-			const std::vector<Name>& _ifaces)
+			const TypeList& _ifaces)
 		: name(_name), ifaces(_ifaces) {}
 	virtual ~ParamType ();
 
@@ -296,6 +297,7 @@ class ConcreteType : public Type
 public:
 	Name name;
 	TypeList subtypes;
+
 	inline ConcreteType (const Name& _name,
 			const TypeList& _subtypes)
 		: name(_name), subtypes(_subtypes) {}
@@ -344,26 +346,6 @@ public:
 	virtual ~FuncDecl ();
 };
 
-class TypeDecl : public Decl
-{
-public:
-	std::string name;
-	TypeList args;
-
-	TypePtr alias;
-	std::vector<Var> fields;
-
-	inline TypeDecl (const std::string& _name,
-			const TypeList& _args,
-			TypePtr _alias)
-		: name(_name), args(_args), alias(_alias) {}
-	inline TypeDecl (const std::string& _name,
-			const TypeList& _args,
-			const std::vector<Var>& _fields)
-		: name(_name), args(_args), fields(_fields) {}
-	virtual ~TypeDecl ();
-};
-
 class ConstDecl : public Decl
 {
 public:
@@ -380,6 +362,21 @@ public:
 	virtual ~ConstDecl ();
 };
 
+class TypeDecl : public Decl
+{
+public:
+	std::string name;
+	std::vector<std::string> args;
+
+	std::vector<Var> fields;
+
+	inline TypeDecl (const std::string& _name,
+			const std::vector<std::string>& _args,
+			const std::vector<Var>& _fields)
+		: name(_name), args(_args), fields(_fields) {}
+	virtual ~TypeDecl ();
+};
+
 struct IFaceFunc
 {
 	std::string name;
@@ -392,14 +389,17 @@ class IFaceDecl : public Decl
 {
 public:
 	std::string name;
+	std::vector<std::string> args;
+
 	std::string selfParam;
 	std::vector<IFaceFunc> funcs;
 
 	Span span;
 
-	IFaceDecl (const std::string& _name, 
-			const std::string& _self)
-		: name(_name), selfParam(_self) {}
+	IFaceDecl (const std::string& _self, 
+			const std::string& _name,
+			const std::vector<std::string>& _args)
+		: name(_name), args(_args), selfParam(_self) {}
 	virtual ~IFaceDecl ();
 
 	void add (const IFaceFunc& func);
