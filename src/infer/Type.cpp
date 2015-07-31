@@ -170,12 +170,12 @@ TypePtr Type::fromAST (AST::TypePtr ty, Type::Ctx& ctx)
 
 	return ctx.createParam(pt->name, ifaces, ty->span);
 }
-void Type::Ctx::createParam (const std::string& name, const TypeList& ifaces, const Span& span)
+TypePtr Type::Ctx::createParam (const std::string& name, const TypeList& ifaces, const Span& span)
 {
 	int id = params.size();
-	auto res = Type::param(id, pt->name, ifaces);
+	auto res = Type::param(id, name, ifaces);
 	params.push_back(res);
-	spans.push_back(ty->span);
+	spans.push_back(span);
 	return res;
 }
 
