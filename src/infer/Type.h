@@ -31,6 +31,8 @@ struct Type
 		bool allowNewTypes;
 		std::vector<TypePtr> params;
 		std::vector<Span> spans;
+
+		void createParam (const std::string& name, const TypeList& ifaces, const Span& sp = Span());
 	};
 
 	// convert AST to Type

@@ -119,11 +119,7 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 
 	// find parameters
 	for (auto& arg : tydecl->args)
-	{
-		ctx.params.push_back(
-			Infer::Type::param(ctx.params.size(), arg, {}));
-		ctx.spans.push_back(tydecl->span);
-	}
+		ctx.createParam(arg, {}, tydecl->span);
 
 	// new parameters may not be declared in fields
 	ctx.allowNewTypes = false;

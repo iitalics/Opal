@@ -168,10 +168,14 @@ TypePtr Type::fromAST (AST::TypePtr ty, Type::Ctx& ctx)
 		throw SourceError(ss.str(), ty->span);
 	}
 
-	int id = ctx.params.size();
-	auto res = param(id, pt->name, ifaces);
-	ctx.params.push_back(res);
-	ctx.spans.push_back(ty->span);
+	return ctx.createParam(pt->name, ifaces, ty->span);
+}
+void Type::Ctx::createParam (const std::string& name, const TypeList& ifaces, const Span& span)
+{
+	int id = params.size();
+	auto res = Type::param(id, pt->name, ifaces);
+	params.push_back(res);
+	spans.push_back(ty->span);
 	return res;
 }
 
