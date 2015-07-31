@@ -188,13 +188,20 @@ type_decl:
 */
 static bool validSignatureType (TypePtr ty)
 {
+	// TODO: not this?
+	//  better error reporting here?
 	auto conc = dynamic_cast<ConcreteType*>(ty.get());
 
 	if (conc == nullptr)
 		return false;
 
 	for (auto sub : conc->subtypes)
-		if (!sub->is<ParamType>())
+		if (auto p = dynamic_cast<ParamType*>(sub.get()))
+		{
+			if (!p->ifaces.empty())
+				return false;
+		}
+		else
 			return false;
 
 	return true;
@@ -205,7 +212,7 @@ static DeclPtr parseTypeDecl (Scanner& scan)
 	auto sig = parseType(scan);
 
 	if (!validSignatureType(sig))
-		throw SourceError("invalid signature type",
+		throw SourceError("invalid type signature",
 			{"expected concrete-type with parameter-type arguments"}, sig->span);
 
 	auto name = ((ConcreteType*) sig.get())->name.name;
