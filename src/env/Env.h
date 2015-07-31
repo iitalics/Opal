@@ -38,11 +38,9 @@ protected:
 
 struct DataType
 {
-	std::string* params;
-	size_t nparams;
-
 	Infer::Var* fields;
 	size_t nfields;
+	size_t nparams;
 
 	void destroy ();
 };

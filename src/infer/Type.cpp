@@ -14,7 +14,7 @@ TypePtr Type::concrete (Env::Type* base, const list<TypePtr>& args)
 TypePtr Type::param (int id, const std::string& name,
 		const list<Env::Type*>& ifaces)
 {
-	auto ty = std::make_shared<Type>(Concrete);
+	auto ty = std::make_shared<Type>(Param);
 	ty->id = id;
 	ty->paramName = name;
 	ty->ifaces = ifaces;
@@ -113,25 +113,39 @@ TypePtr Type::fromAST (AST::TypePtr ty, Type::Ctx& ctx)
 		if (ctx.params[i]->paramName == pt->name)
 		{
 			if (!pt->ifaces.empty())
-				throw SourceError("parameter type defined multiple times",
+				throw SourceError("parameter-type defined multiple times",
 						{ ctx.spans[i], ty->span });
 			else
 				return ctx.params[i];
 		}
 
 	list<Env::Type*> ifaces;
-	for (auto it = pt->ifaces.rend(); it != pt->ifaces.rbegin(); ++it)
+	for (auto it = pt->ifaces.rbegin(); it != pt->ifaces.rend(); ++it)
 	{
 		auto iface = ctx.nm->getType(*it);
 		if (iface == nullptr)
 			throw UndefinedType(*it, ty->span);
+		if (!iface->isIFace)
+		{
+			std::ostringstream ss;
+			ss << iface->fullname().str() << " is not an iface";
+			throw SourceError(ss.str(), ty->span);
+		}
 
 		ifaces = list<Env::Type*>(iface, ifaces);
+	}
+
+	if (!ctx.allowNewTypes)
+	{
+		std::ostringstream ss;
+		ss << "undefined parameter '#" << pt->name << "'";
+		throw SourceError(ss.str(), ty->span);
 	}
 
 	int id = ctx.params.size();
 	auto res = param(id, pt->name, ifaces);
 	ctx.params.push_back(res);
+	ctx.spans.push_back(ty->span);
 	return res;
 }
 

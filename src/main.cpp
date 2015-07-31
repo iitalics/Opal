@@ -10,7 +10,7 @@ int main ()
 
 	try
 	{
-		Env::loadSource("tests/syntax-toplevel.opal");
+		auto nm = Env::loadSource("tests/syntax-toplevel.opal");
 		Env::finishModuleLoad();
 	}
 	catch (SourceError& err)

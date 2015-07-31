@@ -1,5 +1,7 @@
 module Foo
 
-type A {}
-type B {}
-pub type C {}
+type triple[#a, #b, #c] {
+	x : #a, 
+	y : #b,
+	z : #c
+}

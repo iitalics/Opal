@@ -18,12 +18,6 @@ struct Type;
 using TypePtr = std::shared_ptr<Type>;
 
 
-struct Var
-{
-	std::string name;
-	TypePtr type;
-};
-
 struct Type
 {
 	enum Kind { Concrete, Param, Poly };
@@ -66,6 +60,21 @@ struct Type
 	std::string str () const;
 	void set (TypePtr other);
 };
+
+
+struct Var
+{
+	std::string name;
+	TypePtr type;
+
+	static inline Var fromAST (AST::Var var, Type::Ctx& ctx) {
+		return Var {
+			var.name,
+			Type::fromAST(var.type, ctx)
+		};
+	}
+};
+
 
 
 }}

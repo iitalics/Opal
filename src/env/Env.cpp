@@ -70,7 +70,6 @@ AST::Name Function::fullname () const { return AST::Name(name, module->name); }
 // deconstructors
 void DataType::destroy ()
 {
-	delete[] params;
 	delete[] fields;
 }
 void IFaceType::destroy ()

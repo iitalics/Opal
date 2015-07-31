@@ -85,9 +85,9 @@ static void declareType (Namespace* nm, AST::DeclPtr decl)
 	else
 		return;
 
-	auto ty = mod->getType(name);
-	if (ty != nullptr)
-		throw DupError("type", ty->name, ty->declSpan, span);
+	auto type = nm->getType(name);
+	if (type != nullptr)
+		throw DupError("type", type->name, type->declSpan, span);
 
 	// ++ memory allocated here ++
 	auto res = new Type {
@@ -110,6 +110,58 @@ static void declareTypes ()
 
 
 
+
+static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
+{
+	auto type = mod->getType(tydecl->name);
+
+	Infer::Type::Ctx ctx(nm);
+
+	// find parameters
+	for (auto& arg : tydecl->args)
+	{
+		size_t expectedId = ctx.params.size();
+		auto ty = Infer::Type::fromAST(arg, ctx);
+
+		if (ty->id != expectedId)
+			throw SourceError("duplicate parameter names",
+				{ ctx.spans[ty->id], arg->span });
+	}
+
+	// new parameters may not be declared in fields
+	ctx.allowNewTypes = false;
+
+	size_t nfields = tydecl->fields.size();
+	type->data.nfields = nfields;
+	type->data.fields = new Infer::Var[nfields];
+
+	// create fields
+	for (size_t i = 0; i < nfields; i++)
+	{
+		type->data.fields[i] =
+			Infer::Var::fromAST(tydecl->fields[i], ctx);
+
+	//	std::cout << type->data.fields[i].type->str() << std::endl;
+	}
+	std::cout << "created type " << type->fullname().str() << std::endl;
+}
+static void create (Namespace* nm, AST::DeclPtr decl)
+{
+	auto mod = decl->isPublic ? nm->modPublic : nm->modPrivate;
+
+	if (auto tydecl = dynamic_cast<AST::TypeDecl*>(decl.get()))
+	{
+		createType(nm, mod, tydecl);
+	}
+}
+static void createAll ()
+{
+	for (auto nm = Namespace::all(); nm != nullptr; nm = nm->next())
+		for (auto decl : nm->decls)
+			create(nm, decl);
+}
+
+
 void finishModuleLoad ()
 {
 	// declare Types from TypeDecls and IFaceDecls
@@ -118,6 +170,7 @@ void finishModuleLoad ()
 	// create Types and Globals
 	//   (check for duplicate globals/methods)
 	//   (check that referenced types exist and are used properly)
+	createAll();
 	// infer functions
 	// generate code
 	// find entry point and execute
