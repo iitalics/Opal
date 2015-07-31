@@ -18,4 +18,16 @@ Namespace::~Namespace ()
 }
 
 
+Type* Namespace::getType (const AST::Name& name) const
+{
+	if (name.hasModule())
+		return Module::get(name.module)->getType(name.name);
+	else
+		for (auto& imp : imports)
+			if (auto r = imp->getType(name.name))
+				return r;
+	return nullptr;
+}
+
+
 }}

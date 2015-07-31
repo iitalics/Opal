@@ -18,6 +18,9 @@ public:
 	std::set<Module*> imports;
 	std::vector<AST::DeclPtr> decls;
 
+	Type* getType (const AST::Name& name) const;
+	Global* getGlobal (const AST::Name& name) const;
+
 protected:
 	Namespace* _next;
 	static Namespace* _all;
