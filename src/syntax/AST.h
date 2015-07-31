@@ -380,7 +380,7 @@ public:
 struct IFaceFunc
 {
 	std::string name;
-	std::vector<Var> args;
+	std::vector<TypePtr> args;
 	TypePtr ret;
 	Span span;
 };

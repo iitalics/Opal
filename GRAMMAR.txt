@@ -59,7 +59,7 @@ impl:
 iface_decl:
 	"iface" [POLYID ":"] type "{" {iface_fn} "}"
 iface_fn:
-	fn_sig ":" type
+	"fn" ID "(" [type {"," type}] ")" ":" type
 
 
 exp:

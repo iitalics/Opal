@@ -68,8 +68,8 @@ void desugar (AST::DeclPtr& decl)
 	{
 		for (auto& fn : ifacedecl->funcs)
 		{
-			for (auto& a : fn.args)
-				desugar(a.type);
+			for (auto& ty : fn.args)
+				desugar(ty);
 			desugar(fn.ret);
 		}
 	}
