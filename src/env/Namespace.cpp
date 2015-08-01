@@ -28,6 +28,16 @@ Type* Namespace::getType (const AST::Name& name) const
 				return r;
 	return nullptr;
 }
+Global* Namespace::getGlobal (const AST::Name& name) const
+{
+	if (name.hasModule())
+		return Module::get(name.module)->getGlobal(name.name);
+	else
+		for (auto& imp : imports)
+			if (auto r = imp->getGlobal(name.name))
+				return r;
+	return nullptr;
+}
 
 
 }}

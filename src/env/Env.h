@@ -93,7 +93,6 @@ public:
 	AST::Name fullname () const;
 
 	bool isFunc;
-	Infer::TypePtr type;
 	Function* func;
 };
 

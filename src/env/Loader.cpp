@@ -85,6 +85,7 @@ static void declareType (Namespace* nm, AST::DeclPtr decl)
 	else
 		return;
 
+	// duplicate?
 	auto type = nm->getType(name);
 	if (type != nullptr)
 		throw DupError("type", type->name, type->declSpan, span);
@@ -154,6 +155,7 @@ static void createIFace (Namespace* nm, Module* mod, AST::IFaceDecl* ifdecl)
 	// create methods
 	for (size_t i = 0; i < nfuncs; i++)
 	{
+		// duplicate?
 		for (size_t j = 0; j < i; j++)
 			if (ifdecl->funcs[j].name == ifdecl->funcs[i].name)
 				throw DupError("method", ifdecl->funcs[i].name,
@@ -178,6 +180,81 @@ static void createIFace (Namespace* nm, Module* mod, AST::IFaceDecl* ifdecl)
 	}
 	std::cout << "created iface " << type->fullname().str() << std::endl;
 }
+static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
+{
+	Global* global = nullptr;
+	Infer::Var impl { "", nullptr };
+	Type* implBase = nullptr;
+
+	Infer::Type::Ctx ctx(nm);
+
+	// make global, or verify base type in impl
+	if (fndecl->impl.type == nullptr)
+	{
+		// duplicate?
+		global = nm->getGlobal(fndecl->name);
+		if (global != nullptr)
+			throw DupError("global", fndecl->name,
+				global->declSpan, fndecl->span);
+
+		// ++ memory allocated here ++
+		global = new Global {
+			fndecl->name,
+			mod,
+			fndecl->span,
+			true
+		};
+		mod->globals.push_back(global);
+	}
+	else
+	{
+		impl = Infer::Var::fromAST(fndecl->impl, ctx);
+
+		if (impl.type->kind != Infer::Type::Concrete ||
+				impl.type->base->isIFace)
+			throw SourceError("methods may only belong to concrete, non-iface types",
+				fndecl->impl.type->span);
+
+		implBase = impl.type->base;
+
+		// duplicate?
+		for (auto& fn : implBase->methods)
+			if (fn->name == fndecl->name)
+				throw DupError("method", fndecl->name,
+					fn->declSpan, fndecl->span);
+	}
+
+	// ++ memory allocated here ++
+	auto fn = new Function {
+		Function::CodeFunction, // TODO: external functions
+		fndecl->name,
+		mod,
+		fndecl->span
+	};
+	fn->args.reserve(fndecl->args.size() + 1);
+	fn->ret = nullptr; // not yet inferred
+	fn->body = fndecl->body;
+
+	if (implBase != nullptr)
+		fn->args.push_back(impl);
+
+	for (auto& arg : fndecl->args)
+	{
+		auto var = Infer::Var::fromAST(arg, ctx);
+		fn->args.push_back(var);
+	}
+
+	if (global != nullptr)
+	{
+		global->func = fn;
+		std::cout << "created global function " << global->fullname().str() << std::endl;
+	}
+	if (implBase != nullptr)
+	{
+		implBase->methods.push_back(fn);
+		std::cout << "created method " << implBase->fullname().str() << "." << fn->name << std::endl;
+	}
+}
 static void create (Namespace* nm, AST::DeclPtr decl)
 {
 	auto mod = decl->isPublic ? nm->modPublic : nm->modPrivate;
@@ -189,6 +266,10 @@ static void create (Namespace* nm, AST::DeclPtr decl)
 	else if (auto ifdecl = dynamic_cast<AST::IFaceDecl*>(decl.get()))
 	{
 		createIFace(nm, mod, ifdecl);
+	}
+	else if (auto fndecl = dynamic_cast<AST::FuncDecl*>(decl.get()))
+	{
+		createFunc(nm, mod, fndecl);
 	}
 }
 static void createAll ()
