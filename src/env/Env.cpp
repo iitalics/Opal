@@ -87,7 +87,12 @@ Type::~Type ()
 	else
 		data.destroy();
 }
-
+Global::~Global ()
+{
+	if (func != nullptr)
+		delete func;
+}
+Funcion::~Function () {}
 
 
 

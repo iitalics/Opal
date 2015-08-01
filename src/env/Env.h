@@ -87,6 +87,7 @@ public:
 class Global
 {
 public:
+	~Global ();
 	std::string name;
 	Module* module;
 	Span declSpan;
@@ -99,6 +100,7 @@ public:
 class Function
 {
 public:
+	~Function ();
 	enum Kind
 	{
 		CodeFunction,    // code-defined function
