@@ -117,7 +117,7 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 
 	Infer::Type::Ctx ctx(nm);
 
-	// find parameters
+	// make parameters
 	for (auto& arg : tydecl->args)
 		ctx.createParam(arg, {});
 
@@ -128,15 +128,55 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 	type->data.nfields = nfields;
 	type->data.fields = new Infer::Var[nfields];
 
-	// create fields
+	// create fields from AST
 	for (size_t i = 0; i < nfields; i++)
 	{
 		type->data.fields[i] =
 			Infer::Var::fromAST(tydecl->fields[i], ctx);
-
-	//	std::cout << type->data.fields[i].type->str() << std::endl;
 	}
 	std::cout << "created type " << type->fullname().str() << std::endl;
+}
+static void createIFace (Namespace* nm, Module* mod, AST::IFaceDecl* ifdecl)
+{
+	auto type = mod->getType(ifdecl->name);
+
+	Infer::Type::Ctx ctx(nm);
+
+	// make parameters
+	ctx.createParam(ifdecl->selfParam, {});
+	for (auto& arg : ifdecl->args)
+		ctx.createParam(arg, {});
+
+	size_t nfuncs = ifdecl->funcs.size();
+	type->iface.nfuncs = nfuncs;
+	type->iface.funcs = new Env::IFaceSignature[nfuncs];
+
+	// create methods
+	for (size_t i = 0; i < nfuncs; i++)
+	{
+		for (size_t j = 0; j < i; j++)
+			if (ifdecl->funcs[j].name == ifdecl->funcs[i].name)
+				throw DupError("method", ifdecl->funcs[i].name,
+					ifdecl->funcs[j].span,
+					ifdecl->funcs[i].span);
+
+		auto& fnsig = type->iface.funcs[i];
+		auto& fn = ifdecl->funcs[i];
+
+		// new context for each function
+		Infer::Type::Ctx ctx2(ctx);
+
+		// create arguments from AST
+		fnsig.name = fn.name;
+		fnsig.declSpan = fn.span;
+		fnsig.argc = fn.args.size();
+		fnsig.args = new Infer::TypePtr[fnsig.argc];
+		for (size_t j = 0; j < fnsig.argc; j++)
+			fnsig.args[j] = Infer::Type::fromAST(fn.args[j], ctx);
+
+		fnsig.ret = Infer::Type::fromAST(fn.ret, ctx);
+	}
+	std::cout << "created iface " << type->fullname().str() << std::endl;
 }
 static void create (Namespace* nm, AST::DeclPtr decl)
 {
@@ -145,6 +185,10 @@ static void create (Namespace* nm, AST::DeclPtr decl)
 	if (auto tydecl = dynamic_cast<AST::TypeDecl*>(decl.get()))
 	{
 		createType(nm, mod, tydecl);
+	}
+	else if (auto ifdecl = dynamic_cast<AST::IFaceDecl*>(decl.get()))
+	{
+		createIFace(nm, mod, ifdecl);
 	}
 }
 static void createAll ()

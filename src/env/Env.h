@@ -48,7 +48,8 @@ struct IFaceSignature
 {
 	~IFaceSignature ();
 
-	std::string methodName;
+	std::string name;
+	Span declSpan;
 	Infer::TypePtr* args;
 	size_t argc;
 	Infer::TypePtr ret;
