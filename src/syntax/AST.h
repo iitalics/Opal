@@ -312,6 +312,7 @@ struct Var
 {
 	std::string name;
 	TypePtr type;
+	Span span;
 };
 
 class Decl

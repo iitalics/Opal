@@ -69,11 +69,13 @@ struct Var
 {
 	std::string name;
 	TypePtr type;
+	Span declSpan;
 
 	static inline Var fromAST (AST::Var var, Type::Ctx& ctx) {
 		return Var {
 			var.name,
-			Type::fromAST(var.type, ctx)
+			Type::fromAST(var.type, ctx),
+			var.span
 		};
 	}
 };

@@ -95,6 +95,7 @@ var:
 */
 static Var parseVar (Scanner& scan)
 {
+	auto span = scan.get().span;
 	auto name = scan.eat(ID).string;
 	scan.eat(COLON);
 	auto type = parseType(scan);
