@@ -395,8 +395,6 @@ public:
 	std::string selfParam;
 	std::vector<IFaceFunc> funcs;
 
-	Span span;
-
 	IFaceDecl (const std::string& _self, 
 			const std::string& _name,
 			const std::vector<std::string>& _args)
