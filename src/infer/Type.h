@@ -62,6 +62,10 @@ struct Type
 
 	bool containsParam (const std::string& name);
 	bool containsParam (int id);
+
+private:
+	static TypePtr concreteFromAST (AST::ConcreteType* ct, Ctx& ctx);
+	static TypePtr paramFromAST (AST::ParamType* pt, Ctx& ctx);
 };
 
 

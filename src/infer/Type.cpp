@@ -106,47 +106,46 @@ static SourceError UndefinedType (const AST::Name& name, const Span& span)
 	throw SourceError(ss.str(), span);
 }
 
-TypePtr Type::fromAST (AST::TypePtr ty, Type::Ctx& ctx)
+TypePtr Type::concreteFromAST (AST::ConcreteType* ct, Ctx& ctx)
 {
-	if (auto ct = dynamic_cast<AST::ConcreteType*>(ty.get()))
+	Env::Type* base;
+	TypeList args;
+
+	base = ctx.nm->getType(ct->name);
+	if (base == nullptr)
+		throw UndefinedType(ct->name, ct->span);
+
+	if (ct->subtypes.size() != base->nparams)
 	{
-		auto base = ctx.nm->getType(ct->name);
-		if (base == nullptr)
-			throw UndefinedType(ct->name, ty->span);
-
-		if (ct->subtypes.size() != base->nparams)
-		{
-			std::ostringstream ss;
-			ss << "expected " << base->nparams << " argument"
-			   << (base->nparams == 1 ? "" : "s");
-			throw SourceError("wrong number of arguments to type",
-				{ ss.str() },
-				ty->span);
-		}
-
-		TypeList args;
-		for (auto it = ct->subtypes.rbegin(); it != ct->subtypes.rend(); ++it)
-		{
-			auto ty2 = fromAST(*it, ctx);
-			args = TypeList(ty2, args);
-		}
-
-		return concrete(base, args);
+		std::ostringstream ss;
+		ss << "expected " << base->nparams << " argument"
+		   << (base->nparams == 1 ? "" : "s");
+		throw SourceError("wrong number of arguments to type",
+			ct->span);
 	}
 
-	auto pt = (AST::ParamType*) (ty.get());
+	for (auto it = ct->subtypes.rbegin(); it != ct->subtypes.rend(); ++it)
+	{
+		auto ty2 = fromAST(*it, ctx);
+		args = TypeList(ty2, args);
+	}
+
+	return concrete(base, args);
+}
+TypePtr Type::paramFromAST (AST::ParamType* pt, Ctx& ctx)
+{
+	TypeList ifaces;
 
 	for (size_t i = 0, len = ctx.params.size(); i < len; i++)
 		if (ctx.params[i]->paramName == pt->name)
 		{
 			if (!pt->ifaces.empty())
 				throw SourceError("parameter-type defined multiple times",
-						{ ctx.spans[i], ty->span });
+						{ ctx.spans[i], pt->span });
 			else
 				return ctx.params[i];
 		}
 
-	TypeList ifaces;
 	for (auto it = pt->ifaces.rbegin(); it != pt->ifaces.rend(); ++it)
 	{
 		auto ty2 = fromAST(*it, ctx);
@@ -158,17 +157,29 @@ TypePtr Type::fromAST (AST::TypePtr ty, Type::Ctx& ctx)
 
 		if (ty2->containsParam(pt->name))
 			throw SourceError("parameter-type references self in ifaces",
-				{ ty->span });
+				{ pt->span });
 	}
 
 	if (!ctx.allowNewTypes)
 	{
 		std::ostringstream ss;
 		ss << "undefined parameter-type '#" << pt->name << "'";
-		throw SourceError(ss.str(), ty->span);
+		throw SourceError(ss.str(), pt->span);
 	}
 
-	return ctx.createParam(pt->name, ifaces, ty->span);
+	return ctx.createParam(pt->name, ifaces, pt->span);
+}
+
+
+
+TypePtr Type::fromAST (AST::TypePtr ty, Type::Ctx& ctx)
+{
+	if (auto ct = dynamic_cast<AST::ConcreteType*>(ty.get()))
+		return concreteFromAST(ct, ctx);
+	else if (auto pt = dynamic_cast<AST::ParamType*>(ty.get()))
+		return paramFromAST(pt, ctx);
+	else
+		throw SourceError("unimplemented type", ty->span);
 }
 TypePtr Type::Ctx::createParam (const std::string& name, const TypeList& ifaces, const Span& span)
 {
