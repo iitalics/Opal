@@ -99,7 +99,7 @@ static Var parseVar (Scanner& scan)
 	auto name = scan.eat(ID).string;
 	scan.eat(COLON);
 	auto type = parseType(scan);
-	return Var { name, type };
+	return Var { name, type, span };
 }
 
 /*
