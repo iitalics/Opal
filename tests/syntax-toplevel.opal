@@ -1,29 +1,47 @@
-module Lang
+module ABC
+use Core
 
-pub type list[#e] {}
-pub type int {}
-pub type unit {}
-pub type string {}
+// private/public types
+type A { x : int, y : int }
+pub type B { z? : bool }
+pub type C { my_b : B }
 
-pub iface #t : Ord { fn cmp (#t) : int }
-pub iface Show { fn str () : string }
+// types with parameters
+type foo[#a] { x : #a }
 
-impl x : int {
-	fn succ () { x + 1 }
-	fn pred () { x - 1 }
-	fn cmp (y : int) { x - y }
+// ifaces
+iface Foo { fn thing (A) : B }
+pub iface ToB { fn to_B () : B }
+
+// impl (named or automatic self-variable)
+impl B { fn to_B () { self } }
+impl a : A {
+	fn to_A () { a }
+	fn to_B () { new B { z? = x < y } }
 }
+impl C { fn to_B () { self.my_b } }
 
-fn repeat (n : int, f : fn(int) -> unit) {
-	if n > 0 {
-		repeat(n - 1, f)
-		f(n)
+// specialized impl
+impl foo[#t(ToB)] {
+	fn to_B () { self.x.to_B() }
+}
+impl foo[A] {
+	fn to_A () { self.x }
+	fn thing (a : A) {
+		B()
 	}
 }
 
-impl list[#a] {
-	fn foldl (z : #b, f : fn(#b, #a) -> #b) {
-		// ...
+// globals
+fn A () { new A { x = 0, y = 0 } }
+fn B () { new B { z? = false } }
+fn C (x : #t(ToB)) {
+	new C {
+		my_b = x.to_B()
 	}
 }
+
+// special types: tuple / function
+fn foo (x : (A, B)) {}
+fn bar (x : fn(A, B) -> C) {}
 
