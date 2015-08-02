@@ -132,6 +132,14 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 	// create fields from AST
 	for (size_t i = 0; i < nfields; i++)
 	{
+		// duplicate?
+		auto name = tydecl->fields[i].name;
+		for (size_t j = 0; j < i; j++)
+			if (name == type->data.fields[j].name)
+				throw DupError("field", name,
+					type->data.fields[j].declSpan,
+					tydecl->fields[i].span);
+
 		type->data.fields[i] =
 			Infer::Var::fromAST(tydecl->fields[i], ctx);
 	}
@@ -218,6 +226,11 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 		implBase = impl.type->base;
 
 		// duplicate?
+		for (size_t i = 0; i < implBase->data.nfields; i++)
+			if (implBase->data.fields[i].name == fndecl->name)
+				throw DupError("field", fndecl->name,
+					implBase->data.fields[i].declSpan,
+					fndecl->span);
 		for (auto& fn : implBase->methods)
 			if (fn->name == fndecl->name)
 				throw DupError("method", fndecl->name,
