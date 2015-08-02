@@ -92,7 +92,7 @@ Global::~Global ()
 	if (func != nullptr)
 		delete func;
 }
-Funcion::~Function () {}
+Function::~Function () {}
 
 
 
