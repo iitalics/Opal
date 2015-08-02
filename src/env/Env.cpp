@@ -1,4 +1,6 @@
 #include "Env.h"
+#include <map>
+
 namespace Opal { namespace Env {
 ;
 
@@ -59,6 +61,58 @@ Global* Module::getGlobal (const std::string& name) const
 
 	return nullptr;
 }
+
+
+
+static std::map<int, Type*> _functions;
+static std::map<int, Type*> _tuples;
+
+static std::string specialName (const std::string& prefix, size_t n)
+{
+	std::ostringstream ss;
+	ss << prefix << "(" << n << ")";
+	return ss.str();
+}
+
+Type* Type::function (size_t argc)
+{
+	auto it = _functions.find(argc);
+	if (it != _functions.end())
+		return it->second;
+
+	auto coreMod = Module::getCore();
+	auto ty = new Type {
+		specialName("@fn", argc),
+		coreMod,
+		Span(),
+		argc + 1,
+		false
+	};
+	ty->data.fields = nullptr;
+	ty->data.nfields = 0;
+	_functions[argc] = ty;
+	return ty;
+}
+Type* Type::tuple (size_t argc)
+{
+	auto it = _tuples.find(argc);
+	if (it != _tuples.end())
+		return it->second;
+
+	auto coreMod = Module::getCore();
+	auto ty = new Type {
+		specialName("@tuple", argc),
+		coreMod,
+		Span(),
+		argc,
+		false
+	};
+	ty->data.fields = nullptr;
+	ty->data.nfields = 0;
+	_tuples[argc] = ty;
+	return ty;
+}
+
 
 
 AST::Name Type::fullname () const { return AST::Name(name, module->name); }

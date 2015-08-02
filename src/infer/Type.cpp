@@ -71,7 +71,7 @@ void Type::set (TypePtr other)
 	{
 		if (other->kind == Param)
 			paramName = other->paramName;
-		
+
 		id = other->id;
 	}
 }
@@ -111,7 +111,13 @@ TypePtr Type::concreteFromAST (AST::ConcreteType* ct, Ctx& ctx)
 	Env::Type* base;
 	TypeList args;
 
-	base = ctx.nm->getType(ct->name);
+	if (ct->is<AST::FuncType>())
+		base = Env::Type::function(ct->subtypes.size() - 1);
+	else if (ct->is<AST::TupleType>())
+		base = Env::Type::tuple(ct->subtypes.size());
+	else
+		base = ctx.nm->getType(ct->name);
+
 	if (base == nullptr)
 		throw UndefinedType(ct->name, ct->span);
 

@@ -17,6 +17,10 @@ public:
 	static inline Module* all () { return _all; }
 	inline Module* next () const { return _next; }
 
+	static inline Module* getCore () {
+		return get("Core"); // this name?
+	}
+
 	Module (const std::string& _name);
 	Module ();
 	~Module ();
@@ -66,6 +70,10 @@ struct IFaceType
 class Type
 {
 public:
+	// special types
+	static Type* function (size_t argc);
+	static Type* tuple (size_t argc);
+
 	~Type ();
 	std::string name;
 	Module* module;

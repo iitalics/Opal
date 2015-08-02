@@ -47,6 +47,7 @@ static std::vector<Seq> seqs {
 	Seq(".",  DOT),
 	Seq(";",  SEMICOLON),
 	Seq("+",  PLUS),
+	Seq("->", ARROW),
 	Seq("-",  MINUS),
 	Seq("*",  TIMES),
 	Seq("/",  DIVIDE),

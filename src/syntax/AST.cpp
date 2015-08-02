@@ -263,8 +263,8 @@ std::string ConcreteType::str () const
 	ss << name.str();
 	if (!subtypes.empty())
 	{
-		ss << "[";
 		bool first = true;
+		ss << "[";
 		for (auto t : subtypes)
 		{
 			if (!first)
@@ -274,6 +274,36 @@ std::string ConcreteType::str () const
 		}
 		ss << "]";
 	}
+	return ss.str();
+}
+FuncType::~FuncType () {}
+std::string FuncType::str () const
+{
+	std::ostringstream ss;
+	ss << "fn(";
+	for (size_t i = 0, len = subtypes.size(); i < len - 1; i++)
+	{
+		if (i > 0)
+			ss << ", ";
+		ss << subtypes[i]->str();
+	}
+	ss << ") -> " << subtypes.back()->str();
+	return ss.str();
+}
+TupleType::~TupleType () {}
+std::string TupleType::str () const
+{
+	std::ostringstream ss;
+	bool first = true;
+	ss << "(";
+	for (auto t : subtypes)
+	{
+		if (!first)
+			ss << ", ";
+		first = false;
+		ss << t->str();
+	}
+	ss << ")";
 	return ss.str();
 }
 

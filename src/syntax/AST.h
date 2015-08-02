@@ -305,6 +305,24 @@ public:
 
 	virtual std::string str () const;
 };
+class FuncType : public ConcreteType
+{
+public:
+	inline FuncType (const TypeList& _args)
+		: ConcreteType(Name("fn"), _args) {}
+	~FuncType ();
+
+	virtual std::string str () const;
+};
+class TupleType : public ConcreteType
+{
+public:
+	inline TupleType (const TypeList& _args)
+		: ConcreteType(Name("()"), _args) {}
+	~TupleType ();
+
+	virtual std::string str () const;
+};
 
 
 

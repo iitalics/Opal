@@ -412,10 +412,16 @@ Toplevel parseToplevel (Scanner& scan)
 type:
 	POLYID [type_ifaces]
 	name [type_args]
+	fn_type
+	tuple_type
 type_ifaces:
-	"(" name {"," name} ")"
+	"(" type {"," type} ")"
 type_args:
 	"[" type {"," type} "]"
+fn_type:
+	"fn" "(" [type {"," type}] ")" "->" type
+tuple_type:
+	"(" type {"," type} ")"
 */
 TypePtr parseType (Scanner& scan)
 {
@@ -425,14 +431,14 @@ TypePtr parseType (Scanner& scan)
 	if (scan.get() == ID)
 	{
 		auto name = parseName(scan);
-		std::vector<TypePtr> args;
+		TypeList args;
 
 		if (scan.get() == LBRACK)
 			args = commaList(scan, parseType, LBRACK, RBRACK, false);
 		else if (scan.get() == LPAREN) // (a)
 			scan.expect(LBRACK);
 
-		ty = TypePtr(new ConcreteType(name, TypeList(args)));
+		ty = TypePtr(new ConcreteType(name, args));
 	}
 	else if (scan.get() == POLYID)
 	{
@@ -445,6 +451,23 @@ TypePtr parseType (Scanner& scan)
 			scan.expect(LPAREN);
 
 		ty = TypePtr(new ParamType(name, ifaces));
+	}
+	else if (scan.get() == KW_fn)
+	{
+		scan.shift();
+		auto args = commaList(scan, parseType, LPAREN, RPAREN, true);
+		scan.eat(ARROW);
+		args.push_back(parseType(scan));
+
+		ty = TypePtr(new FuncType(args));
+	}
+	else if (scan.get() == LPAREN)
+	{
+		auto args = commaList(scan, parseType, LPAREN, RPAREN, false);
+		if (args.size() == 1)
+			return args[0];
+
+		ty = TypePtr(new TupleType(args));
 	}
 	else
 		throw SourceError("expected type", span);
