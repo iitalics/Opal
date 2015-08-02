@@ -28,21 +28,6 @@ static ExpPtr parseLet (Scanner& scan);
 
 
 
-// utility to easily create
-//  obj.method(a, b, c, ...)
-static inline ExpPtr methodCall (const Span& span,
-		ExpPtr obj, const std::string& method,
-		const ExpList& args)
-{
-	ExpPtr mem(new FieldExp(obj, method));
-	ExpPtr call(new CallExp(mem, args));
-	mem->span = span;
-	call->span = span;
-	return call;
-}
-
-
-
 
 
 /*

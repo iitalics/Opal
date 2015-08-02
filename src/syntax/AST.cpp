@@ -235,6 +235,26 @@ std::string GotoExp::str (int ind) const
 		return "continue";
 }
 
+
+ExpPtr methodCall (const Span& span,
+		ExpPtr obj, const std::string& method,
+		const ExpList& args)
+{
+	ExpPtr mem(new FieldExp(obj, method));
+	ExpPtr call(new CallExp(mem, args));
+	mem->span = span;
+	call->span = span;
+	return call;
+}
+ExpPtr methodCall (ExpPtr obj, const std::string& method,
+		const ExpList& args)
+{
+	return methodCall(obj->span, obj, method, args);
+}
+
+
+
+
 Type::Type () {}
 Type::~Type () {}
 std::string Type::str () const { return "<type>"; }

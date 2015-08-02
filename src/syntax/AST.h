@@ -1,7 +1,14 @@
 #pragma once
 #include "Span.h"
 #include <list.h>
-namespace Opal { namespace AST {
+namespace Opal {
+namespace Env {
+;
+class Type;
+class Function;
+class Global;
+}
+namespace AST {
 ;
 
 
@@ -49,10 +56,11 @@ class VarExp : public Exp
 {
 public:
 	Name name;
-	bool global;
-	int varID;
+	int varId;
+	Env::Global* global;
 
-	explicit inline VarExp (const Name& _name) : name(_name) {}
+	explicit inline VarExp (const Name& _name)
+		: name(_name), global(nullptr) {}
 	virtual ~VarExp ();
 	virtual std::string str (int ident) const;
 };
@@ -60,6 +68,10 @@ class IntExp : public Exp
 {
 public:
 	Int_t value;
+
+	bool castReal;
+	bool castLong;
+
 	explicit inline IntExp (Int_t _value) : value(_value) {}
 	virtual ~IntExp();
 	virtual std::string str (int ident) const;
@@ -144,7 +156,7 @@ class LetExp : public Exp
 public:
 	std::string name;
 	TypePtr varType;
-	int varID;
+	int varId;
 
 	inline LetExp (const std::string& _name, ExpPtr _init)
 		: Exp({ _init }), name(_name), varType(nullptr) {}
@@ -193,8 +205,11 @@ class FieldExp : public Exp
 {
 public:
 	std::string name;
+	int index;
+	Env::Function* method;
+
 	inline FieldExp (ExpPtr _a, const std::string& _name)
-		: Exp({ _a }), name(_name) {}
+		: Exp({ _a }), name(_name), method(nullptr) {}
 	virtual ~FieldExp ();
 	virtual std::string str (int ident) const;
 };
@@ -209,8 +224,10 @@ public:
 class CallExp : public Exp
 {
 public:
+	Env::Function* function;
+
 	inline CallExp (ExpPtr _fn, const ExpList& _args)
-		: Exp({ _fn })
+		: Exp({ _fn }), function(nullptr)
 	{
 		children.insert(children.begin() + 1,
 			_args.begin(), _args.end());
@@ -261,6 +278,16 @@ public:
 	virtual ~GotoExp ();
 	virtual std::string str (int ident) const;
 };
+
+// utility to easily create
+//  obj.method(args...)
+ExpPtr methodCall (const Span& span,
+	ExpPtr obj, const std::string& method,
+	const ExpList& args);
+ExpPtr methodCall (ExpPtr obj, const std::string& method,
+	const ExpList& args);
+
+
 
 
 
