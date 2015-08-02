@@ -8,20 +8,25 @@ language:
 	{toplevel}
 
 toplevel:
-	module
+	"module" ID
+	"use" ID
 	impl
 	["pub"] fn_decl
 	["pub"] type_decl
 	["pub"] let_decl
 	["pub"] iface_decl
 
-module:
-	"module" ID
-	"use" ID
 
 name:
 	ID "::" ID
 	ID
+var:
+	ID ":" type
+
+
+impl:
+	"impl" [ID ":"] type "{" {fn_decl} "}"
+
 
 fn_decl:
 	fn_sig fn_body
@@ -31,20 +36,6 @@ fn_body:
 	"=" exp
 	"extern" STRING ":" type
 	block_exp
-var:
-	ID ":" type
-
-
-type_decl:
-	"type" type "{" [var {"," var}] "}"
-
-type:
-	POLYID [type_ifaces]
-	name [type_args]
-type_ifaces:
-	"(" type {"," type} ")"
-type_args:
-	"[" type {"," type} "]"
 
 
 let_decl:
@@ -52,14 +43,29 @@ let_decl:
 	"let" ID "=" exp
 
 
-impl:
-	"impl" [ID ":"] type "{" {fn_decl} "}"
+type_decl:
+	"type" type "{" [var {"," var}] "}"
 
 
 iface_decl:
 	"iface" [POLYID ":"] type "{" {iface_fn} "}"
 iface_fn:
 	"fn" ID "(" [type {"," type}] ")" ":" type
+
+
+type:
+	POLYID [type_ifaces]
+	name [type_args]
+	fn_type
+	tuple_type
+type_ifaces:
+	"(" type {"," type} ")"
+type_args:
+	"[" type {"," type} "]"
+fn_type:
+	"fn" "(" [type {"," type}] ")" "->" type
+tuple_type:
+	"(" [type {"," type}] ")"
 
 
 exp:
