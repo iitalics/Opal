@@ -74,11 +74,20 @@ public:
 	static Type* function (size_t argc);
 	static Type* tuple (size_t argc);
 
+	Type (const std::string& name,
+		Module* mod, size_t nparams,
+		bool iface, const Span& span = Span());
 	~Type ();
 	std::string name;
 	Module* module;
 	Span declSpan;
 	AST::Name fullname () const;
+	inline bool isFunction () const {
+		return _function;
+	}
+	inline bool isTuple () const {
+		return _tuple;
+	}
 
 	size_t nparams;
 	bool isIFace;
@@ -90,6 +99,8 @@ public:
 	};
 
 	std::vector<Function*> methods;
+private:
+	bool _function, _tuple;
 };
 
 class Global

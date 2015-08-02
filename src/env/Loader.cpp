@@ -91,13 +91,12 @@ static void declareType (Namespace* nm, AST::DeclPtr decl)
 		throw DupError("type", type->name, type->declSpan, span);
 
 	// ++ memory allocated here ++
-	auto res = new Type {
+	auto res = new Type(
 		name,
 		mod,
-		span,
 		nparams,
-		isIFace
-	};
+		isIFace,
+		span);
 	mod->types.push_back(res);
 
 	std::cout << "declared type " << res->fullname().str() << std::endl;

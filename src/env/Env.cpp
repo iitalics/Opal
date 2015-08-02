@@ -64,6 +64,14 @@ Global* Module::getGlobal (const std::string& name) const
 
 
 
+Type::Type (const std::string& _name,
+		Module* _mod, size_t _nparams,
+		bool _iface, const Span& _span)
+	: name(_name), module(_mod), declSpan(_span), nparams(_nparams), isIFace(_iface)
+{
+	_function = _tuple = false;
+}
+
 static std::map<int, Type*> _functions;
 static std::map<int, Type*> _tuples;
 
@@ -81,13 +89,12 @@ Type* Type::function (size_t argc)
 		return it->second;
 
 	auto coreMod = Module::getCore();
-	auto ty = new Type {
+	auto ty = new Type(
 		specialName("@fn", argc),
 		coreMod,
-		Span(),
 		argc + 1,
-		false
-	};
+		false);
+	ty->_function = true;
 	ty->data.fields = nullptr;
 	ty->data.nfields = 0;
 	_functions[argc] = ty;
@@ -100,13 +107,12 @@ Type* Type::tuple (size_t argc)
 		return it->second;
 
 	auto coreMod = Module::getCore();
-	auto ty = new Type {
+	auto ty = new Type(
 		specialName("@tuple", argc),
 		coreMod,
-		Span(),
 		argc,
-		false
-	};
+		false);
+	ty->_tuple = true;
 	ty->data.fields = nullptr;
 	ty->data.nfields = 0;
 	_tuples[argc] = ty;
