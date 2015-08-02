@@ -26,9 +26,6 @@ void desugar (AST::TypePtr& ty)
 }
 void desugar (AST::ExpPtr& e)
 {
-	for (auto& c : e->children)
-		desugar(c);
-
 	if (auto var = dynamic_cast<AST::VarExp*>(e.get()))
 	{
 		desugarName(var->name);
@@ -38,6 +35,33 @@ void desugar (AST::ExpPtr& e)
 		if (let->varType != nullptr)
 			desugar(let->varType);
 	}
+	else if (auto assign = dynamic_cast<AST::AssignExp*>(e.get()))
+	{
+		auto lh = assign->children[0];
+		auto rh = assign->children[1];
+
+		if (auto mem = dynamic_cast<AST::MemberExp*>(lh.get()))
+		{
+			auto obj = mem->children[0];
+			auto what = mem->children[1];
+			auto span = assign->span;
+
+			// a[b] = c   ->   a.set(b, c)
+			e = AST::methodCall(span, obj, "set", { what, rh });
+		}
+	}
+	else if (auto mem = dynamic_cast<AST::MemberExp*>(e.get()))
+	{
+		auto obj = mem->children[0];
+		auto what = mem->children[1];
+		auto span = mem->span;
+
+		// a[b]   ->   a.get(b)
+		e = AST::methodCall(span, obj, "get", { what });
+	}
+
+	for (auto& c : e->children)
+		desugar(c);
 }
 
 
