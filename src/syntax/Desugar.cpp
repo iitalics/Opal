@@ -3,6 +3,14 @@
 namespace Opal { namespace Desugar {
 ;
 
+
+#define SUG_MEMBER_SET       "set"
+#define SUG_MEMBER_GET       "get"
+#define SUG_COMPARE          "cmp"
+#define SUG_EQUAL            "equal"
+
+
+
 static void desugarName (const AST::Name& name)
 {
 	if (name.hasModule())
@@ -47,7 +55,7 @@ void desugar (AST::ExpPtr& e)
 			auto span = assign->span;
 
 			// a[b] = c   ->   a.set(b, c)
-			e = AST::methodCall(span, obj, "set", { what, rh });
+			e = AST::methodCall(span, obj, SUG_MEMBER_SET, { what, rh });
 		}
 	}
 	else if (auto mem = dynamic_cast<AST::MemberExp*>(e.get()))
@@ -57,7 +65,27 @@ void desugar (AST::ExpPtr& e)
 		auto span = mem->span;
 
 		// a[b]   ->   a.get(b)
-		e = AST::methodCall(span, obj, "get", { what });
+		e = AST::methodCall(span, obj, SUG_MEMBER_GET, { what });
+	}
+	else if (auto cmp = dynamic_cast<AST::CompareExp*>(e.get()))
+	{
+		AST::ExpPtr res;
+		auto a = cmp->children[0];
+		auto b = cmp->children[1];
+		auto span = cmp->span;
+
+		// a == b   ->   a.equal(b) == true
+		// a != b   ->   a.equal(b) == false
+		// a > b    ->   a.cmp(b) > 0
+		// a < b    ->   a.cmp(b) < 0
+		// etc.
+		if (cmp->kind == AST::CompareExp::Eq ||
+				cmp->kind == AST::CompareExp::NotEq)
+			res = AST::methodCall(span, a, SUG_EQUAL, { b });
+		else
+			res = AST::methodCall(span, a, SUG_COMPARE, { b });
+
+		e = AST::ExpPtr(new AST::CompareExp(res, cmp->kind));
 	}
 
 	for (auto& c : e->children)

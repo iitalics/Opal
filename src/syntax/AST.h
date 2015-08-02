@@ -184,6 +184,8 @@ public:
 	Kind kind;
 	inline CompareExp (ExpPtr _a, Kind _kind, ExpPtr _b) // sugar
 		: Exp({ _a, _b }), kind(_kind) {}
+	inline CompareExp (ExpPtr _a, Kind _kind)
+		: Exp({ _a }), kind(_kind) {}
 	virtual ~CompareExp ();
 	virtual std::string str (int ident) const;
 };

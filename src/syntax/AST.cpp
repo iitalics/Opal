@@ -156,7 +156,15 @@ std::string CompareExp::str (int ind) const
 	case Gr:    ss << " > "; break;
 	default: break;
 	}
-	ss << children[1]->str(ind);
+	if (children.size() < 2)
+	{
+		if (kind == Eq || kind == NotEq)
+			ss << "true";
+		else
+			ss << "0";
+	}
+	else
+		ss << children[1]->str(ind);
 	return ss.str();
 }
 ConsExp::~ConsExp () {}
