@@ -98,8 +98,6 @@ static void declareType (Namespace* nm, AST::DeclPtr decl)
 		isIFace,
 		span);
 	mod->types.push_back(res);
-
-	std::cout << "declared type " << res->fullname().str() << std::endl;
 }
 static void declareTypes ()
 {
@@ -245,6 +243,7 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 	};
 	fn->args.reserve(fndecl->args.size() + 1);
 	fn->ret = nullptr; // not yet inferred
+	fn->nm = nm;
 	fn->body = fndecl->body;
 
 	if (implBase != nullptr)
@@ -266,6 +265,7 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 		implBase->methods.push_back(fn);
 		std::cout << "created method " << implBase->fullname().str() << "." << fn->name << std::endl;
 	}
+	std::cout << fndecl->body->str() << std::endl;
 }
 static void create (Namespace* nm, AST::DeclPtr decl)
 {

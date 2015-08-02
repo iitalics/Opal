@@ -136,6 +136,7 @@ public:
 	std::vector<Infer::Var> args;
 	Infer::TypePtr ret;
 
+	Namespace* nm;
 	AST::ExpPtr body;
 };
 

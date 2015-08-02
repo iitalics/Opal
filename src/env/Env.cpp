@@ -70,6 +70,17 @@ Type::Type (const std::string& _name,
 	: name(_name), module(_mod), declSpan(_span), nparams(_nparams), isIFace(_iface)
 {
 	_function = _tuple = false;
+
+	if (_iface)
+	{
+		iface.funcs = nullptr;
+		iface.nfuncs = 0;
+	}
+	else
+	{
+		data.fields = nullptr;
+		data.nfields = 0;
+	}
 }
 
 static std::map<int, Type*> _functions;
