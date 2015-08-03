@@ -35,15 +35,19 @@ Module::~Module ()
 }
 
 
-
+static std::map<std::string, Module*> _modules;
 
 Module* Module::get (const std::string& name)
 {
-	for (auto mod = _all; mod != nullptr; mod = mod->_next)
-		if (mod->name == name)
-			return mod;
-
-	return new Module(name);
+	auto it = _modules.find(name);
+	if (it == _modules.end())
+	{
+		auto mod = new Module(name);
+		_modules[name] = mod;
+		return mod;
+	}
+	else
+		return it->second;
 }
 Type* Module::getType (const std::string& name) const
 {
