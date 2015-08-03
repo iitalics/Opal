@@ -10,12 +10,7 @@ int main ()
 
 	try
 	{
-		// bake types
-		auto core = Env::Module::getCore();
-		core->types.push_back(new Env::Type("int", core, 0, false));
-		core->types.push_back(new Env::Type("bool", core, 0, false));
-		core->types.push_back(new Env::Type("real", core, 0, false));
-		core->types.push_back(new Env::Type("string", core, 0, false));
+		Env::Module::getCore();
 
 		auto nm = Env::loadSource("tests/infer-test.opal");
 		Env::finishModuleLoad();

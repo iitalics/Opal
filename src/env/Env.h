@@ -16,10 +16,7 @@ public:
 	static Module* get (const std::string& name);
 	static inline Module* all () { return _all; }
 	inline Module* next () const { return _next; }
-
-	static inline Module* getCore () {
-		return get("Core"); // this name?
-	}
+	static Module* getCore ();
 
 	Module (const std::string& _name);
 	Module ();
@@ -73,6 +70,7 @@ public:
 	// special types
 	static Type* function (size_t argc);
 	static Type* tuple (size_t argc);
+	static Type* core (const std::string& name);
 
 	Type (const std::string& name,
 		Module* mod, size_t nparams,

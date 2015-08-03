@@ -6,11 +6,11 @@ namespace Opal { namespace Env {
 
 Module* Module::_all = nullptr;
 
-static int unnamed = 0;
-static std::string unname ()
+static std::string _unname ()
 {
+	static int n = 0;
 	std::ostringstream ss;
-	ss << "@mod_" << (unnamed++);
+	ss << "@mod_" << (n++);
 	return ss.str();
 }
 
@@ -21,7 +21,7 @@ Module::Module (const std::string& _name)
 	_all = this;
 }
 Module::Module ()
-	: Module(unname()) {}
+	: Module(_unname()) {}
 
 Module::~Module ()
 {
@@ -85,53 +85,6 @@ Type::Type (const std::string& _name,
 		data.fields = nullptr;
 		data.nfields = 0;
 	}
-}
-
-static std::map<int, Type*> _functions;
-static std::map<int, Type*> _tuples;
-
-static std::string specialName (const std::string& prefix, size_t n)
-{
-	std::ostringstream ss;
-	ss << prefix << "(" << n << ")";
-	return ss.str();
-}
-
-Type* Type::function (size_t argc)
-{
-	auto it = _functions.find(argc);
-	if (it != _functions.end())
-		return it->second;
-
-	auto coreMod = Module::getCore();
-	auto ty = new Type(
-		specialName("@fn", argc),
-		coreMod,
-		argc + 1,
-		false);
-	ty->_function = true;
-	ty->data.fields = nullptr;
-	ty->data.nfields = 0;
-	_functions[argc] = ty;
-	return ty;
-}
-Type* Type::tuple (size_t argc)
-{
-	auto it = _tuples.find(argc);
-	if (it != _tuples.end())
-		return it->second;
-
-	auto coreMod = Module::getCore();
-	auto ty = new Type(
-		specialName("@tuple", argc),
-		coreMod,
-		argc,
-		false);
-	ty->_tuple = true;
-	ty->data.fields = nullptr;
-	ty->data.nfields = 0;
-	_tuples[argc] = ty;
-	return ty;
 }
 
 
