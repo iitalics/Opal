@@ -65,6 +65,7 @@ static void makePrimitives ()
 	auto boolType = new Type("bool", coreMod, 0, false);
 	auto charType = new Type("char", coreMod, 0, false);
 	auto stringType = new Type("string", coreMod, 0, false);
+	auto unitType = new Type("unit", coreMod, 0, false);
 
 	// TODO: GC info, default initializers
 
@@ -73,7 +74,8 @@ static void makePrimitives ()
 		  realType,
 		  boolType,
 		  charType,
-		  stringType });
+		  stringType,
+		  unitType });
 }
 Module* Module::getCore ()
 {
