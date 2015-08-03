@@ -15,8 +15,9 @@ int main ()
 		core->types.push_back(new Env::Type("int", core, 0, false));
 		core->types.push_back(new Env::Type("bool", core, 0, false));
 		core->types.push_back(new Env::Type("real", core, 0, false));
+		core->types.push_back(new Env::Type("string", core, 0, false));
 
-		auto nm = Env::loadSource("tests/syntax-toplevel.opal");
+		auto nm = Env::loadSource("tests/infer-test.opal");
 		Env::finishModuleLoad();
 	}
 	catch (SourceError& err)
