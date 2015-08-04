@@ -62,6 +62,10 @@ struct Type
 
 	bool containsParam (const std::string& name);
 	bool containsParam (int id);
+	bool containsPoly (int id);
+
+	bool isPoly (int id) const;
+	bool isConcrete (Env::Type* base) const;
 
 private:
 	static TypePtr concreteFromAST (AST::ConcreteType* ct, Ctx& ctx);

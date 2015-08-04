@@ -80,7 +80,6 @@ bool Type::containsParam (const std::string& name)
 {
 	if (kind == Param && paramName == name)
 		return true;
-
 	for (auto ty : args)
 		if (ty->containsParam(name))
 			return true;
@@ -90,13 +89,29 @@ bool Type::containsParam (int _id)
 {
 	if (kind == Param && id == _id)
 		return true;
-
 	for (auto ty : args)
 		if (ty->containsParam(_id))
 			return true;
 	return false;
 }
+bool Type::containsPoly (int _id)
+{
+	if (isPoly(_id))
+		return true;
+	for (auto ty : args)
+		if (ty->containsPoly(_id))
+			return true;
+	return false;
+}
 
+bool Type::isPoly (int _id) const
+{
+	return kind == Poly && id == _id;
+}
+bool Type::isConcrete (Env::Type* _base) const
+{
+	return kind == Concrete && base == _base;
+}
 
 
 static SourceError UndefinedType (const AST::Name& name, const Span& span)
@@ -155,7 +170,6 @@ TypePtr Type::paramFromAST (AST::ParamType* pt, Ctx& ctx)
 	for (auto it = pt->ifaces.rbegin(); it != pt->ifaces.rend(); ++it)
 	{
 		auto ty2 = fromAST(*it, ctx);
-		ifaces = TypeList(ty2, ifaces);
 
 		if (ty2->kind != Concrete ||
 				!ty2->base->isIFace)
@@ -163,7 +177,18 @@ TypePtr Type::paramFromAST (AST::ParamType* pt, Ctx& ctx)
 
 		if (ty2->containsParam(pt->name))
 			throw SourceError("parameter-type references self in ifaces",
-				{ pt->span });
+				pt->span);
+
+		for (auto ty3 : ifaces)
+			if (ty3->isConcrete(ty2->base))
+			{
+				std::ostringstream ss;
+				ss << "parameter-type iface '" << ty2->base->fullname().str()
+				   << "' used more than once";
+				throw SourceError(ss.str(), pt->span);
+			}
+
+		ifaces = TypeList(ty2, ifaces);
 	}
 
 	if (!ctx.allowNewTypes)
