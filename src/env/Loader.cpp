@@ -172,6 +172,7 @@ static void createIFace (Namespace* nm, Module* mod, AST::IFaceDecl* ifdecl)
 
 		// new context for each function
 		Infer::Type::Ctx ctx2(ctx);
+		ctx.allowNewTypes = false;
 
 		// create arguments from AST
 		fnsig.name = fn.name;
@@ -291,6 +292,28 @@ static void createAll ()
 			create(nm, decl);
 }
 
+static void inferGlobal (Global* g)
+{
+	g->func->infer();
+}
+static void inferType (Type* ty)
+{
+	for (auto& fn : ty->methods)
+		fn->infer();
+}
+static void inferAll ()
+{
+	for (auto mod = Module::all(); mod != nullptr; mod = mod->next())
+	{
+		for (auto g : mod->globals)
+			inferGlobal(g);
+		for (auto ty : mod->types)
+			inferType(ty);
+	}
+}
+
+
+
 
 void finishModuleLoad ()
 {
@@ -302,6 +325,7 @@ void finishModuleLoad ()
 	//   (check that referenced types exist and are used properly)
 	createAll();
 	// infer functions
+	inferAll();
 	// generate code
 	// find entry point and execute
 }

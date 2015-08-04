@@ -136,6 +136,8 @@ public:
 
 	Namespace* nm;
 	AST::ExpPtr body;
+
+	void infer ();
 };
 
 

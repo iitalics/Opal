@@ -1,6 +1,6 @@
 #include "Env.h"
+#include "../infer/Analysis.h"
 #include <map>
-
 namespace Opal { namespace Env {
 ;
 
@@ -87,6 +87,20 @@ Type::Type (const std::string& _name,
 	}
 }
 
+
+void Function::infer ()
+{
+	if (ret != nullptr)
+		return;
+
+	Infer::Analysis inferer(nm);
+	ret = inferer.newType();
+	inferer.infer(body, ret);
+
+	// TODO: do-inst ret (turn poly => param)
+
+	std::cout << fullname().str() << " -> " << ret->str() << std::endl;	
+}
 
 
 AST::Name Type::fullname () const { return AST::Name(name, module->name); }
