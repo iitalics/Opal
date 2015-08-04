@@ -28,7 +28,7 @@ public:
 
 	TypePtr newType ();
 
-	void infer (AST::ExpPtr e, TypePtr ctx);
+	void infer (AST::ExpPtr e, TypePtr dest);
 
 	void unify (TypePtr dest, TypePtr src, const Span& span);
 	void set (int polyId, TypePtr res);
@@ -38,11 +38,11 @@ private:
 	std::vector<TypePtr> _polies;
 	int _polyCount;
 
-	void _infer (AST::VarExp* e, TypePtr ctx);
-	void _infer (AST::IntExp* e, TypePtr ctx);
-	void _infer (AST::FieldExp* e, TypePtr ctx);
-	void _infer (AST::CompareExp* e, TypePtr ctx);
-	void _infer (AST::BlockExp* e, TypePtr ctx);
+	void _infer (AST::VarExp* e, TypePtr dest);
+	void _infer (AST::IntExp* e, TypePtr dest);
+	void _infer (AST::FieldExp* e, TypePtr dest);
+	void _infer (AST::CompareExp* e, TypePtr dest);
+	void _infer (AST::BlockExp* e, TypePtr dest);
 };
 
 

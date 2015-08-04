@@ -40,6 +40,8 @@ TypePtr Analysis::newType ()
 
 void Analysis::unify (TypePtr dest, TypePtr src, const Span& span)
 {
+	std::cout << "**  unify (" << dest->str() << ", " << src->str() << ")" << std::endl;
+
 	if (src->kind == Type::Poly && dest->kind != Type::Poly)
 	{
 		auto t = dest;
@@ -94,6 +96,8 @@ void Analysis::set (int polyId, TypePtr res)
 {
 	bool erase = (res->kind != Type::Poly);
 
+	std::cout << "**  _" << polyId << " := " << res->str() << std::endl;
+
 	for (auto it = _polies.begin(); it != _polies.end(); ++it)
 		if ((*it)->isPoly(polyId))
 		{
@@ -103,9 +107,55 @@ void Analysis::set (int polyId, TypePtr res)
 		}
 }
 
-void Analysis::infer (AST::ExpPtr e, TypePtr ctx)
+void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 {
+	static auto stringType = Type::concrete(Env::Type::core("string"), TypeList());
+	static auto realType = Type::concrete(Env::Type::core("real"), TypeList());
+	static auto boolType = Type::concrete(Env::Type::core("bool"), TypeList());
+
 	// TODO: type inference HERE
+	if (dynamic_cast<AST::StringExp*>(e.get()))
+		unify(dest, stringType, e->span);
+	if (dynamic_cast<AST::RealExp*>(e.get()))
+		unify(dest, realType, e->span);
+	if (dynamic_cast<AST::BoolExp*>(e.get()))
+		unify(dest, boolType, e->span);
+	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get()))
+		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::IntExp*>(e.get()))
+		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get()))
+		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get()))
+		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get()))
+		_infer(e2, dest);
+}
+void Analysis::_infer (AST::VarExp* e, TypePtr dest)
+{
+}
+void Analysis::_infer (AST::IntExp* e, TypePtr dest)
+{
+}
+void Analysis::_infer (AST::FieldExp* e, TypePtr dest)
+{
+}
+void Analysis::_infer (AST::CompareExp* e, TypePtr dest)
+{
+}
+void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
+{
+	static auto unitType = Type::concrete(Env::Type::core("unit"), TypeList());
+
+	auto res = unitType;
+	for (auto& e2 : e->children)
+	{
+		res = newType();
+		infer(e2, res);
+	}
+	if (e->unitResult)
+		res = unitType;
+	unify(dest, res, e->span);
 }
 
 
