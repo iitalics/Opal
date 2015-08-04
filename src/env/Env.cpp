@@ -91,12 +91,13 @@ Type::Type (const std::string& _name,
 
 Infer::TypePtr Global::getType ()
 {
-	func->infer();
-
 	if (isFunc)
 		return func->getType();
 	else
+	{
+		func->infer();
 		return func->ret;
+	}
 }
 
 void Function::infer ()
@@ -114,6 +115,8 @@ void Function::infer ()
 }
 Infer::TypePtr Function::getType ()
 {
+	infer();
+
 	Infer::TypeList types(ret);
 	size_t argc = 0;
 

@@ -12,16 +12,16 @@ pub fn fn_b (x : int) {
 	x
 }
 
-//	pub type foo {
-//		x : int,
-//		y : real,
-//		z : string
-//	}
-//	// result: Core::int
-//	pub fn fn_c (foo : foo) {
-//		foo.x
-//	}
-//	
+pub type foo {
+	x : int,
+	y : real,
+	z : string
+}
+// result: Core::int
+pub fn fn_c (foo : foo) {
+	foo.x
+}
+
 //	impl foo {
 //		// result: Core::real
 //		fn a () {

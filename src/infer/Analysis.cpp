@@ -159,7 +159,8 @@ void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 
 		e->global = global;
 		type = global->getType();
-		// type = instParams(type)
+
+		// TODO: inst params
 	}
 	else
 	{
@@ -171,9 +172,74 @@ void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 }
 void Analysis::_infer (AST::IntExp* e, TypePtr dest)
 {
+	static auto core_int = Env::Type::core("int");
+	static auto core_real = Env::Type::core("real");
+	static auto core_long = Env::Type::core("long");
+	static auto intType = Type::concrete(core_int, TypeList());
+
+	// implicitly casts to real/long if necessary
+	if (dest->kind == Type::Concrete)
+	{
+		if (dest->base == core_real)
+		{
+			e->castReal = true;
+			return;
+		}
+		else if (dest->base == core_long)
+		{
+			e->castLong = true;
+			return;
+		}
+		else if (dest->base == core_int)
+			return;
+	}
+
+	// defaults to Core::int
+	unify(dest, intType, e->span);
 }
 void Analysis::_infer (AST::FieldExp* e, TypePtr dest)
 {
+	auto objType = newType();
+	infer(e->children[0], objType);
+	TypePtr res = nullptr;
+
+	if (objType->kind == Type::Concrete)
+	{
+		auto base = objType->base;
+
+		// find field if not iface
+		if (!objType->base->isIFace)
+			for (size_t i = 0; i < base->data.nfields; i++)
+				if (base->data.fields[i].name == e->name)
+				{
+					res = base->data.fields[i].type;
+					break;
+				}
+
+		// find method
+		if (res == nullptr)
+			for (auto fn : base->methods)
+				if (fn->name == e->name)
+				{
+					std::cout << "found function " << fn << std::endl;
+					res = fn->getType();
+					break;
+				}
+
+		if (res == nullptr)
+			goto fail_bad_field;
+		// TODO: inst params
+	}
+	else
+		goto fail_bad_field;
+
+	unify(dest, res, e->span);
+	return;
+
+fail_bad_field:
+	std::ostringstream ss;
+	ss << "type '" << objType->str() << "' has no field '" << e->name << "'";
+	throw SourceError(ss.str(), e->span);
 }
 void Analysis::_infer (AST::CompareExp* e, TypePtr dest)
 {
