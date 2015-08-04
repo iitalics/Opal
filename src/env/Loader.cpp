@@ -258,11 +258,13 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 
 	if (global != nullptr)
 	{
+		fn->parent = nullptr;
 		global->func = fn;
 		std::cout << "created global function " << global->fullname().str() << std::endl;
 	}
 	if (implBase != nullptr)
 	{
+		fn->parent = implBase;
 		implBase->methods.push_back(fn);
 		std::cout << "created method " << implBase->fullname().str() << "." << fn->name << std::endl;
 	}

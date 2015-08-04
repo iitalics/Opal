@@ -34,27 +34,39 @@ std::string Type::str() const
 {
 	std::ostringstream ss;
 
+	char left, right;
+
 	if (kind == Concrete)
 	{
 		ss << base->fullname().str();
-		if (!args.nil())
-			ss << "["
-			   << args.map<std::string>([] (TypePtr t) {
-			   		return t->str();
-			   }) << "]";
+
+		left = '[';
+		right = ']';
 	}
 	else
 	{
 		if (kind == Param)
 			ss << "#" << paramName;
 		else
-			ss << "_";
+			ss << "_" << id;
 
-		if (!args.nil())
-			ss << "("
-			   << args.map<std::string>([] (TypePtr t) {
-			   		return t->str();
-			   }) << ")";
+		left = '(';
+		right = ')';
+	}
+
+	if (!args.nil())
+	{
+		ss << left;
+		bool first = true;
+		for (auto x : args)
+		{
+			if (first)
+				first = false;
+			else
+				ss << ", ";
+			ss << x->str();
+		}
+		ss << right;
 	}
 
 	return ss.str();
@@ -220,7 +232,19 @@ TypePtr Type::Ctx::createParam (const std::string& name, const TypeList& ifaces,
 	spans.push_back(span);
 	return res;
 }
+void Type::Ctx::locateParams (TypePtr type)
+{
+	if (type->kind == Type::Param)
+	{
+		while (params.size() <= type->id)
+			params.push_back(nullptr);
 
+		params[type->id] = type;
+	}
+	else
+		for (auto ty : type->args)
+			locateParams(ty);
+}
 
 
 

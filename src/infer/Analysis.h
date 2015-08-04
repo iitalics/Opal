@@ -8,7 +8,8 @@ namespace Opal { namespace Infer {
 class Analysis
 {
 public:
-	Analysis (Env::Namespace* _nm);
+	Analysis (Env::Namespace* _nm,
+			const std::vector<Var>& args);
 	~Analysis ();
 
 	struct LocalVar
@@ -19,7 +20,6 @@ public:
 		bool mut;
 	};
 
-	Type::Ctx ctx;
 	std::vector<LocalVar> allVars;
 	std::vector<int> stack;
 
@@ -35,6 +35,7 @@ public:
 
 private:
 	Env::Namespace* nm;
+	Type::Ctx _ctx;
 	std::vector<TypePtr> _polies;
 	int _polyCount;
 

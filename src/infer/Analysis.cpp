@@ -1,11 +1,20 @@
 #include "Analysis.h"
+#include "../env/Namespace.h"
 namespace Opal { namespace Infer {
 ;
 
 
-Analysis::Analysis (Env::Namespace* _nm)
-	: ctx(_nm), nm(_nm), _polyCount(0)
-{}
+Analysis::Analysis (Env::Namespace* _nm,
+		const std::vector<Var>& args)
+	: nm(_nm), _ctx(_nm), _polyCount(0)
+{
+	// define arguments
+	for (auto& arg : args)
+	{
+		_ctx.locateParams(arg.type);
+		let(arg.name, arg.type);
+	}
+}
 Analysis::~Analysis () {}
 
 
@@ -28,6 +37,7 @@ int Analysis::let (const std::string& name, TypePtr type)
 		type,
 		false
 	});
+	stack.push_back(id);
 	return id;
 }
 TypePtr Analysis::newType ()
@@ -90,13 +100,11 @@ fail_incompatible:
 	      "found: " + src->str() }, span);
 
 fail_self_ref:
-	throw SourceError("type inference error: infinite type");
+	throw SourceError("type inference error: infinite type", span);
 }
 void Analysis::set (int polyId, TypePtr res)
 {
 	bool erase = (res->kind != Type::Poly);
-
-	std::cout << "**  _" << polyId << " := " << res->str() << std::endl;
 
 	for (auto it = _polies.begin(); it != _polies.end(); ++it)
 		if ((*it)->isPoly(polyId))
@@ -133,6 +141,33 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 }
 void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 {
+	Env::Global* global;
+	int id;
+	TypePtr type;
+
+	auto name = e->name;
+	if (name.hasModule() || (id = get(name.name)) == -1)
+	{
+		global = nm->getGlobal(name); // get global from namespace
+
+		if (global == nullptr)
+		{
+			std::ostringstream ss;
+			ss << "undefined global '" << name.str() << "'";
+			throw SourceError(ss.str(), e->span);
+		}
+
+		e->global = global;
+		type = global->getType();
+		// type = instParams(type)
+	}
+	else
+	{
+		e->varId = id;
+		type = allVars[id].type;
+	}
+
+	unify(dest, type, e->span);
 }
 void Analysis::_infer (AST::IntExp* e, TypePtr dest)
 {

@@ -112,6 +112,8 @@ public:
 
 	bool isFunc;
 	Function* func;
+
+	Infer::TypePtr getType ();
 };
 
 class Function
@@ -131,6 +133,7 @@ public:
 	Span declSpan;
 	AST::Name fullname () const;
 
+	Type* parent;
 	std::vector<Infer::Var> args;
 	Infer::TypePtr ret;
 
@@ -138,6 +141,7 @@ public:
 	AST::ExpPtr body;
 
 	void infer ();
+	Infer::TypePtr getType ();
 };
 
 

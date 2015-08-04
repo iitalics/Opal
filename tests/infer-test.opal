@@ -3,23 +3,22 @@ use Core
 
 
 // result: Core::string
-fn fn_a () {
-	"hello, world"
+pub fn fn_a () {
+	"hello"
 }
 
+// result: Core::int
+pub fn fn_b (x : int) {
+	x
+}
 
-//	// result: Core::int
-//	fn fn_b (x : int) {
-//		x
-//	}
-//	
 //	pub type foo {
 //		x : int,
 //		y : real,
 //		z : string
 //	}
 //	// result: Core::int
-//	fn fn_c (foo : foo) {
+//	pub fn fn_c (foo : foo) {
 //		foo.x
 //	}
 //	
@@ -36,15 +35,15 @@ fn fn_a () {
 //		fn c (y : real) { self }
 //	}
 //	
-//	// result: Core::@fn(0)[Core::real]
-//	fn fn_d (foo : foo) {
+//	// result: Core::fn[Core::real]
+//	pub fn fn_d (foo : foo) {
 //		foo.a
 //	}
 //	// result: Core::string
-//	fn fn_e (foo : foo) {
+//	pub fn fn_e (foo : foo) {
 //		foo.b(4)
 //	}
 //	// reuslt: InferTest::foo
-//	fn fn_f (foo : foo) {
+//	pub fn fn_f (foo : foo) {
 //		foo.c(0)
 //	}

@@ -32,7 +32,11 @@ struct Type
 		std::vector<TypePtr> params;
 		std::vector<Span> spans;
 
-		TypePtr createParam (const std::string& name, const TypeList& ifaces, const Span& sp = Span());
+		TypePtr createParam (const std::string& name,
+				const TypeList& ifaces,
+				const Span& sp = Span());
+
+		void locateParams (TypePtr type);
 	};
 
 	// convert AST to Type

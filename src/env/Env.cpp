@@ -88,18 +88,48 @@ Type::Type (const std::string& _name,
 }
 
 
+
+Infer::TypePtr Global::getType ()
+{
+	func->infer();
+
+	if (isFunc)
+		return func->getType();
+	else
+		return func->ret;
+}
+
 void Function::infer ()
 {
 	if (ret != nullptr)
 		return;
 
-	Infer::Analysis inferer(nm);
+	Infer::Analysis inferer(nm, args);
 	ret = inferer.newType();
 	inferer.infer(body, ret);
 
-	// TODO: do-inst ret (turn poly => param)
+	// TODO: un-inst ret (turn poly => param)
 
 	std::cout << fullname().str() << " -> " << ret->str() << std::endl;	
+}
+Infer::TypePtr Function::getType ()
+{
+	Infer::TypeList types(ret);
+	size_t argc = 0;
+
+	// add to linked list in reverse
+	for (int i = args.size() - 1; ; i--)
+	{
+		if (i == 0 && parent != nullptr) // don't include "self" argument
+			break;
+		if (i < 0)
+			break;
+
+		types = Infer::TypeList(args[i].type, types);
+		argc++;
+	}
+
+	return Infer::Type::concrete(Type::function(argc), types);
 }
 
 
