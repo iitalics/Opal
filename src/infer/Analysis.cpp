@@ -64,6 +64,10 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get()))
 		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::TupleExp*>(e.get()))
+		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::CondExp*>(e.get()))
+		_infer(e2, dest);
 }
 void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 {
@@ -351,6 +355,41 @@ void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 	}
 	if (e->unitResult)
 		res = unitType;
+	unify(dest, res, e->span);
+}
+void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
+{
+	static auto unitType = Type::concrete(Env::Type::core("unit"), TypeList());
+
+	if (e->children.empty())
+	{
+		unify(dest, unitType, e->span);
+		return;
+	}
+
+	// similar to the algorithm for AST::CallExp
+	std::vector<TypePtr> args;
+	size_t nvals = e->children.size();
+	args.reserve(nvals);
+	for (auto e2 : e->children)
+		args.push_back(newType());
+
+	auto model = Type::concrete(Env::Type::tuple(nvals), TypeList(args));
+	unify(model, dest, e->span);
+
+	for (size_t i = 0; i < nvals; i++)
+		infer(e->children[i], args[i]);
+}
+void Analysis::_infer (AST::CondExp* e, TypePtr dest)
+{
+	static auto boolType = Type::concrete(Env::Type::core("bool"), TypeList());
+
+	auto res = newType();
+
+	infer(e->children[0], boolType);
+	infer(e->children[1], res);
+	infer(e->children[2], res);
+
 	unify(dest, res, e->span);
 }
 
