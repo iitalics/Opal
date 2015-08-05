@@ -211,7 +211,7 @@ public:
 	Env::Function* method;
 
 	inline FieldExp (ExpPtr _a, const std::string& _name)
-		: Exp({ _a }), name(_name), method(nullptr) {}
+		: Exp({ _a }), name(_name), index(-1), method(nullptr) {}
 	virtual ~FieldExp ();
 	virtual std::string str (int ident) const;
 };

@@ -109,7 +109,7 @@ void Function::infer ()
 	ret = inferer.newType();
 	inferer.infer(body, ret);
 
-	// TODO: un-inst ret (turn poly => param)
+	inferer.polyToParam(ret);
 
 	std::cout << fullname().str() << " -> " << ret->str() << std::endl;	
 }
@@ -132,6 +132,15 @@ Infer::TypePtr Function::getType ()
 		argc++;
 	}
 
+	return Infer::Type::concrete(Type::function(argc), types);
+}
+Infer::TypePtr IFaceSignature::getType ()
+{
+	Infer::TypeList types(ret);
+
+	for (int i = argc; i-- > 0; )
+		types = Infer::TypeList(args[i], types);
+	
 	return Infer::Type::concrete(Type::function(argc), types);
 }
 

@@ -40,80 +40,6 @@ int Analysis::let (const std::string& name, TypePtr type)
 	stack.push_back(id);
 	return id;
 }
-TypePtr Analysis::newType ()
-{
-	int id = _polyCount++;
-	auto res = Type::poly(id, {});
-	_polies.push_back(res);
-	return res;
-}
-
-void Analysis::unify (TypePtr dest, TypePtr src, const Span& span)
-{
-	std::cout << "**  unify (" << dest->str() << ", " << src->str() << ")" << std::endl;
-
-	if (src->kind == Type::Poly && dest->kind != Type::Poly)
-	{
-		auto t = dest;
-		dest = src;
-		src = t;
-	}
-
-	// TODO: ifaces
-	//  needed: check if type has method
-	//          instanciate parameter types into poly types
-	//          alpha equivalence check
-
-	if (dest->kind == Type::Poly)
-	{
-		// ifaces TODO: check if type subscribes
-		//              to methods and unify things
-		
-		if (src->isPoly(dest->id))
-			return; // unify(a, a)
-		else if (src->containsPoly(dest->id))
-			goto fail_self_ref;
-		
-		set(dest->id, src);
-	}
-	else if (dest->kind == Type::Concrete && src->kind == Type::Concrete)
-	{
-		// ifaces TODO: implicit cast?
-		if (dest->base != src->base)
-			goto fail_incompatible;
-		
-		for (auto xs = dest->args, ys = src->args; !xs.nil(); ++xs, ++ys)
-			unify(xs.head(), ys.head(), span);
-	}
-	else if (dest->kind == Type::Param && src->kind == Type::Param)
-	{
-		if (dest->id != src->id)
-			goto fail_incompatible;
-	}
-	else
-		goto fail_incompatible;
-	return;
-
-fail_incompatible:
-	throw SourceError("type inference error: incompatible types",
-		{ "expected: " + dest->str(),
-	      "found: " + src->str() }, span);
-
-fail_self_ref:
-	throw SourceError("type inference error: infinite type", span);
-}
-void Analysis::set (int polyId, TypePtr res)
-{
-	bool erase = (res->kind != Type::Poly);
-
-	for (auto it = _polies.begin(); it != _polies.end(); ++it)
-		if ((*it)->isPoly(polyId))
-		{
-			(*it)->set(res);
-			if (erase)
-				_polies.erase(it--);
-		}
-}
 
 void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 {
@@ -134,7 +60,7 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get()))
 		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get()))
+	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get()))
 		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get()))
 		_infer(e2, dest);
@@ -160,7 +86,9 @@ void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 		e->global = global;
 		type = global->getType();
 
-		// TODO: inst params
+		// turn params into poly
+		std::vector<TypePtr> repl;
+		type = replaceParams(type, repl);
 	}
 	else
 	{
@@ -197,52 +125,219 @@ void Analysis::_infer (AST::IntExp* e, TypePtr dest)
 	// defaults to Core::int
 	unify(dest, intType, e->span);
 }
+
+
+TypePtr Analysis::_getFieldType (int& idx_out, Env::Type* base, const std::string& name)
+{
+	for (size_t i = 0; i < base->data.nfields; i++)
+		if (base->data.fields[i].name == name)
+		{
+			idx_out = i;
+			return base->data.fields[i].type;
+		}
+	return nullptr;
+}
+TypePtr Analysis::_getIFaceFuncType (Env::Type* base, const std::string& name)
+{
+	for (size_t i = 0; i < base->iface.nfuncs; i++)
+		if (base->iface.funcs[i].name == name)
+		{
+			// TODO: get a function?
+			return base->iface.funcs[i].getType();
+		}
+	return nullptr;
+}
+TypePtr Analysis::_getMethodType (Env::Function*& fnout, Env::Type* base, const std::string& name)
+{
+	for (auto fn : base->methods)
+		if (fn->name == name)
+		{
+			fnout = fn;
+			return fn->getType();
+		}
+	return nullptr;
+}
+TypePtr Analysis::_instField (TypePtr self, TypePtr type)
+{
+	std::vector<TypePtr> with;
+
+	for (auto arg : self->args)
+		with.push_back(arg);
+
+	return replaceParams(type, with);
+}
+TypePtr Analysis::_instIFace (TypePtr self, TypePtr type)
+{
+	std::vector<TypePtr> with;
+	with.push_back(self);
+
+	for (auto arg : self->args)
+		with.push_back(arg);
+
+	return replaceParams(type, with);
+}
+TypePtr Analysis::_instMethod (TypePtr self, TypePtr type, Env::Function* fn)
+{
+	std::vector<TypePtr> with;
+
+	auto fn_self = fn->args[0].type;
+	fn_self = replaceParams(fn_self, with);
+
+	// not actually of type
+	/*  e.g.
+		type A[#t] {...}
+		impl A[int] {
+			fn foo () {}
+		}
+		fn bar (a : A[string]) {
+			a.foo()
+			  ^ error missing field 'foo'
+		}
+	*/
+	if (_unify(self, fn_self) != UnifyOK)
+		return nullptr;
+
+	return replaceParams(type, with);
+}
+
+
 void Analysis::_infer (AST::FieldExp* e, TypePtr dest)
 {
 	auto objType = newType();
 	infer(e->children[0], objType);
 	TypePtr res = nullptr;
 
+	// save this now in case unify() overwrites some things
+	//  and then fails
+	auto typeName = objType->str();
+
 	if (objType->kind == Type::Concrete)
 	{
 		auto base = objType->base;
 
-		// find field if not iface
-		if (!objType->base->isIFace)
-			for (size_t i = 0; i < base->data.nfields; i++)
-				if (base->data.fields[i].name == e->name)
-				{
-					res = base->data.fields[i].type;
-					break;
-				}
+		if (base->isIFace)
+		{
+			// get method of iface type
+			if ((res = _getIFaceFuncType(base, e->name)))
+				res = _instIFace(objType, res);
+		}
+		else
+		{
+			int index;
 
-		// find method
-		if (res == nullptr)
-			for (auto fn : base->methods)
-				if (fn->name == e->name)
-				{
-					std::cout << "found function " << fn << std::endl;
-					res = fn->getType();
-					break;
-				}
+			// or get field of normal type
+			if ((res = _getFieldType(index, base, e->name)))
+			{
+				res = _instField(objType, res);
+				e->index = index;
+			}
+		}
 
 		if (res == nullptr)
-			goto fail_bad_field;
-		// TODO: inst params
+		{
+			Env::Function* fn;
+			// or get a method
+			if ((res = _getMethodType(fn, base, e->name)))
+			{
+				res = _instMethod(objType, res, fn);
+				e->method = fn;
+			}
+		}
 	}
-	else
-		goto fail_bad_field;
+	else // Poly / Param
+	{
+		// get method of iface
+		for (auto iface : objType->args)
+			if ((res = _getIFaceFuncType(iface->base, e->name)))
+			{
+				res = _instIFace(objType, res);
+				break;
+			}
+	}
+
+	// no luck.
+	if (res == nullptr)
+	{
+		std::ostringstream ss;
+		ss << "type is missing field '" << e->name << "'";
+		throw SourceError(ss.str(),
+			{ "type: " + typeName }, e->span);
+	}
 
 	unify(dest, res, e->span);
 	return;
-
-fail_bad_field:
-	std::ostringstream ss;
-	ss << "type '" << objType->str() << "' has no field '" << e->name << "'";
-	throw SourceError(ss.str(), e->span);
 }
-void Analysis::_infer (AST::CompareExp* e, TypePtr dest)
+void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 {
+	/*
+		kind of weird algorithm.  get the number of arguments,
+	     get the type of the function to be called, then
+	     make a "model" type to represent the function.
+	     unify the model and the function type, then infer
+	     each argument against the types in each argument of the
+	     model type.
+		e.g.
+
+		fn repeat (msg : string, n : int) : unit
+		
+		infer({ repeat("hi", 5) }, dest)
+			infer({ repeat }, fnty)
+			fnty := fn(string, int) -> unit
+			fnmodel := fn(_1, _2) -> _3
+
+			unify(fnmodel, fnty)
+			_1 <- string
+			_2 <- int
+			_3 <- unit
+
+			infer({ "hi" }, _1 = string) // Ok
+			infer({ 5 }, _2 = int)       // Ok
+
+			unify(dest, _3 = unit)       // Ok
+
+		{ repeat("hi", 5) } : unit
+	*/
+	auto fnty = newType();
+	infer(e->children[0], fnty);
+
+	if (fnty->kind == Type::Concrete)
+	{
+		if (!fnty->base->isFunction())
+			throw SourceError("attempt to call type '" + fnty->str() + "'",
+					e->span);
+
+		if (e->children.size() != fnty->args.size())
+		{
+			std::ostringstream ss1, ss2;
+			ss1 << "expected: " << fnty->args.size() - 1;
+			ss2 << "found: " << e->children.size() - 1;
+
+			throw SourceError("wrong number of arguments to function",
+					{ ss1.str(), ss2.str() }, e->span);
+		}
+	}
+
+	// create model for function based on # arguments
+	std::vector<TypePtr> args;
+	size_t argc = e->children.size() - 1;
+	auto ret = newType();
+
+	args.reserve(argc);
+	for (size_t i = 0; i < argc; i++)
+		args.push_back(newType());
+	args.push_back(ret);
+
+	auto fnmodel = Type::concrete(Env::Type::function(argc), TypeList(args));
+
+	// get argument types
+	unify(fnmodel, fnty, e->span);
+
+	// infer arguments
+	for (size_t i = 0; i < argc; i++)
+		infer(e->children[i + 1], args[i]);
+	
+	// push return value
+	unify(dest, ret, e->span);
 }
 void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 {

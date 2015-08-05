@@ -54,6 +54,8 @@ struct IFaceSignature
 	Infer::TypePtr* args;
 	size_t argc;
 	Infer::TypePtr ret;
+
+	Infer::TypePtr getType ();
 };
 
 struct IFaceType

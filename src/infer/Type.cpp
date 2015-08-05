@@ -48,7 +48,7 @@ std::string Type::str() const
 		if (kind == Param)
 			ss << "#" << paramName;
 		else
-			ss << "_" << id;
+			ss << "_";// << id;
 
 		left = '(';
 		right = ')';
@@ -209,6 +209,9 @@ TypePtr Type::paramFromAST (AST::ParamType* pt, Ctx& ctx)
 		ss << "undefined parameter-type '#" << pt->name << "'";
 		throw SourceError(ss.str(), pt->span);
 	}
+
+	std::cout << "creating param #" << pt->name << " -> "
+	          << ctx.params.size() << std::endl;
 
 	return ctx.createParam(pt->name, ifaces, pt->span);
 }
