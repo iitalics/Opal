@@ -6,7 +6,7 @@ namespace Opal { namespace Infer {
 
 Analysis::Analysis (Env::Namespace* _nm,
 		const std::vector<Var>& args)
-	: nm(_nm), _ctx(_nm), _polyCount(0)
+	: nm(_nm), _ctx(_nm)
 {
 	// define arguments
 	for (auto& arg : args)
@@ -355,6 +355,7 @@ void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 	}
 	if (e->unitResult)
 		res = unitType;
+
 	unify(dest, res, e->span);
 }
 void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
@@ -388,7 +389,8 @@ void Analysis::_infer (AST::CondExp* e, TypePtr dest)
 
 	infer(e->children[0], boolType);
 	infer(e->children[1], res);
-	infer(e->children[2], res);
+	if (e->children.size() > 2)
+		infer(e->children[2], res);
 
 	unify(dest, res, e->span);
 }

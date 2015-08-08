@@ -32,15 +32,12 @@ public:
 	void infer (AST::ExpPtr e, TypePtr dest);
 
 	void unify (TypePtr dest, TypePtr src, const Span& span);
-	void set (int polyId, TypePtr res);
 
 	void polyToParam (TypePtr type);
 
 private:
 	Env::Namespace* nm;
 	Type::Ctx _ctx;
-	std::vector<TypePtr> _polies;
-	int _polyCount;
 
 	enum {
 		UnifyOK = 0,

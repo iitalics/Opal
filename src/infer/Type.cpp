@@ -4,6 +4,8 @@
 namespace Opal { namespace Infer {
 ;
 
+static int _id;
+
 TypePtr Type::concrete (Env::Type* base, const TypeList& args)
 {
 	auto ty = std::make_shared<Type>(Concrete);
@@ -16,19 +18,31 @@ TypePtr Type::param (int id, const std::string& name,
 {
 	auto ty = std::make_shared<Type>(Param);
 	ty->id = id;
-	ty->paramName = name;
 	ty->args = ifaces;
+	ty->paramName = name;
 	return ty;
 }
-TypePtr Type::poly (int id, const TypeList& ifaces)
+TypePtr Type::poly (const TypeList& ifaces)
 {
 	auto ty = std::make_shared<Type>(Poly);
-	ty->id = id;
+	std::ostringstream ss;
+	ss << ++_id;
+	ty->links = new TypeWeakList { ty.get() };
 	ty->args = ifaces;
+	ty->paramName = ss.str();
 	return ty;
 }
 
-Type::~Type () {}
+Type::~Type ()
+{
+	if (kind == Poly && links != nullptr)
+		for (auto it = links->begin(); it != links->end(); ++it)
+			if (*it == this)
+			{
+				links->erase(it);
+				break;
+			}
+}
 
 std::string Type::str() const
 {
@@ -48,7 +62,7 @@ std::string Type::str() const
 		if (kind == Param)
 			ss << "#" << paramName;
 		else
-			ss << "_";// << id;
+			ss << "_" << paramName;
 
 		left = '(';
 		right = ')';
@@ -73,19 +87,34 @@ std::string Type::str() const
 }
 void Type::set (TypePtr other)
 {
-	kind = other->kind;
-	args = other->args;
+	if (kind == Poly)
+	{
+		for (auto ty : *links)
+			ty->_set(other);
+	}
+	else
+		_set(other);
+}
+void Type::_set (TypePtr other)
+{
 	if (other->kind == Concrete)
 	{
 		base = other->base;
 	}
-	else
+	else if (other->kind == Param)
 	{
-		if (other->kind == Param)
-			paramName = other->paramName;
-
+		paramName = other->paramName;
 		id = other->id;
 	}
+	else
+	{
+		links = other->links;
+		if (kind == Poly)
+			links->push_back(this);
+	}
+
+	kind = other->kind;
+	args = other->args;
 }
 
 bool Type::containsParam (const std::string& name)
@@ -106,19 +135,19 @@ bool Type::containsParam (int _id)
 			return true;
 	return false;
 }
-bool Type::containsPoly (int _id)
+bool Type::containsPoly (TypePtr poly)
 {
-	if (isPoly(_id))
+	if (isPoly(poly))
 		return true;
 	for (auto ty : args)
-		if (ty->containsPoly(_id))
+		if (ty->containsPoly(poly))
 			return true;
 	return false;
 }
 
-bool Type::isPoly (int _id) const
+bool Type::isPoly (TypePtr other) const
 {
-	return kind == Poly && id == _id;
+	return kind == Poly && links == other->links;
 }
 bool Type::isConcrete (Env::Type* _base) const
 {

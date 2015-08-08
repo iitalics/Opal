@@ -5,22 +5,7 @@ namespace Opal { namespace Infer {
 
 TypePtr Analysis::newType (const TypeList& ifaces)
 {
-	int id = _polyCount++;
-	auto res = Type::poly(id, ifaces);
-	_polies.push_back(res);
-	return res;
-}
-void Analysis::set (int polyId, TypePtr res)
-{
-	bool erase = (res->kind != Type::Poly);
-
-	for (auto it = _polies.begin(); it != _polies.end(); ++it)
-		if ((*it)->isPoly(polyId))
-		{
-			(*it)->set(res);
-			if (erase)
-				_polies.erase(it--);
-		}
+	return Type::poly(ifaces);
 }
 
 TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
@@ -55,10 +40,10 @@ void Analysis::polyToParam (TypePtr type)
 	if (type->kind == Type::Poly)
 	{
 		std::ostringstream ss;
-		ss << type->id;
+		ss << _ctx.params.size();
 		auto param = _ctx.createParam(ss.str(), type->args);
 		
-		set(type->id, param);
+		type->set(param);
 	}
 
 	for (auto arg : type->args)
@@ -100,12 +85,12 @@ int Analysis::_unify (TypePtr dest, TypePtr src)
 		// ifaces TODO: check if type subscribes
 		//              to methods and unify things
 		
-		if (src->isPoly(dest->id))
-			return UnifyOK; // unify(a, a)
-		else if (src->containsPoly(dest->id))
+		if (src->isPoly(dest))
+			return UnifyOK; // unify(_a, _a)
+		else if (src->containsPoly(dest))
 			return FailInfinite;
 		
-		set(dest->id, src);
+		dest->set(src);
 		return UnifyOK;
 	}
 	else if (dest->kind == Type::Concrete && src->kind == Type::Concrete)
