@@ -2,6 +2,18 @@ module Test
 use Core
 
 
+fn circ_A () {
+	if true {
+		circ_B()
+	} else {
+		0
+	}
+}
+fn circ_B () {
+	circ_A()
+}
+
+
 
 // test 1  constants
 //   Test::test1_0 -> Core::int
