@@ -207,7 +207,7 @@ TypePtr Analysis::_instMethod (TypePtr self, TypePtr type, Env::Function* fn)
 
 void Analysis::_infer (AST::FieldExp* e, TypePtr dest)
 {
-	auto objType = newType();
+	auto objType = Type::poly();
 	infer(e->children[0], objType);
 	TypePtr res = nullptr;
 
@@ -301,7 +301,7 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 
 		{ repeat("hi", 5) } : unit
 	*/
-	auto fnty = newType();
+	auto fnty = Type::poly();
 	infer(e->children[0], fnty);
 
 	if (fnty->kind == Type::Concrete)
@@ -324,11 +324,11 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 	// create model for function based on # arguments
 	std::vector<TypePtr> args;
 	size_t argc = e->children.size() - 1;
-	auto ret = newType();
+	auto ret = Type::poly();
 
 	args.reserve(argc);
 	for (size_t i = 0; i < argc; i++)
-		args.push_back(newType());
+		args.push_back(Type::poly());
 	args.push_back(ret);
 
 	auto fnmodel = Type::concrete(Env::Type::function(argc), TypeList(args));
@@ -350,7 +350,7 @@ void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 	auto res = unitType;
 	for (auto& e2 : e->children)
 	{
-		res = newType();
+		res = Type::poly();
 		infer(e2, res);
 	}
 	if (e->unitResult)
@@ -373,7 +373,7 @@ void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
 	size_t nvals = e->children.size();
 	args.reserve(nvals);
 	for (auto e2 : e->children)
-		args.push_back(newType());
+		args.push_back(Type::poly());
 
 	auto model = Type::concrete(Env::Type::tuple(nvals), TypeList(args));
 	unify(model, dest, e->span);
@@ -385,7 +385,7 @@ void Analysis::_infer (AST::CondExp* e, TypePtr dest)
 {
 	static auto boolType = Type::concrete(Env::Type::core("bool"), TypeList());
 
-	auto res = newType();
+	auto res = Type::poly();
 
 	infer(e->children[0], boolType);
 	infer(e->children[1], res);

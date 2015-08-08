@@ -106,9 +106,9 @@ void Function::infer ()
 		return;
 
 	Infer::Analysis inferer(nm, args);
-	ret = inferer.newType();
-	inferer.infer(body, ret);
 
+	ret = Infer::Type::poly();
+	inferer.infer(body, ret);
 	inferer.polyToParam(ret);
 
 	std::cout << fullname().str() << " -> " << ret->str() << std::endl;	

@@ -26,14 +26,11 @@ public:
 	int get (const std::string& name) const;
 	int let (const std::string& name, TypePtr type);
 
-	TypePtr newType (const TypeList& ifaces = TypeList());
 	TypePtr replaceParams (TypePtr ty, std::vector<TypePtr>& with);
+	void polyToParam (TypePtr type);
 
 	void infer (AST::ExpPtr e, TypePtr dest);
-
 	void unify (TypePtr dest, TypePtr src, const Span& span);
-
-	void polyToParam (TypePtr type);
 
 private:
 	Env::Namespace* nm;

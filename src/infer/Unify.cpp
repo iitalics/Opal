@@ -3,11 +3,6 @@
 namespace Opal { namespace Infer {
 ;
 
-TypePtr Analysis::newType (const TypeList& ifaces)
-{
-	return Type::poly(ifaces);
-}
-
 TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
 {
 	auto newArgs = ty->args.map<TypePtr>([&] (TypePtr ty2) {
@@ -20,7 +15,7 @@ TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
 			with.push_back(nullptr);
 
 		if (with[ty->id] == nullptr)
-			with[ty->id] = newType(newArgs);
+			with[ty->id] = Type::poly(newArgs);
 		
 		return with[ty->id];
 	}
