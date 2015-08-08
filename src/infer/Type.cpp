@@ -36,12 +36,17 @@ TypePtr Type::poly (const TypeList& ifaces)
 Type::~Type ()
 {
 	if (kind == Poly && links != nullptr)
+	{
 		for (auto it = links->begin(); it != links->end(); ++it)
 			if (*it == this)
 			{
 				links->erase(it);
 				break;
 			}
+
+		if (links->empty())
+			delete links;
+	}
 }
 
 std::string Type::str() const
@@ -89,8 +94,10 @@ void Type::set (TypePtr other)
 {
 	if (kind == Poly)
 	{
+		auto _links = links;
 		for (auto ty : *links)
 			ty->_set(other);
+		delete _links;
 	}
 	else
 		_set(other);
