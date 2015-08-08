@@ -147,7 +147,13 @@ Infer::TypePtr IFaceSignature::getType ()
 
 AST::Name Type::fullname () const { return AST::Name(name, module->name); }
 AST::Name Global::fullname () const { return AST::Name(name, module->name); }
-AST::Name Function::fullname () const { return AST::Name(name, module->name); }
+AST::Name Function::fullname () const
+{
+	if (parent == nullptr)
+		return AST::Name(name, module->name);
+	else
+		return AST::Name(parent->name + "." + name, parent->module->name);
+}
 
 
 

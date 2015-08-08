@@ -47,17 +47,17 @@ pub fn test3_2 (obj : B[int]) { obj.a }
 pub fn test3_3 (obj : B[B[#a]]) { obj.a }
 
 // test 4  methods of basic types
-//   @mod_0::x -> Core::real
+//   Test::A.x -> Core::real
 //   Test::test4_0 -> Core::fn[Core::real]
-//   @mod_0::y -> Test::A
+//   Test::A.y -> Test::A
 //   Test::test4_1 -> Core::fn[Test::A]
-//   @mod_0::t -> Core::int
+//   Test::B.t -> Core::int
 //   Test::test4_2 -> Core::fn[Core::int]
-//   @mod_0::s -> #b
+//   Test::B.s -> #b
 //   Test::test4_3 -> Core::fn[#0, #0]
-//   @mod_0::u -> #a
+//   Test::B.u -> #a
 //   Test::test4_4 -> Core::fn[Core::int]
-//   @mod_0::v -> #b
+//   Test::B.v -> #b
 //   Test::test4_5 -> Core::fn[#0, #0]
 //   Test::test4_6  FAIL (uncomment)
 impl A {
