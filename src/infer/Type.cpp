@@ -49,47 +49,8 @@ Type::~Type ()
 	}
 }
 
-std::string Type::str() const
-{
-	std::ostringstream ss;
 
-	char left, right;
 
-	if (kind == Concrete)
-	{
-		ss << base->fullname().str();
-
-		left = '[';
-		right = ']';
-	}
-	else
-	{
-		if (kind == Param)
-			ss << "#" << paramName;
-		else
-			ss << "_" << paramName;
-
-		left = '(';
-		right = ')';
-	}
-
-	if (!args.nil())
-	{
-		ss << left;
-		bool first = true;
-		for (auto x : args)
-		{
-			if (first)
-				first = false;
-			else
-				ss << ", ";
-			ss << x->str();
-		}
-		ss << right;
-	}
-
-	return ss.str();
-}
 void Type::set (TypePtr other)
 {
 	if (kind == Poly)
@@ -123,6 +84,102 @@ void Type::_set (TypePtr other)
 	kind = other->kind;
 	args = other->args;
 }
+
+
+
+
+static std::string functionTypeStr (const Type* type)
+{
+	std::ostringstream ss;
+	auto xs = type->args;
+	bool first = true;
+	ss << "fn(";
+	for (; !xs.nil(); ++xs)
+	{
+		auto ty = xs.head();
+
+		if (xs.tail().nil())
+		{
+			ss << ") -> " << ty->str();
+			break;
+		}
+
+		if (first)
+			first = false;
+		else
+			ss << ", ";
+		ss << ty->str();
+	}
+	return ss.str();
+}
+static std::string tupleTypeStr (const Type* type)
+{
+	std::ostringstream ss;
+	bool first = true;
+	ss << "(";
+	for (auto ty : type->args)
+	{
+		if (first)
+			first = false;
+		else
+			ss << ", ";
+		ss << ty->str();
+	}
+	ss << ")";
+	return ss.str();
+}
+static std::string concreteTypeStr (const Type* type)
+{
+	std::ostringstream ss;
+	ss << type->base->fullname().str();
+
+	if (type->args.nil())
+		return ss.str();
+
+	bool first = true;
+	ss << "[";
+	for (auto ty : type->args)
+	{
+		if (first)
+			first = false;
+		else
+			ss << ", ";
+		ss << ty->str();
+	}
+	ss << "]";
+	return ss.str();
+}
+static std::string paramTypeStr (const Type* type, const std::string& prefix)
+{
+	if (type->args.nil())
+		return prefix;
+	else
+		return prefix + tupleTypeStr(type);
+}
+std::string Type::str() const
+{
+	if (kind == Concrete)
+	{
+		if (base->isFunction())
+			return functionTypeStr(this);
+		else if (base->isTuple())
+			return tupleTypeStr(this);
+		else
+			return concreteTypeStr(this);
+	}
+	else
+	{
+		if (kind == Param)
+			return paramTypeStr(this, "#" + paramName);
+		else
+			return paramTypeStr(this, "_" + paramName);
+	}
+}
+
+
+
+
+
 
 bool Type::containsParam (const std::string& name)
 {

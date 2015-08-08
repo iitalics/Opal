@@ -8,7 +8,7 @@ use Core
 //   Test::test1_1 -> Core::real
 //   Test::test1_2 -> Core::bool
 //   Test::test1_3 -> Core::string
-//   Test::test1_4 -> Core::tuple(2)[Core::int, Core::bool]
+//   Test::test1_4 -> (Core::int, Core::bool)
 //   Test::test1_5 -> Core::unit
 //   Test::test1_6 -> Core::unit
 pub fn test1_0 () { 0 }
@@ -21,9 +21,9 @@ pub fn test1_6 () { }
 
 // test 2  variables (global or local)
 //   Test::test2_0 -> Core::int
-//   Test::test2_1 -> Core::fn[Core::int, Core::int]
+//   Test::test2_1 -> fn(Core::int) -> Core::int
 //   Test::test2_2 -> #a
-//   Test::test2_3 -> Core::fn[#0, #1, #0]
+//   Test::test2_3 -> fn(#0, #1) -> #0
 pub fn test2_0 (x : int) { x }
 pub fn test2_1 () { test2_0 }
 pub fn test2_2 (x : #a, y : #b) { x }
@@ -48,17 +48,17 @@ pub fn test3_3 (obj : B[B[#a]]) { obj.a }
 
 // test 4  methods of basic types
 //   Test::A.x -> Core::real
-//   Test::test4_0 -> Core::fn[Core::real]
+//   Test::test4_0 -> fn() -> Core::real
 //   Test::A.y -> Test::A
-//   Test::test4_1 -> Core::fn[Test::A]
+//   Test::test4_1 -> fn() -> Test::A
 //   Test::B.t -> Core::int
-//   Test::test4_2 -> Core::fn[Core::int]
+//   Test::test4_2 -> fn() -> Core::int
 //   Test::B.s -> #b
-//   Test::test4_3 -> Core::fn[#0, #0]
+//   Test::test4_3 -> fn(#0) -> #0
 //   Test::B.u -> #a
-//   Test::test4_4 -> Core::fn[Core::int]
+//   Test::test4_4 -> fn() -> Core::int
 //   Test::B.v -> #b
-//   Test::test4_5 -> Core::fn[#0, #0]
+//   Test::test4_5 -> fn(#0) -> #0
 //   Test::test4_6  FAIL (uncomment)
 impl A {
 	fn x () { self.b }
@@ -85,9 +85,9 @@ pub fn test4_5 (obj : B[int]) { obj.v }
 //   Test::test5_1 -> Core::int
 //   Test::test5_2 -> Core::int
 //   Test::test5_3 -> Core::bool
-//   Test::test5_4_0 -> Core::fn[Core::int, Core::int]
+//   Test::test5_4_0 -> fn(Core::int) -> Core::int
 //   Test::test5_4_1 -> #a
-//   Test::test5_4 -> Core::fn[Core::int, Core::int]
+//   Test::test5_4 -> fn(Core::int) -> Core::int
 //   Test::test5_5 -> #0
 pub fn test5_0 (x : real ) { test1_0() }
 pub fn test5_1 () { test2_0(99) }
@@ -100,7 +100,7 @@ pub fn test5_5 (x : int) { test5_5(x) }
 
 // test 6  conditionals
 //   Test::test6_0 -> Core::int
-//   Test::test6_1 -> Core::fn[Core::int, Core::int]
+//   Test::test6_1 -> fn(Core::int) -> Core::int
 //   Test::test6_2  FAIL (uncomment)
 //   Test::test6_3  FAIL (uncomment)
 pub fn test6_0 (x : bool) { if x { 1 } else { 2 } }
