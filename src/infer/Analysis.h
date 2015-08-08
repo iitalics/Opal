@@ -22,6 +22,7 @@ public:
 
 	std::vector<LocalVar> allVars;
 	std::vector<int> stack;
+	TypePtr ret;
 
 	int get (const std::string& name) const;
 	int let (const std::string& name, TypePtr type);
@@ -44,6 +45,7 @@ private:
 
 	int _unify (TypePtr dest, TypePtr src);
 
+	TypePtr _getFuncType (Env::Function* func);
 	TypePtr _getFieldType (int& idx, Env::Type* base, const std::string& name);
 	TypePtr _getIFaceFuncType (Env::Type* base, const std::string& name);
 	TypePtr _getMethodType (Env::Function*& fnout, Env::Type* base, const std::string& name);

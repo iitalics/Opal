@@ -303,9 +303,6 @@ TypePtr Type::paramFromAST (AST::ParamType* pt, Ctx& ctx)
 		throw SourceError(ss.str(), pt->span);
 	}
 
-	std::cout << "creating param #" << pt->name << " -> "
-	          << ctx.params.size() << std::endl;
-
 	return ctx.createParam(pt->name, ifaces, pt->span);
 }
 

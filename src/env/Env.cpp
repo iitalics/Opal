@@ -94,29 +94,36 @@ Infer::TypePtr Global::getType ()
 	if (isFunc)
 		return func->getType();
 	else
-	{
-		func->infer();
 		return func->ret;
-	}
 }
 
+
+Function::Function (Kind _kind, const std::string& _name, Module* _mod,
+		const Span& _span)
+	: kind(_kind), name(_name), module(_mod), declSpan(_span)
+{
+	parent = nullptr;
+	ret = nullptr;
+	analysis = nullptr;
+}
 void Function::infer ()
 {
 	if (ret != nullptr)
 		return;
 
 	Infer::Analysis inferer(nm, args);
+	analysis = &inferer;
 
-	ret = Infer::Type::poly();
+	ret = inferer.ret;
 	inferer.infer(body, ret);
 	inferer.polyToParam(ret);
+
+	analysis = nullptr;
 
 	std::cout << fullname().str() << " -> " << ret->str() << std::endl;	
 }
 Infer::TypePtr Function::getType ()
 {
-	infer();
-
 	Infer::TypeList types(ret);
 	size_t argc = 0;
 

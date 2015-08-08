@@ -3,7 +3,12 @@
 #include "../infer/Type.h"
 #include "../syntax/AST.h"
 
-namespace Opal { namespace Env {
+namespace Opal {
+namespace Infer {
+class Analysis;
+}
+namespace Env {
+;
 
 class Function;
 class Type;
@@ -121,7 +126,6 @@ public:
 class Function
 {
 public:
-	~Function ();
 	enum Kind
 	{
 		CodeFunction,    // code-defined function
@@ -129,6 +133,9 @@ public:
 		IFaceFunction,   // iface method function (does lookup)
 		EnumFunction,    // enum constructor function
 	};
+	Function (Kind kind, const std::string& name, Module* mod,
+		const Span& span = Span());
+	~Function ();
 	Kind kind;
 	std::string name;
 	Module* module;
@@ -141,6 +148,8 @@ public:
 
 	Namespace* nm;
 	AST::ExpPtr body;
+
+	Infer::Analysis* analysis;
 
 	void infer ();
 	Infer::TypePtr getType ();

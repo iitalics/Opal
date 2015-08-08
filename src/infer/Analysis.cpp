@@ -8,6 +8,7 @@ Analysis::Analysis (Env::Namespace* _nm,
 		const std::vector<Var>& args)
 	: nm(_nm), _ctx(_nm)
 {
+	ret = Type::poly();
 	// define arguments
 	for (auto& arg : args)
 	{
@@ -88,6 +89,7 @@ void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 		}
 
 		e->global = global;
+		_getFuncType(global->func);
 		type = global->getType();
 
 		// turn params into poly
@@ -130,6 +132,20 @@ void Analysis::_infer (AST::IntExp* e, TypePtr dest)
 	unify(dest, intType, e->span);
 }
 
+TypePtr Analysis::_getFuncType (Env::Function* func)
+{
+	if (func->ret == nullptr)
+		func->infer();
+	else if (func->kind == Env::Function::CodeFunction &&
+			func->analysis != nullptr)
+	{
+		// circular call
+		std::cout << "circular call: " << std::endl
+		          << " " << func->fullname().str() << std::endl;
+	}
+
+	return func->getType();
+}
 
 TypePtr Analysis::_getFieldType (int& idx_out, Env::Type* base, const std::string& name)
 {
@@ -157,7 +173,7 @@ TypePtr Analysis::_getMethodType (Env::Function*& fnout, Env::Type* base, const 
 		if (fn->name == name)
 		{
 			fnout = fn;
-			return fn->getType();
+			return _getFuncType(fn);
 		}
 	return nullptr;
 }

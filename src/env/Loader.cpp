@@ -236,20 +236,18 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 	}
 
 	// ++ memory allocated here ++
-	auto fn = new Function {
+	auto fn = new Function(
 		Function::CodeFunction, // TODO: external functions
 		fndecl->name,
 		mod,
-		fndecl->span
-	};
-	fn->args.reserve(fndecl->args.size() + 1);
-	fn->ret = nullptr; // not yet inferred
+		fndecl->span);
 	fn->nm = nm;
 	fn->body = fndecl->body;
 
 	if (implBase != nullptr)
 		fn->args.push_back(impl);
 
+	fn->args.reserve(fndecl->args.size() + 1);
 	for (auto& arg : fndecl->args)
 	{
 		auto var = Infer::Var::fromAST(arg, ctx);
@@ -258,7 +256,6 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 
 	if (global != nullptr)
 	{
-		fn->parent = nullptr;
 		global->func = fn;
 		std::cout << "created global function " << global->fullname().str() << std::endl;
 	}
@@ -268,7 +265,6 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 		implBase->methods.push_back(fn);
 		std::cout << "created method " << implBase->fullname().str() << "." << fn->name << std::endl;
 	}
-	std::cout << fndecl->body->str() << std::endl;
 }
 static void create (Namespace* nm, AST::DeclPtr decl)
 {
