@@ -231,132 +231,130 @@ void Analysis::_infer (AST::IntExp* e, TypePtr dest)
 	unify(dest, intType, e->span);
 }
 
-TypePtr Analysis::_getFieldType (int& idx_out, Env::Type* base, const std::string& name)
+TypePtr Analysis::_inst (TypePtr obj, TypePtr type)
 {
+	std::vector<TypePtr> with;
+	if (obj->kind != Type::Concrete ||
+			obj->base->isIFace)
+		with.push_back(obj);
+
+	for (auto arg : obj->args)
+		with.push_back(arg);
+
+	return replaceParams(type, with);
+}
+TypePtr Analysis::_instMethod (TypePtr obj, Env::Function* fn)
+{
+	std::vector<TypePtr> with;
+
+	auto fn_self = replaceParams(fn->args[0].type, with);
+
+	/*
+	_unify() fails if the 'obj' type and the 'impl' type
+	 are incompatible e.g.
+
+		type T[#a] { ... }
+		impl T[int] {
+			fn foo () { ... }
+		}
+		fn bar (t : T[string]) {
+			t.foo
+			  ^ missing field 'foo'
+		}
+	*/
+	if (_unify(fn_self, obj) != UnifyOK)
+		return nullptr;
+
+	return replaceParams(_getFuncType(fn), with);
+}
+TypePtr Analysis::_findField (TypePtr obj, const std::string& name, int& out)
+{
+	auto base = obj->base;
+
 	for (size_t i = 0; i < base->data.nfields; i++)
 		if (base->data.fields[i].name == name)
 		{
-			idx_out = i;
-			return base->data.fields[i].type;
+			out = int(i);
+			return _inst(obj, base->data.fields[i].type);
 		}
+
 	return nullptr;
 }
-TypePtr Analysis::_getIFaceFuncType (Env::Type* base, const std::string& name)
+TypePtr Analysis::_findMethod (TypePtr obj, const std::string& name, Env::Function*& out)
 {
+	// look for defined methods
+	if (obj->kind == Type::Concrete)
+	{
+		if (obj->base->isIFace)
+			return _findIFaceFunc(obj, name, out);
+
+		for (auto fn : obj->base->methods)
+			if (fn->name == name)
+			{
+				auto res = _instMethod(obj, fn);
+				if (res)
+				{
+					out = fn;
+					return res;
+				}
+				else // failed!
+					return nullptr;
+			}
+
+		return nullptr;
+	}
+
+	// look for iface functions in each iface
+	for (auto iface : obj->args)
+	{
+		auto res = _findIFaceFunc(obj, name, out);
+		if (res)
+			return res;
+	}
+	return nullptr;
+}
+TypePtr Analysis::_findIFaceFunc (TypePtr obj, const std::string& name, Env::Function*& out)
+{
+	auto base = obj->base;
+
 	for (size_t i = 0; i < base->iface.nfuncs; i++)
 		if (base->iface.funcs[i].name == name)
 		{
-			// TODO: get a function?
-			return base->iface.funcs[i].getType();
+			out = nullptr; // TOOD: FIX THIS
+			return _inst(obj, base->iface.funcs[i].getType());
 		}
+
 	return nullptr;
 }
-TypePtr Analysis::_getMethodType (Env::Function*& fnout, Env::Type* base, const std::string& name)
-{
-	for (auto fn : base->methods)
-		if (fn->name == name)
-		{
-			fnout = fn;
-			return _getFuncType(fn);
-		}
-	return nullptr;
-}
-TypePtr Analysis::_instField (TypePtr self, TypePtr type)
-{
-	std::vector<TypePtr> with;
-
-	for (auto arg : self->args)
-		with.push_back(arg);
-
-	return replaceParams(type, with);
-}
-TypePtr Analysis::_instIFace (TypePtr self, TypePtr type)
-{
-	std::vector<TypePtr> with;
-	with.push_back(self);
-
-	for (auto arg : self->args)
-		with.push_back(arg);
-
-	return replaceParams(type, with);
-}
-TypePtr Analysis::_instMethod (TypePtr self, TypePtr type, Env::Function* fn)
-{
-	std::vector<TypePtr> with;
-
-	auto fn_self = fn->args[0].type;
-	fn_self = replaceParams(fn_self, with);
-
-	// not actually of type
-	/*  e.g.
-		type A[#t] {...}
-		impl A[int] {
-			fn foo () {}
-		}
-		fn bar (a : A[string]) {
-			a.foo()
-			  ^ error missing field 'foo'
-		}
-	*/
-	if (_unify(self, fn_self) != UnifyOK)
-		return nullptr;
-
-	return replaceParams(type, with);
-}
-
 
 void Analysis::_infer (AST::FieldExp* e, TypePtr dest)
 {
-	auto objType = Type::poly();
-	infer(e->children[0], objType);
 	TypePtr res = nullptr;
+	auto obj = Type::poly();
+	infer(e->children[0], obj);
 
 	// save this now in case unify() overwrites some things
 	//  and then fails
-	auto typeName = objType->str();
+	auto typeName = obj->str();
 
-	if (objType->kind == Type::Concrete)
+	// look for fields
+	if (obj->kind == Type::Concrete &&
+			!obj->base->isIFace)
 	{
-		auto base = objType->base;
-
-		if (base->isIFace)
+		int index;
+		if ((res = _findField(obj, e->name, index)))
 		{
-			// get method of iface type
-			if ((res = _getIFaceFuncType(base, e->name)))
-				res = _instIFace(objType, res);
-		}
-		else
-		{
-			int index;
-
-			// or get field of normal type
-			if ((res = _getFieldType(index, base, e->name)))
-			{
-				res = _instField(objType, res);
-				e->index = index;
-			}
-		}
-
-		if (res == nullptr)
-		{
-			Env::Function* fn;
-			// or get a method
-			if ((res = _getMethodType(fn, base, e->name)))
-			{
-				res = _instMethod(objType, res, fn);
-				e->method = fn;
-			}
+			e->index = index;
+			e->method = nullptr;
 		}
 	}
-	else // Poly / Param
+
+	// look for methods
+	if (res == nullptr)
 	{
-		// get method of iface
-		for (auto iface : objType->args)
-			if ((res = _getIFaceFuncType(iface->base, e->name)))
-			{
-				res = _instIFace(objType, res);
-				break;
-			}
+		Env::Function* fn;
+		if ((res = _findMethod(obj, e->name, fn)))
+			e->method = fn;
 	}
 
 	// no luck.

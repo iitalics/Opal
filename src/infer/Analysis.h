@@ -56,14 +56,16 @@ private:
 			std::map<TypeWeakList*, TypePtr>& with);
 
 	int _unify (TypePtr dest, TypePtr src);
-
 	TypePtr _getFuncType (Env::Function* func);
-	TypePtr _getFieldType (int& idx, Env::Type* base, const std::string& name);
-	TypePtr _getIFaceFuncType (Env::Type* base, const std::string& name);
-	TypePtr _getMethodType (Env::Function*& fnout, Env::Type* base, const std::string& name);
-	TypePtr _instField (TypePtr self, TypePtr type);
-	TypePtr _instIFace (TypePtr self, TypePtr type);
-	TypePtr _instMethod (TypePtr self, TypePtr type, Env::Function* fn);
+
+	TypePtr _findField (TypePtr obj,
+		const std::string& name, int& out);
+	TypePtr _findMethod (TypePtr obj,
+		const std::string& name, Env::Function*& out);
+	TypePtr _findIFaceFunc (TypePtr obj,
+		const std::string& name, Env::Function*& out);
+	TypePtr _inst (TypePtr obj, TypePtr type);
+	TypePtr _instMethod (TypePtr obj, Env::Function* fn);
 
 	void _infer (AST::VarExp* e, TypePtr dest);
 	void _infer (AST::IntExp* e, TypePtr dest);
