@@ -445,16 +445,19 @@ void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 {
 	static auto unitType = Type::concrete(Env::Type::core("unit"), TypeList());
 
-	auto res = unitType;
-	for (auto& e2 : e->children)
-	{
-		res = Type::poly();
-		infer(e2, res);
-	}
-	if (e->unitResult)
-		res = unitType;
+	bool returnUnit = e->unitResult || e->children.empty();
 
-	unify(dest, res, e->span);
+	size_t ignored = e->children.size();
+	if (!returnUnit)
+		ignored--;
+
+	for (size_t i = 0; i < ignored; i++)
+		infer(e->children[i], Type::poly());
+
+	if (returnUnit)
+		unify(dest, unitType, e->span);
+	else
+		infer(e->children.back(), dest);
 }
 void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
 {
@@ -474,7 +477,7 @@ void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
 		args.push_back(Type::poly());
 
 	auto model = Type::concrete(Env::Type::tuple(nvals), TypeList(args));
-	unify(model, dest, e->span);
+	unify(dest, model, e->span);
 
 	for (size_t i = 0; i < nvals; i++)
 		infer(e->children[i], args[i]);
