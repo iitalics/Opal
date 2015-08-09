@@ -22,8 +22,8 @@ static ExpPtr parseCond (Scanner& scan, bool req_else);
 static ExpPtr parseLambda (Scanner& scan);
 static ExpPtr parseObject (Scanner& scan);
 static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit);
-static bool parseFinalStmt (Scanner& scan, ExpList& exps, bool& unit);
-static ExpPtr parseAssign (Scanner& scan);
+static bool parseFinalStmt (Scanner& scan, ExpList& exps);
+static ExpPtr parseAssign (Scanner& scan, bool& unit);
 static ExpPtr parseLet (Scanner& scan);
 
 
@@ -762,8 +762,11 @@ static ExpPtr parseBlockExp (Scanner& scan)
 }
 static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit)
 {
-	if (parseFinalStmt(scan, exps, unit))
+	if (parseFinalStmt(scan, exps))
+	{
+		unit = false;
 		return false;
+	}
 
 	switch (scan.get().kind)
 	{
@@ -785,17 +788,17 @@ static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit)
 		exps.push_back(parseLet(scan));
 		break;
 	default:
-		unit = false;
-		exps.push_back(parseAssign(scan));
+		exps.push_back(parseAssign(scan, unit));
 		break;
 	}
 	return true;
 }
-static ExpPtr parseAssign (Scanner& scan)
+static ExpPtr parseAssign (Scanner& scan, bool& unit)
 {
 	auto lh = parseExp(scan);
 	if (scan.get() == EQUAL)
 	{
+		unit = true;
 		auto span = scan.shift().span;
 		auto rh = parseExp(scan);
 		auto res = ExpPtr(new AssignExp(lh, rh));
@@ -803,9 +806,12 @@ static ExpPtr parseAssign (Scanner& scan)
 		return res;
 	}
 	else
+	{
+		unit = false;
 		return lh;
+	}
 }
-static bool parseFinalStmt (Scanner& scan, ExpList& exps, bool& unit)
+static bool parseFinalStmt (Scanner& scan, ExpList& exps)
 {
 	ExpPtr res;
 	auto span = scan.get().span;
@@ -821,19 +827,16 @@ static bool parseFinalStmt (Scanner& scan, ExpList& exps, bool& unit)
 			else
 				ret = ExpPtr(new TupleExp({}));
 			res = ExpPtr(new ReturnExp(ret));
-			unit = false;
 			break;
 		}
 
 	case KW_break:
 		scan.shift();
 		res = ExpPtr(new GotoExp(GotoExp::Break));
-		unit = true;
 		break;
 	case KW_continue:
 		scan.shift();
 		res = ExpPtr(new GotoExp(GotoExp::Continue));
-		unit = true;
 		break;
 	default:
 		return false;
