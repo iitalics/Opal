@@ -10,8 +10,8 @@ pub type C { my_b : B }
 type foo[#a] { x : #a }
 
 // ifaces
-iface Foo { fn thing (A) : B }
-pub iface ToB { fn to_B () : B }
+iface Foo { fn thing (A) -> B }
+pub iface ToB { fn to_B () -> B }
 
 // impl (named or automatic self-variable)
 impl B { fn to_B () { self } }

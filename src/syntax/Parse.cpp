@@ -236,14 +236,14 @@ static DeclPtr parseTypeDecl (Scanner& scan)
 iface_decl:
 	"iface" [POLYID ":"] type "{" {iface_fn} "}"
 iface_fn:
-	"fn" ID "(" [type {"," type}] ")" ":" type
+	"fn" ID "(" [type {"," type}] ")" "->" type
 */
 static void parseIFaceFunc (IFaceDecl* iface, Scanner& scan)
 {
 	auto span = scan.shift().span;
 	auto name = scan.eat(ID).string;
 	auto args = commaList(scan, parseType, LPAREN, RPAREN, true);
-	scan.eat(COLON);
+	scan.eat(ARROW);
 	auto ret = parseType(scan);
 	iface->funcs.push_back({ name, args, ret, span });
 }

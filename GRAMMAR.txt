@@ -50,7 +50,7 @@ type_decl:
 iface_decl:
 	"iface" [POLYID ":"] type "{" {iface_fn} "}"
 iface_fn:
-	"fn" ID "(" [type {"," type}] ")" ":" type
+	"fn" ID "(" [type {"," type}] ")" "->" type
 
 
 type:
