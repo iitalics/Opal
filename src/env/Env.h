@@ -151,8 +151,12 @@ public:
 
 	Infer::Analysis* analysis;
 
-	void infer ();
+	void infer (Infer::Analysis* calledBy = nullptr);
+	void endInfer ();
 	Infer::TypePtr getType ();
+
+private:
+	void _endInfer ();
 };
 
 

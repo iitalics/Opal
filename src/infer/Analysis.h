@@ -1,6 +1,7 @@
 #pragma once
 #include "Type.h"
 #include "../env/Env.h"
+#include <set>
 namespace Opal { namespace Infer {
 ;
 
@@ -8,8 +9,7 @@ namespace Opal { namespace Infer {
 class Analysis
 {
 public:
-	Analysis (Env::Namespace* _nm,
-			const std::vector<Var>& args);
+	Analysis (Env::Function* parent, Analysis* calledBy);
 	~Analysis ();
 
 	struct LocalVar
@@ -19,29 +19,41 @@ public:
 		TypePtr type;
 		bool mut;
 	};
+	using Depends = std::set<Analysis*>;
 
+	TypePtr ret;
 	std::vector<LocalVar> allVars;
 	std::vector<int> stack;
-	TypePtr ret;
+	Depends* depends;
+	Env::Function* parent;
 
 	int get (const std::string& name) const;
 	int let (const std::string& name, TypePtr type);
 
 	TypePtr replaceParams (TypePtr ty, std::vector<TypePtr>& with);
-	void polyToParam (TypePtr type);
+	TypePtr polyToParam (TypePtr type);
 
 	void infer (AST::ExpPtr e, TypePtr dest);
 	void unify (TypePtr dest, TypePtr src, const Span& span);
 
-private:
-	Env::Namespace* nm;
-	Type::Ctx _ctx;
+	void dependOn (Analysis* other);
+	void finish ();
+	bool allFinished () const;
 
+private:
 	enum {
 		UnifyOK = 0,
 		FailBadMatch,
 		FailInfinite
 	};
+
+	Env::Namespace* nm;
+	Type::Ctx _ctx;
+	Analysis* _calledBy;
+	bool _finished;
+
+	TypePtr polyToParam (TypePtr type, 
+			std::map<TypeWeakList*, TypePtr>& out);
 
 	int _unify (TypePtr dest, TypePtr src);
 

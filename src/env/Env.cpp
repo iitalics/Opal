@@ -106,22 +106,35 @@ Function::Function (Kind _kind, const std::string& _name, Module* _mod,
 	ret = nullptr;
 	analysis = nullptr;
 }
-void Function::infer ()
+void Function::infer (Infer::Analysis* calledBy)
 {
 	if (ret != nullptr)
 		return;
 
-	Infer::Analysis inferer(nm, args);
-	analysis = &inferer;
+	analysis = new Infer::Analysis(this, calledBy);
+	analysis->infer(body, ret);
+	analysis->finish();
 
-	ret = inferer.ret;
-	inferer.infer(body, ret);
-	inferer.polyToParam(ret);
-
-	analysis = nullptr;
-
-	std::cout << fullname().str() << " -> " << ret->str() << std::endl;	
+	if (analysis->allFinished())
+		_endInfer();
 }
+void Function::_endInfer ()
+{
+	auto depends = analysis->depends;
+	for (auto an : *depends)
+		an->parent->endInfer();
+	delete depends;
+}
+void Function::endInfer ()
+{
+	ret = analysis->polyToParam(ret);
+
+	std::cout << fullname().str() << " -> " << ret->str() << std::endl;
+
+	delete analysis;
+	analysis = nullptr;
+}
+
 Infer::TypePtr Function::getType ()
 {
 	Infer::TypeList types(ret);

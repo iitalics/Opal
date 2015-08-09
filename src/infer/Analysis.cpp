@@ -4,19 +4,94 @@ namespace Opal { namespace Infer {
 ;
 
 
-Analysis::Analysis (Env::Namespace* _nm,
-		const std::vector<Var>& args)
-	: nm(_nm), _ctx(_nm)
+Analysis::Analysis (Env::Function* fn, Analysis* _call)
+	: parent(fn), nm(fn->nm), _ctx(nm), _calledBy(_call), _finished(false)
 {
-	ret = Type::poly();
+	ret = parent->ret = Type::poly();
+
+	depends = new Depends();
+	depends->insert(this);
+
 	// define arguments
-	for (auto& arg : args)
+	for (auto& arg : parent->args)
 	{
 		_ctx.locateParams(arg.type);
 		let(arg.name, arg.type);
 	}
 }
 Analysis::~Analysis () {}
+
+
+// dependencies for circular calls
+void Analysis::dependOn (Analysis* other)
+{
+	auto dep = depends;
+
+	// merge dependency sets
+	if (dep != other->depends)
+	{
+		for (auto an : *dep)
+		{
+			other->depends->insert(an);
+			an->depends = other->depends;
+		}
+		delete dep;
+	}
+}
+void Analysis::finish ()
+{
+	_finished = true;
+}
+bool Analysis::allFinished () const
+{
+	for (auto an : *depends)
+		if (!an->_finished)
+			return false;
+	return true;
+}
+TypePtr Analysis::polyToParam (TypePtr type)
+{
+	std::map<TypeWeakList*, TypePtr> with;
+	return polyToParam(type, with);
+}
+TypePtr Analysis::polyToParam (TypePtr type,
+		std::map<TypeWeakList*, TypePtr>& with)
+{
+	auto newArgs = type->args.map<TypePtr>([&] (TypePtr ty2)
+	{
+		return polyToParam(ty2, with);
+	});
+
+	if (type->kind == Type::Poly)
+	{
+		auto it = with.find(type->links);
+		if (it == with.end())
+		{
+			std::ostringstream ss;
+			ss << "." << _ctx.params.size();
+			return
+				with[type->links] = _ctx.createParam(ss.str(), newArgs);
+		}
+		else
+			return it->second;
+	}
+	else if (newArgs.nil())
+	{
+		return type;
+	}
+	else if (type->kind == Type::Concrete)
+	{
+		return Type::concrete(type->base, newArgs);
+	}
+	else if (type->kind == Type::Param)
+	{
+		return Type::param(type->id, type->paramName, newArgs);
+	}
+	else
+		return type;
+}
+
+
 
 
 int Analysis::get (const std::string& name) const
@@ -40,6 +115,30 @@ int Analysis::let (const std::string& name, TypePtr type)
 	});
 	stack.push_back(id);
 	return id;
+}
+
+
+TypePtr Analysis::_getFuncType (Env::Function* func)
+{
+	if (func->ret == nullptr)
+		func->infer(this);
+	else if (func->kind == Env::Function::CodeFunction &&
+			func->analysis != nullptr)
+	{
+		// >> circular call <<
+
+		// descend call stack and make everything dependent
+		//  on us
+		auto top = _calledBy;
+		for (; top != nullptr; top = top->_calledBy)
+		{
+			top->dependOn(this);
+			if (top == func->analysis)
+				break;
+		}
+	}
+
+	return func->getType();
 }
 
 void Analysis::infer (AST::ExpPtr e, TypePtr dest)
@@ -130,21 +229,6 @@ void Analysis::_infer (AST::IntExp* e, TypePtr dest)
 
 	// defaults to Core::int
 	unify(dest, intType, e->span);
-}
-
-TypePtr Analysis::_getFuncType (Env::Function* func)
-{
-	if (func->ret == nullptr)
-		func->infer();
-	else if (func->kind == Env::Function::CodeFunction &&
-			func->analysis != nullptr)
-	{
-		// circular call
-		std::cout << "circular call: " << std::endl
-		          << " " << func->fullname().str() << std::endl;
-	}
-
-	return func->getType();
 }
 
 TypePtr Analysis::_getFieldType (int& idx_out, Env::Type* base, const std::string& name)

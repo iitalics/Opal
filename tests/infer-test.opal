@@ -2,19 +2,6 @@ module Test
 use Core
 
 
-fn circ_A () {
-	if true {
-		circ_B()
-	} else {
-		0
-	}
-}
-fn circ_B () {
-	circ_A()
-}
-
-
-
 // test 1  constants
 //   Test::test1_0 -> Core::int
 //   Test::test1_1 -> Core::real
@@ -35,7 +22,7 @@ pub fn test1_6 () { }
 //   Test::test2_0 -> Core::int
 //   Test::test2_1 -> fn(Core::int) -> Core::int
 //   Test::test2_2 -> #a
-//   Test::test2_3 -> fn(#0, #1) -> #0
+//   Test::test2_3 -> fn(#.0, #.1) -> #.0
 pub fn test2_0 (x : int) { x }
 pub fn test2_1 () { test2_0 }
 pub fn test2_2 (x : #a, y : #b) { x }
@@ -66,11 +53,11 @@ pub fn test3_3 (obj : B[B[#a]]) { obj.a }
 //   Test::B.t -> Core::int
 //   Test::test4_2 -> fn() -> Core::int
 //   Test::B.s -> #b
-//   Test::test4_3 -> fn(#0) -> #0
+//   Test::test4_3 -> fn(#.0) -> #.0
 //   Test::B.u -> #a
 //   Test::test4_4 -> fn() -> Core::int
 //   Test::B.v -> #b
-//   Test::test4_5 -> fn(#0) -> #0
+//   Test::test4_5 -> fn(#.0) -> #.0
 //   Test::test4_6  FAIL (uncomment)
 impl A {
 	fn x () { self.b }
@@ -100,7 +87,7 @@ pub fn test4_5 (obj : B[int]) { obj.v }
 //   Test::test5_4_0 -> fn(Core::int) -> Core::int
 //   Test::test5_4_1 -> #a
 //   Test::test5_4 -> fn(Core::int) -> Core::int
-//   Test::test5_5 -> #0
+//   Test::test5_5 -> #.0
 pub fn test5_0 (x : real ) { test1_0() }
 pub fn test5_1 () { test2_0(99) }
 pub fn test5_2 () { test5_0(99) }

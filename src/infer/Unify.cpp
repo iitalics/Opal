@@ -30,20 +30,6 @@ TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
 	else
 		return ty;
 }
-void Analysis::polyToParam (TypePtr type)
-{
-	if (type->kind == Type::Poly)
-	{
-		std::ostringstream ss;
-		ss << _ctx.params.size();
-		auto param = _ctx.createParam(ss.str(), type->args);
-		
-		type->set(param);
-	}
-
-	for (auto arg : type->args)
-		polyToParam(arg);
-}
 
 
 void Analysis::unify (TypePtr dest, TypePtr src, const Span& span)
