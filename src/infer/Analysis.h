@@ -62,7 +62,7 @@ private:
 		const std::string& name, int& out);
 	TypePtr _findMethod (TypePtr obj,
 		const std::string& name, Env::Function*& out);
-	TypePtr _findIFaceFunc (TypePtr obj,
+	TypePtr _findIFaceFunc (TypePtr obj, TypePtr iface,
 		const std::string& name, Env::Function*& out);
 	TypePtr _inst (TypePtr obj, TypePtr type);
 	TypePtr _instMethod (TypePtr obj, Env::Function* fn);

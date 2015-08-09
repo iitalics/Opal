@@ -211,7 +211,7 @@ TypePtr Analysis::_findMethod (TypePtr obj, const std::string& name, Env::Functi
 	if (obj->kind == Type::Concrete)
 	{
 		if (obj->base->isIFace)
-			return _findIFaceFunc(obj, name, out);
+			return _findIFaceFunc(obj, obj, name, out);
 
 		for (auto fn : obj->base->methods)
 			if (fn->name == name)
@@ -232,15 +232,15 @@ TypePtr Analysis::_findMethod (TypePtr obj, const std::string& name, Env::Functi
 	// look for iface functions in each iface
 	for (auto iface : obj->args)
 	{
-		auto res = _findIFaceFunc(obj, name, out);
+		auto res = _findIFaceFunc(obj, iface, name, out);
 		if (res)
 			return res;
 	}
 	return nullptr;
 }
-TypePtr Analysis::_findIFaceFunc (TypePtr obj, const std::string& name, Env::Function*& out)
+TypePtr Analysis::_findIFaceFunc (TypePtr obj, TypePtr iface, const std::string& name, Env::Function*& out)
 {
-	auto base = obj->base;
+	auto base = iface->base;
 
 	for (size_t i = 0; i < base->iface.nfuncs; i++)
 		if (base->iface.funcs[i].name == name)
