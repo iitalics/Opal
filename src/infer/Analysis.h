@@ -53,7 +53,7 @@ private:
 	bool _finished;
 
 	TypePtr polyToParam (TypePtr type, 
-			std::map<TypeWeakList*, TypePtr>& out);
+			std::map<TypeWeakList*, TypePtr>& with);
 
 	int _unify (TypePtr dest, TypePtr src);
 
