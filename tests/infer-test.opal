@@ -87,7 +87,6 @@ pub fn test4_5 (obj : B[int]) { obj.v }
 //   Test::test5_4_0 -> fn(Core::int) -> Core::int
 //   Test::test5_4_1 -> #a
 //   Test::test5_4 -> fn(Core::int) -> Core::int
-//   Test::test5_5 -> #.0
 pub fn test5_0 (x : real ) { test1_0() }
 pub fn test5_1 () { test2_0(99) }
 pub fn test5_2 () { test5_0(99) }
@@ -95,7 +94,6 @@ pub fn test5_3 () { test2_2(true, 88) }
 pub fn test5_4_0 (f : fn(int) -> int) { f }
 pub fn test5_4_1 (x : #a) { x }
 pub fn test5_4 () { test5_4_0(test5_4_1) }
-pub fn test5_5 (x : int) { test5_5(x) }
 
 // test 6  conditionals
 //   Test::test6_0 -> Core::int
@@ -106,3 +104,19 @@ pub fn test6_0 (x : bool) { if x { 1 } else { 2 } }
 pub fn test6_1 () { if true { test2_0 } else { test5_4_1 } }
 //pub fn test6_2 (x : bool) { if x { 1 } else { 1.5 } }
 //pub fn test6_3 (x : #a) { if x { false } else { true } }
+
+// test 7  recursive type inference
+//   Test::test7_0 -> #.0
+//   Test::test7_1 -> Core::int
+//   Test::test7_2 -> Core::int
+//   Test::test7_3 -> Core::bool
+//   Test::test7_4 -> Core::bool
+//   Test::test7_5 -> Core::bool
+//   Test::test7_6  FAIL (uncomment)
+pub fn test7_0 () { test7_0() }
+pub fn test7_1 () { if true { test7_2() } else { 0 } }
+pub fn test7_2 () { test7_1() }
+pub fn test7_3 () { if true { test7_4() } else { false } }
+pub fn test7_4 () { test7_5() }
+pub fn test7_5 () { test7_3() }
+//pub fn test7_6 () { test7_6 }
