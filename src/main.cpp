@@ -12,7 +12,7 @@ int main ()
 	{
 		Env::Module::getCore();
 
-		auto nm = Env::loadSource("tests/infer-test.opal");
+		auto nm = Env::loadSource("tests/expressions.opal");
 		Env::finishModuleLoad();
 	}
 	catch (SourceError& err)

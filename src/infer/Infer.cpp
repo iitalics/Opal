@@ -3,20 +3,42 @@
 namespace Opal { namespace Infer {
 ;
 
+// cache core types required by the inferer
+static bool _initCoreTypes = false;
+static Env::Type* core_unit, *core_int, *core_bool, *core_real, *core_string;
+static TypePtr unitType, intType, boolType, realType, stringType;
+static void initCoreTypes ()
+{
+	_initCoreTypes = true;
+
+	core_unit = Env::Type::core("unit");
+	core_int = Env::Type::core("int");
+	core_bool = Env::Type::core("bool");
+	core_real = Env::Type::core("real");
+	core_string = Env::Type::core("string");
+
+	unitType = Type::concrete(core_unit, TypeList());
+	intType = Type::concrete(core_int, TypeList());
+	boolType = Type::concrete(core_bool, TypeList());
+	realType = Type::concrete(core_real, TypeList());
+	stringType = Type::concrete(core_string, TypeList());
+}
+
+
 
 void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 {
-	static auto stringType = Type::concrete(Env::Type::core("string"), TypeList());
-	static auto realType = Type::concrete(Env::Type::core("real"), TypeList());
-	static auto boolType = Type::concrete(Env::Type::core("bool"), TypeList());
+	if (!_initCoreTypes)
+		initCoreTypes();
 
-	// TODO: type inference HERE
 	if (dynamic_cast<AST::StringExp*>(e.get()))
 		unify(dest, stringType, e->span);
 	if (dynamic_cast<AST::RealExp*>(e.get()))
 		unify(dest, realType, e->span);
 	if (dynamic_cast<AST::BoolExp*>(e.get()))
 		unify(dest, boolType, e->span);
+	if (dynamic_cast<AST::GotoExp*>(e.get()))
+		; // assume this theoretically returns the right thing always
 	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get()))
 		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::IntExp*>(e.get()))
@@ -30,6 +52,10 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 	else if (auto e2 = dynamic_cast<AST::TupleExp*>(e.get()))
 		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::CondExp*>(e.get()))
+		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::LazyOpExp*>(e.get()))
+		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get()))
 		_infer(e2, dest);
 }
 
@@ -70,11 +96,6 @@ void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 
 void Analysis::_infer (AST::IntExp* e, TypePtr dest)
 {
-	static auto core_int = Env::Type::core("int");
-	static auto core_real = Env::Type::core("real");
-	static auto core_long = Env::Type::core("long");
-	static auto intType = Type::concrete(core_int, TypeList());
-
 	// implicitly casts to real/long if necessary
 	if (dest->kind == Type::Concrete)
 	{
@@ -83,11 +104,11 @@ void Analysis::_infer (AST::IntExp* e, TypePtr dest)
 			e->castReal = true;
 			return;
 		}
-		else if (dest->base == core_long)
+/*		else if (dest->base == core_long)
 		{
 			e->castLong = true;
 			return;
-		}
+		}*/
 		else if (dest->base == core_int)
 			return;
 	}
@@ -214,8 +235,6 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 
 void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 {
-	static auto unitType = Type::concrete(Env::Type::core("unit"), TypeList());
-
 	bool returnUnit = e->unitResult || e->children.empty();
 
 	size_t ignored = e->children.size();
@@ -233,8 +252,6 @@ void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 
 void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
 {
-	static auto unitType = Type::concrete(Env::Type::core("unit"), TypeList());
-
 	if (e->children.empty())
 	{
 		unify(dest, unitType, e->span);
@@ -257,8 +274,6 @@ void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
 
 void Analysis::_infer (AST::CondExp* e, TypePtr dest)
 {
-	static auto boolType = Type::concrete(Env::Type::core("bool"), TypeList());
-
 	auto res = Type::poly();
 
 	infer(e->children[0], boolType);
@@ -268,5 +283,36 @@ void Analysis::_infer (AST::CondExp* e, TypePtr dest)
 
 	unify(dest, res, e->span);
 }
+
+void Analysis::_infer (AST::LazyOpExp* e, TypePtr dest)
+{
+	// expects 'bool' and returns 'bool'
+	infer(e->children[0], boolType);
+	infer(e->children[1], boolType);
+	unify(dest, boolType, e->span);
+}
+void Analysis::_infer (AST::CompareExp* e, TypePtr dest)
+{
+	TypePtr desired;
+	switch (e->kind)
+	{
+	// iface #t : Eq { fn equal (#t) -> bool }
+	case AST::CompareExp::Eq:
+	case AST::CompareExp::NotEq:
+		desired = boolType;
+		break;
+
+	// iface #t : Ord { fn cmp (#t) -> int }
+	default:
+		desired = intType;
+		break;
+	}
+
+	// expects a certain output type
+	infer(e->children[0], desired);
+	// ends up returning bool
+	unify(dest, boolType, e->span);
+}
+
 
 }}
