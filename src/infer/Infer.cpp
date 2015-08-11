@@ -176,17 +176,15 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 		infer({ repeat("hi", 5) }, dest)
 			infer({ repeat }, fnty)
 			fnty := fn(string, int) -> unit
-			fnmodel := fn(_1, _2) -> _3
+			fnmodel := fn(_1, _2) -> dest
 
 			unify(fnmodel, fnty)
 			_1 <- string
 			_2 <- int
-			_3 <- unit
+			dest <- unit
 
 			infer({ "hi" }, _1 = string) // Ok
 			infer({ 5 }, _2 = int)       // Ok
-
-			unify(dest, _3 = unit)       // Ok
 
 		{ repeat("hi", 5) } : unit
 	*/
@@ -213,12 +211,11 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 	// create model for function based on # arguments
 	std::vector<TypePtr> args;
 	size_t argc = e->children.size() - 1;
-	auto ret = Type::poly();
 
 	args.reserve(argc);
 	for (size_t i = 0; i < argc; i++)
 		args.push_back(Type::poly());
-	args.push_back(ret);
+	args.push_back(dest); // return value dest
 
 	auto fnmodel = Type::concrete(Env::Type::function(argc), TypeList(args));
 
@@ -228,9 +225,6 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 	// infer arguments
 	for (size_t i = 0; i < argc; i++)
 		infer(e->children[i + 1], args[i]);
-	
-	// push return value
-	unify(dest, ret, e->span);
 }
 
 void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
