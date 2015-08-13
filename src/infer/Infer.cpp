@@ -59,6 +59,8 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get()))
 		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get()))
+		_infer(e2);
 }
 
 void Analysis::_infer (AST::VarExp* e, TypePtr dest)
@@ -353,6 +355,12 @@ void Analysis::_infer (AST::ObjectExp* e, TypePtr dest)
 	}
 
 	unify(dest, type, e->span);
+}
+
+void Analysis::_infer (AST::ReturnExp* e)
+{
+	// infer returned value with expected return value of function
+	infer(e->children[0], ret);
 }
 
 

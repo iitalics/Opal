@@ -825,7 +825,10 @@ static bool parseFinalStmt (Scanner& scan, ExpList& exps)
 			if (scan.get() != RCURL)
 				ret = parseExp(scan);
 			else
+			{
 				ret = ExpPtr(new TupleExp({}));
+				ret->span = span;
+			}
 			res = ExpPtr(new ReturnExp(ret));
 			break;
 		}
