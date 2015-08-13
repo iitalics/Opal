@@ -206,6 +206,15 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 			throw SourceError("wrong number of arguments to function",
 					{ ss1.str(), ss2.str() }, e->span);
 		}
+
+		TypePtr given_ret;
+		for (auto xs = fnty->args; !xs.nil(); ++xs)
+			given_ret = xs.head();
+
+		// unifying here gives prettier error messages
+		//  in case of type mismatch
+		if (given_ret)
+			unify(dest, given_ret, e->span);
 	}
 
 	// create model for function based on # arguments
@@ -217,9 +226,8 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 		args.push_back(Type::poly());
 	args.push_back(dest); // return value dest
 
-	auto fnmodel = Type::concrete(Env::Type::function(argc), TypeList(args));
-
 	// get argument types
+	auto fnmodel = Type::concrete(Env::Type::function(argc), TypeList(args));
 	unify(fnmodel, fnty, e->span);
 
 	// infer arguments
