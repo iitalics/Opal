@@ -150,7 +150,7 @@ TypePtr Analysis::_getFuncType (Env::Function* func)
 	let bar : T[int]
 	bar.x  ->  list[int]
 */
-TypePtr Analysis::_inst (TypePtr obj, TypePtr type)
+TypePtr Analysis::_inst (TypePtr obj, TypePtr type, TypePtr self)
 {
 	std::vector<TypePtr> with;
 
@@ -159,9 +159,8 @@ TypePtr Analysis::_inst (TypePtr obj, TypePtr type)
 		iface #t : Ord { fn cmp (#t) : int }
 		      ^                  ^
 	*/
-	if (obj->kind != Type::Concrete ||
-			obj->base->isIFace)
-		with.push_back(obj);
+	if (self != nullptr)
+		with.push_back(self);
 
 	for (auto arg : obj->args)
 		with.push_back(arg);
@@ -246,7 +245,7 @@ TypePtr Analysis::_findIFaceFunc (TypePtr obj, TypePtr iface, const std::string&
 		if (base->iface.funcs[i].name == name)
 		{
 			out = nullptr; // TOOD: FIX THIS
-			return _inst(obj, base->iface.funcs[i].getType());
+			return _inst(obj, base->iface.funcs[i].getType(), obj);
 		}
 
 	return nullptr;
