@@ -61,6 +61,10 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get()))
 		_infer(e2);
+	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get()))
+		_infer(e2);
+	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get()))
+		_infer(e2);
 }
 
 void Analysis::_infer (AST::VarExp* e, TypePtr dest)
@@ -242,18 +246,25 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 {
 	bool returnUnit = e->unitResult || e->children.empty();
+	size_t nstack = stack.size();
 
+	// # of expressions to ignore
 	size_t ignored = e->children.size();
 	if (!returnUnit)
 		ignored--;
 
+	// infer stuff but ignore the result
 	for (size_t i = 0; i < ignored; i++)
 		infer(e->children[i], Type::poly());
 
+	// either return unit or return the last expression
 	if (returnUnit)
 		unify(dest, unitType, e->span);
 	else
 		infer(e->children.back(), dest);
+
+	// revert stack to original size
+	stack.resize(nstack);
 }
 
 void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
@@ -354,6 +365,7 @@ void Analysis::_infer (AST::ObjectExp* e, TypePtr dest)
 		infer(e->children[i], fieldType);
 	}
 
+	e->base = type->base;
 	unify(dest, type, e->span);
 }
 
@@ -361,6 +373,29 @@ void Analysis::_infer (AST::ReturnExp* e)
 {
 	// infer returned value with expected return value of function
 	infer(e->children[0], ret);
+}
+
+void Analysis::_infer (AST::LetExp* e)
+{
+	TypePtr type;
+	if (e->varType == nullptr)
+	{
+		// initializer
+		type = Type::poly();
+		infer(e->children[0], type);
+	}
+	else // default initialization
+		type = Type::fromAST(e->varType, _ctx);
+
+	e->varId = let(e->name, type);
+}
+
+void Analysis::_infer (AST::AssignExp* e)
+{
+	// easy
+	auto type = Type::poly();
+	infer(e->children[0], type);
+	infer(e->children[1], type);
 }
 
 

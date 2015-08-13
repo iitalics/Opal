@@ -57,6 +57,8 @@ void desugar (AST::ExpPtr& e)
 			// a[b] = c   ->   a.set(b, c)
 			e = AST::methodCall(span, obj, SUG_MEMBER_SET, { what, rh });
 		}
+		else if (!(lh->is<AST::VarExp>() || lh->is<AST::FieldExp>()))
+			throw SourceError("invalid left-hand of assignment", lh->span);
 	}
 	else if (auto mem = dynamic_cast<AST::MemberExp*>(e.get()))
 	{

@@ -134,6 +134,8 @@ public:
 
 	TypePtr objType;
 	std::vector<std::string> inits;
+
+	Env::Type* base;
 	std::vector<int> index;
 
 	ObjectExp (
