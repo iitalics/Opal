@@ -57,6 +57,8 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get()))
 		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get()))
+		_infer(e2, dest);
 }
 
 void Analysis::_infer (AST::VarExp* e, TypePtr dest)
@@ -151,7 +153,7 @@ void Analysis::_infer (AST::FieldExp* e, TypePtr dest)
 	if (res == nullptr)
 	{
 		std::ostringstream ss;
-		ss << "type is missing field '" << e->name << "'";
+		ss << "undefined field '" << e->name << "'";
 		throw SourceError(ss.str(),
 			{ "type: " + typeName }, e->span);
 	}
@@ -293,6 +295,7 @@ void Analysis::_infer (AST::LazyOpExp* e, TypePtr dest)
 	infer(e->children[1], boolType);
 	unify(dest, boolType, e->span);
 }
+
 void Analysis::_infer (AST::CompareExp* e, TypePtr dest)
 {
 	TypePtr desired;
@@ -314,6 +317,42 @@ void Analysis::_infer (AST::CompareExp* e, TypePtr dest)
 	infer(e->children[0], desired);
 	// ends up returning bool
 	unify(dest, boolType, e->span);
+}
+
+void Analysis::_infer (AST::ObjectExp* e, TypePtr dest)
+{
+	auto type = Type::fromAST(e->objType, _ctx);
+
+	if (type->kind != Type::Concrete || type->base->isIFace)
+		throw SourceError("expected concrete, non-iface type",
+			e->objType->span);
+
+	for (size_t i = 0, len = e->inits.size(); i < len; i++)
+	{
+		auto name = e->inits[i];
+
+		for (size_t j = 0; j < i; j++)
+			if (e->inits[j] == name)
+			{
+				std::ostringstream ss;
+				ss << "field '" << name << "' initialized multiple times";
+				throw SourceError(ss.str(), e->span);
+			}
+
+		int index;
+		auto fieldType = _findField(type, name, index);
+		if (fieldType == nullptr)
+		{
+			std::ostringstream ss;
+			ss << "undefined field '" << name << "'";
+			throw SourceError(ss.str(), e->span);
+		}
+
+		e->index.push_back(index);
+		infer(e->children[i], fieldType);
+	}
+
+	unify(dest, type, e->span);
 }
 
 

@@ -134,6 +134,7 @@ public:
 
 	TypePtr objType;
 	std::vector<std::string> inits;
+	std::vector<int> index;
 
 	ObjectExp (
 		TypePtr _objType,

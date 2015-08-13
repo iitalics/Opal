@@ -18,6 +18,7 @@ Analysis::Analysis (Env::Function* fn, Analysis* _call)
 		_ctx.locateParams(arg.type);
 		let(arg.name, arg.type);
 	}
+	_ctx.allowNewTypes = false;
 }
 Analysis::~Analysis () {}
 

@@ -87,6 +87,10 @@ void desugar (AST::ExpPtr& e)
 
 		e = AST::ExpPtr(new AST::CompareExp(res, cmp->kind));
 	}
+	else if (auto obj = dynamic_cast<AST::ObjectExp*>(e.get()))
+	{
+		desugar(obj->objType);
+	}
 
 	for (auto& c : e->children)
 		desugar(c);
