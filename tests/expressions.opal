@@ -15,6 +15,7 @@ impl x : int {
 
 	fn str () { "" }
 }
+impl string { fn str () { self } }
 
 
 iface #t : Ord {
@@ -35,28 +36,42 @@ iface #t : Num {
 	fn div (#t) -> #t
 	fn neg (#t) -> #t
 }
-iface #t : Add { fn add (#t) -> #t }
 iface Show { fn str () -> string }
 
 
-fn show (x : #t(Show)) { x.str() }
 fn max (x : #t(Ord), y : #t) {
 	if x > y { x } else { y }
 }
-fn println (x : #t(Show)) {
-	()
-}
+fn println (x : #t(Show)) { }
 
-fn sum (n : #t(Enum, Add)) {
-	if n.zero?() {
-		n
-	} else {
-		n + sum(n.pred())
+
+pub type vec2 {
+	x : int,
+	y : int
+}
+impl a : vec2 {
+	fn add (b : vec2) {
+		new vec2 {
+			x = a.x + b.x,
+			y = a.y + b.y
+		}
 	}
 }
-
-
+fn vec2 (x : int, y : int) {
+	new vec2 { x = x, y = y }
+}
 
 fn main () {
-	println(sum(50))
+	let x = 0
+	let y = true
+	let z : vec2
+
+	z.x = 4
+
+	if z.y > z.x {
+		return false
+	}
+	
+	println(max(x, z.x))
+	true
 }
