@@ -15,7 +15,7 @@ namespace Opal {
 ;
 typedef int32_t Int_t;
 typedef int64_t Long_t;
-typedef float   Real_t;
+typedef double  Real_t;
 
 
 }
