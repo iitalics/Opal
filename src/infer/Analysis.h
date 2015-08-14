@@ -12,6 +12,8 @@ public:
 	Analysis (Env::Function* parent, Analysis* calledBy);
 	~Analysis ();
 
+	static void initTypes ();
+
 	struct LocalVar
 	{
 		int id;

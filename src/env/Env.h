@@ -2,7 +2,8 @@
 #include "../opal.h"
 #include "../infer/Type.h"
 #include "../syntax/AST.h"
-
+#include "../runtime/Cell.h"
+#include "../runtime/GC.h"
 namespace Opal {
 namespace Infer {
 class Analysis;
@@ -79,6 +80,7 @@ public:
 	static Type* tuple (size_t argc);
 	static Type* core (const std::string& name);
 
+	// fields
 	Type (const std::string& name,
 		Module* mod, size_t nparams,
 		bool iface, const Span& span = Span());
@@ -94,15 +96,14 @@ public:
 		return _tuple;
 	}
 
+	// type data
 	size_t nparams;
 	bool isIFace;
-
 	union
 	{
 		DataType data;
 		IFaceType iface;
 	};
-
 	std::vector<Function*> methods;
 private:
 	bool _function, _tuple;
@@ -149,7 +150,13 @@ public:
 	Namespace* nm;
 	AST::ExpPtr body;
 
-	Infer::Analysis* analysis;
+	union
+	{
+		Infer::Analysis* analysis;
+		// Run::NativeFn_t nativeFunc;
+		IFaceSignature* ifaceSig;
+		Env::Type* enumType;
+	};
 
 	void infer (Infer::Analysis* calledBy = nullptr);
 	void endInfer ();

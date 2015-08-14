@@ -4,13 +4,10 @@ namespace Opal { namespace Infer {
 ;
 
 // cache core types required by the inferer
-static bool _initCoreTypes = false;
 static Env::Type* core_unit, *core_int, *core_bool, *core_real, *core_string;
 static TypePtr unitType, intType, boolType, realType, stringType;
-static void initCoreTypes ()
+void Analysis::initTypes ()
 {
-	_initCoreTypes = true;
-
 	core_unit = Env::Type::core("unit");
 	core_int = Env::Type::core("int");
 	core_bool = Env::Type::core("bool");
@@ -28,9 +25,6 @@ static void initCoreTypes ()
 
 void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 {
-	if (!_initCoreTypes)
-		initCoreTypes();
-
 	if (dynamic_cast<AST::StringExp*>(e.get()))
 		unify(dest, stringType, e->span);
 	if (dynamic_cast<AST::RealExp*>(e.get()))
