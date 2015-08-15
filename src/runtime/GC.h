@@ -13,13 +13,6 @@ struct Cell;
 namespace GC {
 ;
 
-enum Strategy
-{
-	NoGC,
-	MarkSweep,
-	RefCount,
-};
-
 struct Object
 {
 	size_t count;
