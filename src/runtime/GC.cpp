@@ -8,10 +8,16 @@ namespace Opal { namespace GC {
 Object::~Object () {}
 void Object::markChildren () {}
 
-// TODO: fill these in (garbage collector)
-void Object::mark () {}
-void Object::retain () {}
-void Object::release () {}
+void Object::mark ()
+{
+	if (!gc_marked)
+	{
+		gc_marked = true;
+		markChildren();
+	}
+}
+void Object::retain () { gc_count++; }
+void Object::release () { gc_count--; }
 
 
 }}

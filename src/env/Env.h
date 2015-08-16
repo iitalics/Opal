@@ -105,6 +105,9 @@ public:
 		IFaceType iface;
 	};
 	std::vector<Function*> methods;
+
+
+	bool gc_collected;
 private:
 	bool _function, _tuple;
 };

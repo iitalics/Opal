@@ -73,6 +73,7 @@ Type::Type (const std::string& _name,
 		bool _iface, const Span& _span)
 	: name(_name), module(_mod), declSpan(_span), nparams(_nparams), isIFace(_iface)
 {
+	gc_collected = true;
 	_function = _tuple = false;
 
 	if (_iface)

@@ -15,7 +15,9 @@ namespace GC {
 
 struct Object
 {
-	size_t count;
+	size_t gc_count;
+	bool gc_marked;
+
 	virtual ~Object ();
 	void mark ();
 	void retain ();
@@ -23,6 +25,7 @@ struct Object
 
 	virtual void markChildren ();
 };
+
 
 
 }}

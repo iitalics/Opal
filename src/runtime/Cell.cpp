@@ -24,10 +24,29 @@ Cell Cell::Int (Int_t n)
 Cell Cell::Object (Env::Type* type, GC::Object* obj)
 { return Cell { type, .obj = obj }; }
 
-// TODO: fill these in (garbage collector)
-void Cell::mark () {}
-void Cell::retain () {}
-void Cell::release () {}
+
+void Cell::mark ()
+{
+	if (type->gc_collected && obj)
+		obj->mark();
+}
+void Cell::retain ()
+{
+	if (type->gc_collected && obj)
+		obj->retain();
+}
+void Cell::release ()
+{
+	if (type->gc_collected && obj)
+	{
+		obj->release();
+		if (obj->gc_count == 0)
+		{
+			delete obj;
+			obj = nullptr;
+		}
+	}
+}
 
 
 SimpleObject::SimpleObject (size_t nchilds)

@@ -68,6 +68,12 @@ static void makePrimitives ()
 	auto unitType = new Type("unit", coreMod, 0, false);
 
 	// TODO: GC info, default initializers
+	intType->gc_collected = false;
+	realType->gc_collected = false;
+	boolType->gc_collected = false;
+	charType->gc_collected = false;
+	unitType->gc_collected = false;
+	stringType->gc_collected = true;
 
 	coreMod->types.insert(coreMod->types.begin(),
 		{ intType,
