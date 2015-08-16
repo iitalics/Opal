@@ -16,6 +16,6 @@ namespace Opal {
 typedef int32_t Int_t;
 typedef int64_t Long_t;
 typedef double  Real_t;
-
+typedef char    Char_t; // unicode?
 
 }

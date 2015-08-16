@@ -21,6 +21,7 @@ struct Cell
 		Int_t dataInt;
 		Long_t dataLong;
 		Real_t dataReal;
+		Char_t dataChar;
 		bool dataBool;
 		GC::Object* obj;
 		void* data;
