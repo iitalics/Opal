@@ -2,8 +2,7 @@
 #include "../opal.h"
 #include "../infer/Type.h"
 #include "../syntax/AST.h"
-#include "../runtime/Cell.h"
-#include "../runtime/GC.h"
+#include "../runtime/Exec.h"
 namespace Opal {
 namespace Infer {
 class Analysis;
@@ -155,7 +154,11 @@ public:
 
 	union
 	{
-		Infer::Analysis* analysis;
+		struct
+		{
+			Infer::Analysis* analysis;
+			Run::Code code;
+		};
 		// Run::NativeFn_t nativeFunc;
 		IFaceSignature* ifaceSig;
 		Env::Type* enumType;

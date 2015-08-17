@@ -28,7 +28,7 @@ struct Cell
 	};
 
 	void mark ();
-	void retain ();
+	Cell retain ();
 	void release ();
 
 	static void initTypes ();

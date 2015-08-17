@@ -30,10 +30,11 @@ void Cell::mark ()
 	if (type->gc_collected && obj)
 		obj->mark();
 }
-void Cell::retain ()
+Cell Cell::retain ()
 {
 	if (type->gc_collected && obj)
 		obj->retain();
+	return *this;
 }
 void Cell::release ()
 {
