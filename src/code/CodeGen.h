@@ -17,26 +17,25 @@ public:
 
 	inline void add (int cmd)
 	{
-		program.push_back(Run::Cmd { cmd });
+		_program.push_back(Run::Cmd { cmd });
 	}
-	template <typename T>
-	inline void add (int cmd, T data)
+	inline void add (const Run::Cmd& cmd)
 	{
-		program.push_back(Run::Cmd { cmd, data });
+		_program.push_back(cmd);
 	}
 	Label label ();
 	void place (Label label);
+	size_t var (int varID);
 	Run::Code output ();
-
-	std::vector<Run::Cmd> program;
-	std::vector<size_t> labels;
-	size_t nargs, nvars;
 
 
 	void generate (AST::ExpPtr e);
 private:
-	size_t _var (int varID);
+	std::vector<Run::Cmd> _program;
+	std::vector<size_t> _labels;
+	size_t _nargs, _nvars;
 
+	static bool _noValue (AST::ExpPtr e);
 	void _generate (AST::BlockExp* e);
 	void _generate (AST::VarExp* e);
 	void _generate (AST::IntExp* e);

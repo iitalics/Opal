@@ -16,7 +16,7 @@ int main ()
 		Infer::Analysis::initTypes();
 		Run::Cell::initTypes();
 
-		auto nm = Env::loadSource("tests/expressions.opal");
+		auto nm = Env::loadSource("tests/runtime.opal");
 		Env::finishModuleLoad();
 
 		// find 'main' function
