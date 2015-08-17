@@ -41,7 +41,7 @@ private:
 	void _generate (AST::IntExp* e);
 	void _generate (AST::RealExp* e);
 	void _generate (AST::BoolExp* e);
-//	void _generate (AST::CallExp* e);
+	void _generate (AST::CallExp* e);
 //	void _generate (AST::LetExp* e);
 //	void _generate (AST::AssignExp* e);
 //	void _generate (AST::LazyOpExp* e);

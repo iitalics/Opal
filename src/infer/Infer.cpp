@@ -235,6 +235,20 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 	// infer arguments
 	for (size_t i = 0; i < argc; i++)
 		infer(e->children[i + 1], args[i]);
+
+
+	// find out if we're calling a static function
+	auto fne = e->children[0];
+	if (auto field = dynamic_cast<AST::FieldExp*>(fne.get()))
+	{
+		e->function = field->method;
+	}
+	else if (auto var = dynamic_cast<AST::VarExp*>(fne.get()))
+	{
+		auto global = var->global;
+		if (global != nullptr && global->isFunc)
+			e->function = global->func;
+	}
 }
 
 void Analysis::_infer (AST::BlockExp* e, TypePtr dest)

@@ -67,6 +67,11 @@ bool CodeGen::_noValue (AST::ExpPtr e)
 	return false;
 }
 
+static inline SourceError cannot (const Span& span)
+{
+	return SourceError("cannot generate this expression", span);
+}
+
 void CodeGen::generate (AST::ExpPtr e)
 {
 	if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get()))
@@ -79,8 +84,10 @@ void CodeGen::generate (AST::ExpPtr e)
 		_generate(e2);
 	else if (auto e2 = dynamic_cast<AST::BoolExp*>(e.get()))
 		_generate(e2);
+	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get()))
+		_generate(e2);
 	else
-		throw SourceError("cannot generate this expression", e->span);
+		throw cannot(e->span);
 }
 void CodeGen::_generate (AST::BlockExp* e)
 {
@@ -98,6 +105,9 @@ void CodeGen::_generate (AST::BlockExp* e)
 }
 void CodeGen::_generate (AST::VarExp* e)
 {
+	if (e->global != nullptr)
+		throw cannot(e->span);
+
 	add({ Cmd::Load, .var = var(e->varId) });
 }
 void CodeGen::_generate (AST::IntExp* e)
@@ -114,6 +124,32 @@ void CodeGen::_generate (AST::RealExp* e)
 void CodeGen::_generate (AST::BoolExp* e)
 {
 	add(e->value ? Cmd::True : Cmd::False);
+}
+void CodeGen::_generate (AST::CallExp* e)
+{
+	Env::Function* func = e->function;
+
+	if (func == nullptr)
+	{
+		generate(e->children[0]);
+		add(Cmd::Prelude);
+	}
+	else if (e->children[0]->is<AST::FieldExp>())
+	{
+		generate(e->children[0]->children[0]);
+	}
+
+	for (size_t i = 1, len = e->children.size(); i < len; i++)
+		generate(e->children[i]);
+
+	if (func == nullptr)
+	{
+		add({ Cmd::Apply, .count = e->children.size() - 1 });
+	}
+	else
+	{
+		add({ Cmd::Call, .func = func });
+	}
 }
 
 
