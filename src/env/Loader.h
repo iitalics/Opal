@@ -1,9 +1,8 @@
 #pragma once
 #include "Env.h"
+#include "Namespace.h"
 namespace Opal { namespace Env {
 ;
-
-class Namespace;
 
 
 

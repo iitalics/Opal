@@ -6,7 +6,7 @@ namespace Opal { namespace Run {
 
 Code::Code (Cmd* _program, size_t _nargs, size_t _nvars)
 	: program(_program), nargs(_nargs), nvars(_nvars) {}
-Code::~Code () { delete[] program; }
+Code::~Code () { }
 
 
 Thread::Thread () {}

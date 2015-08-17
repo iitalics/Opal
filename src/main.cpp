@@ -5,39 +5,33 @@
 using namespace Opal;
 
 
-
-Run::Code example_program ()
-{
-	using namespace Opal::Run;
-
-	auto prgm = new Cmd[64];
-
-	prgm[0] = Cmd { Cmd::Load, .var = 0 };
-	prgm[1] = Cmd { Cmd::Store, .var = 1 };
-	prgm[2] = Cmd { Cmd::Jump, .dest_pc = 0 };
-	prgm[3] = Cmd { Cmd::Ret };
-
-	return Run::Code(prgm, 0, 1);
-}
-
 int main ()
 {
 	SourceError::color = true;
 
+	Run::Thread thread;
 	try
 	{
 		Env::Module::getCore();
 		Infer::Analysis::initTypes();
 		Run::Cell::initTypes();
 
-		Run::Thread thread;
-		auto code = example_program();
+		auto nm = Env::loadSource("tests/expressions.opal");
+		Env::finishModuleLoad();
 
+		// find 'main' function
+		auto g_main = nm->getGlobal(AST::Name("main"));
+		if (g_main == nullptr)
+			throw SourceError("no main function defined");
+		auto fn_main = g_main->func;
+		auto code = fn_main->code;
+
+		// execute it in a new thread
+		std::cout << "executing main" << std::endl;
 		thread.call(code);
 		while (thread.step()) ;
 
-	//	auto nm = Env::loadSource("tests/expressions.opal");
-		Env::finishModuleLoad();
+		// bye
 	}
 	catch (SourceError& err)
 	{

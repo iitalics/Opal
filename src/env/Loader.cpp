@@ -2,6 +2,7 @@
 #include "Namespace.h"
 #include "../syntax/Parse.h"
 #include "../syntax/Desugar.h"
+#include "../code/CodeGen.h"
 namespace Opal { namespace Env {
 ;
 
@@ -309,6 +310,25 @@ static void inferAll ()
 			inferType(ty);
 	}
 }
+static void codeGen (Function* func)
+{
+	if (func->kind == Function::CodeFunction)
+		func->code = Code::CodeGen::generate(func);
+}
+static void codeGenAll ()
+{
+	for (auto mod = Module::all(); mod != nullptr; mod = mod->next())
+	{
+		for (auto g : mod->globals)
+			codeGen(g->func);
+
+		// triple-nested for loops
+		// hard to pull off
+		for (auto ty : mod->types)
+			for (auto func : ty->methods)
+				codeGen(func);
+	}
+}
 
 
 
@@ -325,6 +345,7 @@ void finishModuleLoad ()
 	// infer functions
 	inferAll();
 	// generate code
+	codeGenAll();
 	// find entry point and execute
 }
 
