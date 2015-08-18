@@ -756,6 +756,9 @@ static ExpPtr parseBlockExp (Scanner& scan)
 
 	scan.eat(RCURL);
 
+	if (exps.empty())
+		unit = true;
+
 	ExpPtr res(new BlockExp(exps, unit));
 	res->span = span;
 	return res;

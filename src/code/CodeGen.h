@@ -44,7 +44,7 @@ private:
 	void _generate (AST::CallExp* e);
 	void _generate (AST::LetExp* e);
 	void _generate (AST::AssignExp* e);
-//	void _generate (AST::CondExp* e);
+	void _generate (AST::CondExp* e);
 //	void _generate (AST::LazyOpExp* e);
 //	void _generate (AST::CompareExp* e);
 //	void _generate (AST::FieldExp* e);

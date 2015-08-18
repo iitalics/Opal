@@ -1,9 +1,13 @@
 use Core
 
+fn print (x : int) {}
 
-fn main (n : int)
+fn main (thing? : bool, thing : int, inc : int)
 {
-	let x = 0
+	if true {
+		let x = if thing? { thing } else { 0 }
 
-	x = x + n
+		x = x + inc
+		print(x)
+	}
 }

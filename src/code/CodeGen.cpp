@@ -90,6 +90,8 @@ void CodeGen::generate (AST::ExpPtr e)
 		_generate(e2);
 	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get()))
 		_generate(e2);
+	else if (auto e2 = dynamic_cast<AST::CondExp*>(e.get()))
+		_generate(e2);
 	else
 		throw cannot(e->span);
 }
@@ -192,6 +194,29 @@ void CodeGen::_generate (AST::AssignExp* e)
 	}
 	else
 		add(Cmd::Drop);
+}
+void CodeGen::_generate (AST::CondExp* e)
+{
+	auto cond = e->children[0];
+	auto labelElse = label();
+	auto labelEnd = label();
+	bool noValue = (e->children.size() == 2);
+
+	generate(cond);
+	add({ Cmd::Else, .index = labelElse });
+	generate(e->children[1]);
+
+	if (noValue)
+		add(Cmd::Drop);
+	else
+		add({ Cmd::Jump, .index = labelEnd });
+
+	place(labelElse);
+
+	if (!noValue)
+		generate(e->children[2]);
+
+	place(labelEnd);
 }
 
 
