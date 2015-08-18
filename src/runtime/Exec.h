@@ -3,7 +3,6 @@
 #include "Cell.h"
 namespace Opal {
 namespace Env {
-;
 class Type;
 class Function;
 class Global;
@@ -90,13 +89,14 @@ public:
 	Cell get (size_t pos);
 	void set (size_t pos, Cell cell);
 	Cell pop ();
-	void pop_release ();
+	void drop ();
+	void drop (size_t n = 0);
 	void push (Cell cell);
 	void units (size_t n);
-	void drop (size_t n = 0);
 
 	// execution utilities
 	void call (const Code& code);
+	void call (Env::Function* func);
 	void ret ();
 
 private:
@@ -106,5 +106,6 @@ private:
 
 
 
+using NativeFn_t = void (*) (Thread&);
 
 }}

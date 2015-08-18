@@ -159,7 +159,7 @@ public:
 			Infer::Analysis* analysis;
 			Run::Code code;
 		};
-		// Run::NativeFn_t nativeFunc;
+		Run::NativeFn_t nativeFunc;
 		IFaceSignature* ifaceSig;
 		Env::Type* enumType;
 	};

@@ -44,7 +44,7 @@ Cell Thread::pop ()
 	else
 		return Cell::Unit();
 }
-void Thread::pop_release ()
+void Thread::drop ()
 {
 	if (!_stack.empty())
 	{
@@ -78,6 +78,26 @@ void Thread::call (const Code& code)
 {
 	_calls.push_back(Exec {});
 	_calls.back().begin(*this, code);
+}
+void Thread::call (Env::Function* func)
+{
+	switch (func->kind)
+	{
+	case Env::Function::CodeFunction:
+		call(func->code);
+		break;
+
+	case Env::Function::NativeFunction:
+		func->nativeFunc(*this);
+		break;
+
+	case Env::Function::IFaceFunction:
+		throw SourceError("iface call unimplemented", func->declSpan);
+	case Env::Function::EnumFunction:
+		throw SourceError("enum call unimplemented", func->declSpan);
+	default:
+		throw SourceError("call unimplemented", func->declSpan);
+	}
 }
 void Thread::ret ()
 {
