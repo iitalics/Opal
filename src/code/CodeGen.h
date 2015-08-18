@@ -42,13 +42,13 @@ private:
 	void _generate (AST::RealExp* e);
 	void _generate (AST::BoolExp* e);
 	void _generate (AST::CallExp* e);
-//	void _generate (AST::LetExp* e);
-//	void _generate (AST::AssignExp* e);
+	void _generate (AST::LetExp* e);
+	void _generate (AST::AssignExp* e);
+//	void _generate (AST::CondExp* e);
 //	void _generate (AST::LazyOpExp* e);
 //	void _generate (AST::CompareExp* e);
 //	void _generate (AST::FieldExp* e);
 //	void _generate (AST::ReturnExp* e);
-//	void _generate (AST::CondExp* e);
 //	void _generate (AST::GotoExp* e);
 //	void _generate (AST::StringExp* e);
 //	void _generate (AST::TupleExp* e);

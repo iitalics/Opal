@@ -86,6 +86,10 @@ void CodeGen::generate (AST::ExpPtr e)
 		_generate(e2);
 	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get()))
 		_generate(e2);
+	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get()))
+		_generate(e2);
+	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get()))
+		_generate(e2);
 	else
 		throw cannot(e->span);
 }
@@ -106,9 +110,9 @@ void CodeGen::_generate (AST::BlockExp* e)
 void CodeGen::_generate (AST::VarExp* e)
 {
 	if (e->global != nullptr)
-		throw cannot(e->span);
-
-	add({ Cmd::Load, .var = var(e->varId) });
+		add({ Cmd::SetGlob, .global = e->global });
+	else
+		add({ Cmd::Load, .var = var(e->varId) });
 }
 void CodeGen::_generate (AST::IntExp* e)
 {
@@ -127,29 +131,67 @@ void CodeGen::_generate (AST::BoolExp* e)
 }
 void CodeGen::_generate (AST::CallExp* e)
 {
+	auto fne = e->children[0];
 	Env::Function* func = e->function;
 
 	if (func == nullptr)
 	{
-		generate(e->children[0]);
+		generate(fne);
 		add(Cmd::Prelude);
 	}
-	else if (e->children[0]->is<AST::FieldExp>())
+	else if (fne->is<AST::FieldExp>())
 	{
-		generate(e->children[0]->children[0]);
+		generate(fne->children[0]);
 	}
 
 	for (size_t i = 1, len = e->children.size(); i < len; i++)
 		generate(e->children[i]);
 
 	if (func == nullptr)
-	{
 		add({ Cmd::Apply, .count = e->children.size() - 1 });
+	else
+		add({ Cmd::Call, .func = func });
+}
+void CodeGen::_generate (AST::LetExp* e)
+{
+	if (e->varType != nullptr) // default initializer
+		throw cannot(e->span);
+
+	generate(e->children[0]);
+	add({ Cmd::Store, .var = var(e->varId) });
+}
+void CodeGen::_generate (AST::AssignExp* e)
+{
+	auto lh = e->children[0];
+
+	if (auto field = dynamic_cast<AST::FieldExp*>(lh.get()))
+	{
+		if (field->method != nullptr)
+			throw SourceError("cannot assign to method", e->span);
+
+		generate(field->children[0]);
+	}
+
+	generate(e->children[1]);
+
+	if (auto fieldexp = dynamic_cast<AST::FieldExp*>(lh.get()))
+	{
+		add({ Cmd::Set, .index = size_t(fieldexp->index) });
+	}
+	else if (auto varexp = dynamic_cast<AST::VarExp*>(lh.get()))
+	{
+		if (varexp->global)
+		{
+			if (varexp->global->isFunc)
+				throw SourceError("cannot assign to global function");
+
+			add({ Cmd::SetGlob, .global = varexp->global });
+		}
+		else
+			add({ Cmd::Store, .var = var(varexp->varId) });
 	}
 	else
-	{
-		add({ Cmd::Call, .func = func });
-	}
+		add(Cmd::Drop);
 }
 
 

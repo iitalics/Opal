@@ -1,8 +1,9 @@
 use Core
 
 
-fn id (x : #a) { x }
+fn main (n : int)
+{
+	let x = 0
 
-fn main (x : int) {
-	1 + 2
+	x = x + n
 }
