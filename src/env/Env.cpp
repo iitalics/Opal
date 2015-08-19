@@ -203,7 +203,11 @@ Global::~Global ()
 	if (func != nullptr)
 		delete func;
 }
-Function::~Function () {}
+Function::~Function ()
+{
+	if (kind == CodeFunction)
+		delete[] code.program;
+}
 
 
 
