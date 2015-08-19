@@ -39,7 +39,6 @@ fn_body:
 
 
 let_decl:
-	"let" ID ":" type
 	"let" ID "=" exp
 
 

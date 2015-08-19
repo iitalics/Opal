@@ -64,7 +64,7 @@ fn vec2 (x : int, y : int) {
 fn main () {
 	let x = 0
 	let y = true
-	let z : vec2
+	let z = vec2(0, 0)
 
 	z.x = 4
 

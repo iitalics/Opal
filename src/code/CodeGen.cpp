@@ -151,9 +151,6 @@ void CodeGen::_generate (AST::CallExp* e)
 }
 void CodeGen::_generate (AST::LetExp* e)
 {
-	if (e->varType != nullptr) // default initializer
-		throw unimplement(e->span);
-
 	generate(e->children[0]);
 	add({ Cmd::Store, .var = var(e->varId) });
 }

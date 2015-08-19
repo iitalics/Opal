@@ -38,11 +38,6 @@ void desugar (AST::ExpPtr& e)
 	{
 		desugarName(var->name);
 	}
-	else if (auto let = dynamic_cast<AST::LetExp*>(e.get()))
-	{
-		if (let->varType != nullptr)
-			desugar(let->varType);
-	}
 	else if (auto assign = dynamic_cast<AST::AssignExp*>(e.get()))
 	{
 		auto lh = assign->children[0];

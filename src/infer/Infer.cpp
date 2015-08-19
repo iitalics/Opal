@@ -385,15 +385,8 @@ void Analysis::_infer (AST::ReturnExp* e)
 
 void Analysis::_infer (AST::LetExp* e)
 {
-	TypePtr type;
-	if (e->varType == nullptr)
-	{
-		// initializer
-		type = Type::poly();
-		infer(e->children[0], type);
-	}
-	else // default initialization
-		type = Type::fromAST(e->varType, _ctx);
+	TypePtr type = Type::poly();
+	infer(e->children[0], type);
 
 	e->varId = let(e->name, type);
 }

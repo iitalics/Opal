@@ -893,29 +893,16 @@ static ExpPtr parseCond (Scanner& scan, bool req_else)
 
 /*
 let_decl:
-	"let" ID ":" type
 	"let" ID "=" exp
 */
 static ExpPtr parseLet (Scanner& scan)
 {
 	auto span = scan.shift().span;
-	ExpPtr res;
-
-	if (scan.get(1) == COLON)
-	{
-		auto name = scan.eat(ID).string;
-		scan.shift();
-		auto type = parseType(scan);
-		res = ExpPtr(new LetExp(name, type));
-	}
-	else //if (scan.get(1) == EQUAL)
-	{
-		auto name = scan.eat(ID).string;
-		scan.eat(EQUAL);
-		auto init = parseExp(scan);
-		res = ExpPtr(new LetExp(name, init));
-	}
-
+	// TODO (much later): pattern destructuring
+	auto name = scan.eat(ID).string;
+	scan.eat(EQUAL);
+	auto init = parseExp(scan);
+	auto res = ExpPtr(new LetExp(name, init));
 	res->span = span;
 	return res;
 }

@@ -122,11 +122,7 @@ LetExp::~LetExp () {}
 std::string LetExp::str (int ind) const
 {
 	std::ostringstream ss;
-	ss << "let " << name;
-	if (varType == nullptr)
-		ss << " = " << children[0]->str(ind);
-	else
-		ss << " : " << varType->str();
+	ss << "let " << name << " = " << children[0]->str(ind);
 	return ss.str();
 }
 LazyOpExp::~LazyOpExp () {}

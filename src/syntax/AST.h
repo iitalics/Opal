@@ -158,13 +158,10 @@ class LetExp : public Exp
 {
 public:
 	std::string name;
-	TypePtr varType;
 	int varId;
 
 	inline LetExp (const std::string& _name, ExpPtr _init)
-		: Exp({ _init }), name(_name), varType(nullptr) {}
-	inline LetExp (const std::string& _name, TypePtr _type)
-		: name(_name), varType(_type) {}
+		: Exp({ _init }), name(_name) {}
 	virtual ~LetExp ();
 	virtual std::string str (int ident) const;
 };
