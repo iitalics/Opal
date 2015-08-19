@@ -88,6 +88,7 @@ void desugar (AST::ExpPtr& e)
 			res = AST::methodCall(span, a, SUG_COMPARE, { b });
 
 		e = AST::ExpPtr(new AST::CompareExp(res, cmp->kind));
+		e->span = span;
 	}
 	else if (auto obj = dynamic_cast<AST::ObjectExp*>(e.get()))
 	{

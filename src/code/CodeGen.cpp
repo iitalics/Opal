@@ -92,6 +92,10 @@ void CodeGen::generate (AST::ExpPtr e)
 		_generate(e2);
 	else if (auto e2 = dynamic_cast<AST::CondExp*>(e.get()))
 		_generate(e2);
+	else if (auto e2 = dynamic_cast<AST::LazyOpExp*>(e.get()))
+		_generate(e2);
+	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get()))
+		_generate(e2);
 	else
 		throw cannot(e->span);
 }
@@ -217,6 +221,54 @@ void CodeGen::_generate (AST::CondExp* e)
 		generate(e->children[2]);
 
 	place(labelEnd);
+}
+void CodeGen::_generate (AST::LazyOpExp* e)
+{
+	auto a = e->children[0];
+	auto b = e->children[1];
+	auto labelEnd = label();
+	auto labelThen = label();
+
+	generate(a);
+	add(Cmd::Dupl);
+	if (e->kind == AST::LazyOpExp::And)
+	{
+		add({ Cmd::Else, .index = labelEnd });
+		//add({ Cmd::Jump, .index = labelThen });
+	}
+	else
+	{
+		add({ Cmd::Else, .index = labelThen });
+		add({ Cmd::Jump, .index = labelEnd });
+	}
+	place(labelThen);
+	add(Cmd::Drop);
+	generate(b);
+	place(labelEnd);
+}
+void CodeGen::_generate (AST::CompareExp* e)
+{
+	generate(e->children[0]);
+
+	int flags = 0;
+	switch (e->kind)
+	{
+	case AST::CompareExp::Lt:
+		flags = Cmd::CmpLt; break;
+	case AST::CompareExp::LtEq:
+		flags = Cmd::CmpLt | Cmd::CmpEq; break;
+	case AST::CompareExp::Gr:
+		flags = Cmd::CmpGr; break;
+	case AST::CompareExp::GrEq:
+		flags = Cmd::CmpGr | Cmd::CmpEq; break;
+	case AST::CompareExp::NotEq:
+		flags = Cmd::CmpNot; break;
+
+	case AST::CompareExp::Eq:
+	default:
+		return;
+	}
+	add({ Cmd::Compare, .cmp_flags = flags });
 }
 
 

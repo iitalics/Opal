@@ -1,13 +1,14 @@
 use Core
 
-fn print (x : int) {}
+impl int {
+	fn equal (x : int) { true }
+	fn str () { }
+}
 
-fn main (thing? : bool, thing : int, inc : int)
+fn println (what : int) { }
+
+fn main (argc : int)
 {
-	if true {
-		let x = if thing? { thing } else { 0 }
-
-		x = x + inc
-		print(x)
-	}
+	let x = if argc > 1 { argc } else { 0 }
+	let foo = x <= 4
 }

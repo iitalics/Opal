@@ -11,6 +11,12 @@ static void proc_int_add (Run::Thread& th)
 	auto a = th.pop().dataInt;
 	th.push(Run::Cell::Int(a + b));
 }
+static void proc_int_sub (Run::Thread& th)
+{
+	auto b = th.pop().dataInt;
+	auto a = th.pop().dataInt;
+	th.push(Run::Cell::Int(a - b));
+}
 
 
 int main ()
@@ -35,6 +41,13 @@ int main ()
 		fn_int_add->ret = intType;
 		fn_int_add->parent = core_int;
 		core_int->methods.push_back(fn_int_add);
+
+		auto fn_int_cmp = new Env::Function(Env::Function::NativeFunction, "cmp", core);
+		fn_int_cmp->nativeFunc = proc_int_sub;
+		fn_int_cmp->args = { { "x", intType }, { "y", intType } };
+		fn_int_cmp->ret = intType;
+		fn_int_cmp->parent = core_int;
+		core_int->methods.push_back(fn_int_cmp);
 
 		// load some code
 		auto nm = Env::loadSource("tests/runtime.opal");
