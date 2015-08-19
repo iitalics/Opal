@@ -67,37 +67,28 @@ bool CodeGen::_noValue (AST::ExpPtr e)
 	return false;
 }
 
-static inline SourceError cannot (const Span& span)
+static inline SourceError unimplement (const Span& span)
 {
 	return SourceError("cannot generate this expression", span);
 }
 
 void CodeGen::generate (AST::ExpPtr e)
 {
-	if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get()))
-		_generate(e2);
-	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get()))
-		_generate(e2);
-	else if (auto e2 = dynamic_cast<AST::IntExp*>(e.get()))
-		_generate(e2);
-	else if (auto e2 = dynamic_cast<AST::RealExp*>(e.get()))
-		_generate(e2);
-	else if (auto e2 = dynamic_cast<AST::BoolExp*>(e.get()))
-		_generate(e2);
-	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get()))
-		_generate(e2);
-	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get()))
-		_generate(e2);
-	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get()))
-		_generate(e2);
-	else if (auto e2 = dynamic_cast<AST::CondExp*>(e.get()))
-		_generate(e2);
-	else if (auto e2 = dynamic_cast<AST::LazyOpExp*>(e.get()))
-		_generate(e2);
-	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get()))
-		_generate(e2);
+	if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::IntExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::RealExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::BoolExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::CondExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::LazyOpExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get())) _generate(e2);
 	else
-		throw cannot(e->span);
+		throw unimplement(e->span);
 }
 void CodeGen::_generate (AST::BlockExp* e)
 {
@@ -161,7 +152,7 @@ void CodeGen::_generate (AST::CallExp* e)
 void CodeGen::_generate (AST::LetExp* e)
 {
 	if (e->varType != nullptr) // default initializer
-		throw cannot(e->span);
+		throw unimplement(e->span);
 
 	generate(e->children[0]);
 	add({ Cmd::Store, .var = var(e->varId) });
@@ -189,7 +180,7 @@ void CodeGen::_generate (AST::AssignExp* e)
 		if (varexp->global)
 		{
 			if (varexp->global->isFunc)
-				throw SourceError("cannot assign to global function");
+				throw SourceError("cannot assign to global function", e->span);
 
 			add({ Cmd::SetGlob, .global = varexp->global });
 		}
@@ -269,6 +260,21 @@ void CodeGen::_generate (AST::CompareExp* e)
 		return;
 	}
 	add({ Cmd::Compare, .cmp_flags = flags });
+}
+void CodeGen::_generate (AST::FieldExp* e)
+{
+	if (e->method != nullptr)
+		throw unimplement(e->span);
+	else
+	{
+		generate(e->children[0]);
+		add({ Cmd::Get, .index = size_t(e->index) });
+	}
+}
+void CodeGen::_generate (AST::ReturnExp* e)
+{
+	generate(e->children[0]);
+	add(Cmd::Ret);
 }
 
 
