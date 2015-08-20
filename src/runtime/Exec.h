@@ -19,7 +19,7 @@ struct Cmd
 		// operations
 		NoOp = 0,
 		Load, Store, Dupl, Drop,
-		Int, Real, Unit, True, False,
+		Int, Real, String, Unit, True, False,
 		Jump, Else, Compare, IsEnum,
 		Call, Tail, Prelude, Apply,
 		Get, Set, GetGlob, SetGlob,
@@ -45,6 +45,7 @@ struct Cmd
 		size_t count; // Apply
 		size_t index; // Get, Set
 
+		std::string* string;
 		Env::Function* func; // Call, Tail, IsEnum
 		Env::Type* type; // Make
 		Env::Global* global; // GetGlob, SetGlob
@@ -55,21 +56,19 @@ struct Cmd
 struct Code
 {
 	Code (Cmd* program, size_t nargs, size_t nvars);
-	~Code ();
+	void destroy ();
 
 	Cmd* program;
 	size_t nargs;
 	size_t nvars;
-
-	// TODO: constant data?
 };
 
 // executing frame
 struct Exec
 {
 	size_t frame_pos;
-	Cmd* program;
 	size_t pc;
+	Cmd* program;
 
 	void begin (Thread& th, const Code& code);
 	void step (Thread& th);

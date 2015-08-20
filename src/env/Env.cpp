@@ -206,7 +206,7 @@ Global::~Global ()
 Function::~Function ()
 {
 	if (kind == CodeFunction)
-		delete[] code.program;
+		code.destroy();
 }
 
 

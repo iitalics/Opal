@@ -6,7 +6,11 @@ namespace Opal { namespace Run {
 
 Code::Code (Cmd* _program, size_t _nargs, size_t _nvars)
 	: program(_program), nargs(_nargs), nvars(_nvars) {}
-Code::~Code () { }
+void Code::destroy ()
+{
+	delete[] program;
+	program = nullptr;
+}
 
 
 Thread::Thread () {}
@@ -125,7 +129,7 @@ void Exec::step (Thread& th)
 {
 	std::string cmds[] = {
 		"noop", "load", "store", "dupl",
-		"drop", "int", "real", "unit",
+		"drop", "int", "real", "string", "unit",
 		"true", "false", "jump", "else",
 		"compare", "isenum", "call", "tail",
 		"prelude", "apply", "get", "set",
@@ -188,6 +192,10 @@ void Exec::step (Thread& th)
 		break;
 	case Cmd::Make:
 		std::cout << " <" << cur.type->fullname().str() << ">" << std::endl;
+		break;
+
+	case Cmd::String:
+		std::cout << " \"" << *(cur.string) << "\"" << std::endl;
 		break;
 
 	default:

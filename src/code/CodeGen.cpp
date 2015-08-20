@@ -87,6 +87,8 @@ void CodeGen::generate (AST::ExpPtr e)
 	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::StringExp*>(e.get()))
+		add({ Cmd::String, .string = new std::string(e2->value) });
 	else
 		throw unimplement(e->span);
 }
