@@ -72,7 +72,9 @@ public:
 	bool castReal;
 	bool castLong;
 
-	explicit inline IntExp (Int_t _value) : value(_value) {}
+	explicit inline IntExp (Int_t _value)
+		: value(_value), castReal(false),
+		  castLong(false) {}
 	virtual ~IntExp();
 	virtual std::string str (int ident) const;
 };
