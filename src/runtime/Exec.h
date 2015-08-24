@@ -23,7 +23,7 @@ struct Cmd
 		Jump, Else, Compare, IsEnum,
 		Call, Tail, Prelude, Apply,
 		Get, Set, GetGlob, SetGlob,
-		Make, Ret, Throw,
+		Object, Tuple, Func, Ret, Throw,
 
 		CmpLt = 1,
 		CmpGr = 2,
@@ -42,12 +42,12 @@ struct Cmd
 
 		size_t var; // Load, Store
 		size_t dest_pc; // Jump, Else
-		size_t count; // Apply
+		size_t count; // Apply, Object, Tuple
 		size_t index; // Get, Set
 
-		std::string* string;
-		Env::Function* func; // Call, Tail, IsEnum
-		Env::Type* type; // Make
+		std::string* string; // String
+		Env::Function* func; // Call, Tail, IsEnum, Func
+		Env::Type* type; // Object
 		Env::Global* global; // GetGlob, SetGlob
 	};
 };

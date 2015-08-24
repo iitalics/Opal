@@ -71,7 +71,7 @@ Global* Module::getGlobal (const std::string& name) const
 Type::Type (const std::string& _name,
 		Module* _mod, size_t _nparams,
 		bool _iface, const Span& _span)
-	: name(_name), module(_mod), declSpan(_span), nparams(_nparams), isIFace(_iface)
+	: name(_name), module(_mod), declSpan(_span), nparams(_nparams), isIFace(_iface), userCreate(false)
 {
 	gc_collected = true;
 	_function = _tuple = false;

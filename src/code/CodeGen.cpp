@@ -77,8 +77,6 @@ void CodeGen::generate (AST::ExpPtr e)
 	if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::IntExp*>(e.get())) _generate(e2);
-	else if (auto e2 = dynamic_cast<AST::RealExp*>(e.get())) _generate(e2);
-	else if (auto e2 = dynamic_cast<AST::BoolExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get())) _generate(e2);
@@ -87,8 +85,18 @@ void CodeGen::generate (AST::ExpPtr e)
 	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::TupleExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get())) _generate(e2);
+
 	else if (auto e2 = dynamic_cast<AST::StringExp*>(e.get()))
 		add({ Cmd::String, .string = new std::string(e2->value) });
+
+	else if (auto e2 = dynamic_cast<AST::RealExp*>(e.get()))
+		add({ Cmd::Real, .real_val = e2->value });
+
+	else if (auto e2 = dynamic_cast<AST::BoolExp*>(e.get()))
+		add(e2->value ? Cmd::True : Cmd::False);
+
 	else
 		throw unimplement(e->span);
 }
@@ -119,14 +127,6 @@ void CodeGen::_generate (AST::IntExp* e)
 		add({ Cmd::Real, .real_val = Real_t(e->value) });
 	else
 		add({ Cmd::Int, .int_val = e->value });
-}
-void CodeGen::_generate (AST::RealExp* e)
-{
-	add({ Cmd::Real, .real_val = e->value });
-}
-void CodeGen::_generate (AST::BoolExp* e)
-{
-	add(e->value ? Cmd::True : Cmd::False);
 }
 void CodeGen::_generate (AST::CallExp* e)
 {
@@ -275,7 +275,25 @@ void CodeGen::_generate (AST::ReturnExp* e)
 	generate(e->children[0]);
 	add(Cmd::Ret);
 }
+void CodeGen::_generate (AST::TupleExp* e)
+{
+	for (auto& e2 : e->children)
+		generate(e2);
+	add({ Cmd::Tuple, .count = e->children.size() });
+}
+void CodeGen::_generate (AST::ObjectExp* e)
+{
+	auto base = e->base;
+	size_t nfields = base->data.nfields;
 
+	add({ Cmd::Object, .type = base });
+	for (size_t i = 0; i < nfields; i++)
+	{
+		add(Cmd::Dupl);
+		generate(e->children[i]);
+		add({ Cmd::Set, .index = size_t(e->index[i]) });
+	}
+}
 
 
 

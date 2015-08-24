@@ -1,30 +1,33 @@
 use Core
 
-impl int {
-	fn equal (x : int) { true }
-	fn str () { "<int>" }
+pub type rect {
+	width : int,
+	height : int
+}
+pub type pt {
+	x : int, y : int
 }
 
-fn println (what : string) { }
+impl rect {
+	fn perim () {
+		self.width + self.width +
+		self.height + self.height
+	}
+	fn draw (pt : pt) { ; }
+}
+impl (pt, rect) {
+	fn draw () {
+		let p = self.a
+		let r = self.b
+		r.draw(p)
+	}
+}
 
-fn main (argc : int)
-{
-	let y = 
-		if argc < 2 {
-			println("not enough arguments")
-			true
-		} else {
-			let x = 4
+fn main () {
+	let shape =
+		(new pt { x = 0, y = 0 },
+		 new rect { width = 100, height = 120 })
 
-			println(x.str())
-			x = x + 1
-			println(x.str())
-
-			x != 5
-		}
-	let z = true
-
-	println(
-		if y and z { "y and z!" }
-		else { ":<" })
+	shape.draw()
+	shape.b.draw(new pt { x = 10, y = 10 })
 }

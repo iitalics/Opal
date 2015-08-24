@@ -126,6 +126,7 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 	size_t nfields = tydecl->fields.size();
 	type->data.nfields = nfields;
 	type->data.fields = new Infer::Var[nfields];
+	type->userCreate = true;
 
 	// create fields from AST
 	for (size_t i = 0; i < nfields; i++)

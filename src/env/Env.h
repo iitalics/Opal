@@ -98,6 +98,7 @@ public:
 	// type data
 	size_t nparams;
 	bool isIFace;
+	bool userCreate;
 	union
 	{
 		DataType data;

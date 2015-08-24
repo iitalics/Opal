@@ -344,8 +344,8 @@ void Analysis::_infer (AST::ObjectExp* e, TypePtr dest)
 {
 	auto type = Type::fromAST(e->objType, _ctx);
 
-	if (type->kind != Type::Concrete || type->base->isIFace)
-		throw SourceError("expected concrete, non-iface type",
+	if (type->kind != Type::Concrete || !type->base->userCreate)
+		throw SourceError("cannot explicitly create instances of this type",
 			e->objType->span);
 
 	for (size_t i = 0, len = e->inits.size(); i < len; i++)
@@ -371,6 +371,29 @@ void Analysis::_infer (AST::ObjectExp* e, TypePtr dest)
 
 		e->index.push_back(index);
 		infer(e->children[i], fieldType);
+	}
+
+	if (e->inits.size() < type->base->data.nfields)
+	{
+		for (size_t i = 0, nfields = type->base->data.nfields; i < nfields; i++)
+		{
+			bool found = false;
+			for (auto idx : e->index)
+				if (idx == i)
+				{
+					found = true;
+					break;
+				}
+
+			if (!found)
+			{
+				std::ostringstream ss;
+				ss << "field '"
+				   << type->base->data.fields[i].name
+				   << "' requires initialization";
+				throw SourceError(ss.str(), e->span);
+			}
+		}
 	}
 
 	e->base = type->base;

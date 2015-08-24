@@ -44,8 +44,14 @@ Type* Type::tuple (size_t argc)
 		argc,
 		false);
 	ty->_tuple = true;
-	ty->data.fields = nullptr;
-	ty->data.nfields = 0;
+	ty->data.nfields = argc;
+	ty->data.fields = new Infer::Var[argc];
+	for (size_t i = 0; i < argc; i++)
+	{
+		auto name = std::string(1, 'a' + i);
+		auto type = Infer::Type::param(i, name);
+		ty->data.fields[i] = Infer::Var { name, type };
+	}
 	_tuples[argc] = ty;
 	return ty;
 }

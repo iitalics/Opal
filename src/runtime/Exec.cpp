@@ -133,8 +133,8 @@ void Exec::step (Thread& th)
 		"true", "false", "jump", "else",
 		"compare", "isenum", "call", "tail",
 		"prelude", "apply", "get", "set",
-		"getg", "setg", "make",	"ret",
-		"throw"
+		"getg", "setg", "object", "tuple",
+		"func", "ret", "throw"
 	};
 
 	auto cur = program[pc++];
@@ -148,7 +148,7 @@ void Exec::step (Thread& th)
 		break;
 
 	case Cmd::Get: case Cmd::Set:
-	case Cmd::Apply:
+	case Cmd::Apply: case Cmd::Tuple:
 		std::cout << " " << cur.index << std::endl;
 		break;
 
@@ -182,15 +182,15 @@ void Exec::step (Thread& th)
 		std::cout << "}" << std::endl;
 		break;
 
-	case Cmd::Call:
-	case Cmd::Tail:
+	case Cmd::Call: case Cmd::Tail:
 	case Cmd::IsEnum:
+	case Cmd::Func:
 		std::cout << " <" << cur.func->fullname().str() << ">" << std::endl;
 		break;
 	case Cmd::SetGlob: case Cmd::GetGlob:
 		std::cout << " <" << cur.global->fullname().str() << ">" << std::endl;
 		break;
-	case Cmd::Make:
+	case Cmd::Object:
 		std::cout << " <" << cur.type->fullname().str() << ">" << std::endl;
 		break;
 
