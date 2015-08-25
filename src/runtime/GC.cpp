@@ -4,7 +4,9 @@
 namespace Opal { namespace GC {
 ;
 
-// virtual
+Object::Object ()
+	: gc_count(1), gc_marked(false)
+{ }
 Object::~Object () {}
 void Object::markChildren () {}
 

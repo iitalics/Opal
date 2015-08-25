@@ -18,6 +18,7 @@ struct Object
 	size_t gc_count;
 	bool gc_marked;
 
+	Object ();
 	virtual ~Object ();
 	void mark ();
 	void retain ();
