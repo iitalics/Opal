@@ -22,7 +22,7 @@ Thread::~Thread ()
 
 /// stack utilities
 ///
-Cell Thread::get (size_t pos)
+Cell Thread::get (size_t pos) const
 {
 	if (_stack.size() > pos)
 		return _stack[pos];
@@ -46,6 +46,13 @@ Cell Thread::pop ()
 //		std::cout << "{thread} popped: " << cell.str() << std::endl;
 		return cell;
 	}
+	else
+		return Cell::Unit();
+}
+Cell Thread::peek () const
+{
+	if (!_stack.empty())
+		return _stack.back();
 	else
 		return Cell::Unit();
 }
@@ -198,7 +205,7 @@ void Exec::step (Thread& th)
 		a.release();
 		break;
 	case Cmd::Dupl:
-		th.push(a = th.get(th.size() - 1));
+		th.push(a = th.peek());
 		break;
 	case Cmd::Drop:
 		th.drop();

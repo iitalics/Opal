@@ -85,9 +85,10 @@ public:
 
 	// stack utilities
 	inline size_t size () const { return _stack.size(); }
-	Cell get (size_t pos);
+	Cell get (size_t pos) const;
 	void set (size_t pos, Cell cell);
 	Cell pop ();
+	Cell peek () const;
 	void drop ();
 	void drop (size_t n);
 	void push (Cell cell);
