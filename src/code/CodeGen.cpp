@@ -36,7 +36,7 @@ size_t CodeGen::var (int varID)
 	if (var >= _nargs)
 	{
 		if (_nvars < var - _nargs + 1)
-			_nvars = var - _nvars + 1;
+			_nvars = var - _nargs + 1;
 	}
 	return var;
 }
