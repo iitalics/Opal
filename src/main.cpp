@@ -40,14 +40,22 @@ int main ()
 		fn_int_add->args = { { "x", intType }, { "y", intType } };
 		fn_int_add->ret = intType;
 		fn_int_add->parent = core_int;
-		core_int->methods.push_back(fn_int_add);
 
 		auto fn_int_cmp = new Env::Function(Env::Function::NativeFunction, "cmp", core);
 		fn_int_cmp->nativeFunc = proc_int_sub;
 		fn_int_cmp->args = { { "x", intType }, { "y", intType } };
 		fn_int_cmp->ret = intType;
 		fn_int_cmp->parent = core_int;
+
+		auto fn_int_sub = new Env::Function(Env::Function::NativeFunction, "sub", core);
+		fn_int_sub->nativeFunc = proc_int_sub;
+		fn_int_sub->args = { { "x", intType }, { "y", intType } };
+		fn_int_sub->ret = intType;
+		fn_int_sub->parent = core_int;
+
+		core_int->methods.push_back(fn_int_add);
 		core_int->methods.push_back(fn_int_cmp);
+		core_int->methods.push_back(fn_int_sub);
 
 		// load some code
 		auto nm = Env::loadSource("tests/runtime.opal");
@@ -61,7 +69,17 @@ int main ()
 		// execute it in a new thread
 		std::cout << "executing main" << std::endl;
 		thread.call(global_main->func);
-		while (thread.step()) ;
+
+		size_t count = 0;
+		while (thread.step()) count++;
+
+		std::cout << "total commands: " << count << std::endl;
+		if (thread.size() > 0)
+		{
+			auto res = thread.pop();
+			std::cout << "result: " << res.str() << std::endl;
+			res.release();
+		}
 
 		// bye
 	}

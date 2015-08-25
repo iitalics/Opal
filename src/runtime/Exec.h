@@ -89,9 +89,10 @@ public:
 	void set (size_t pos, Cell cell);
 	Cell pop ();
 	void drop ();
-	void drop (size_t n = 0);
+	void drop (size_t n);
 	void push (Cell cell);
 	void units (size_t n);
+	void remove (size_t start, size_t end);
 
 	// execution utilities
 	void call (const Code& code);
