@@ -37,6 +37,7 @@ struct Cell
 	static Cell Int (Int_t n);
 	static Cell Real (Real_t n);
 	static Cell Long (Long_t n);
+	static Cell String (const std::string& s);
 	static Cell Object (Env::Type* type, GC::Object* obj);
 	static Cell Enum (Env::Type* type, size_t nfields,
 		Env::Function* ctor = nullptr);
@@ -48,7 +49,8 @@ struct Cell
 
 struct SimpleObject : public GC::Object
 {
-	SimpleObject (size_t nchilds, Env::Function* ctor = nullptr);
+	explicit SimpleObject (size_t nchilds,
+		Env::Function* ctor = nullptr);
 	virtual ~SimpleObject ();
 
 	Env::Function* ctor;
@@ -56,6 +58,14 @@ struct SimpleObject : public GC::Object
 
 	Cell get (size_t i);
 	void set (size_t i, Cell c);
+};
+
+struct StringObject : public GC::Object
+{
+	StringObject (const std::string& str);
+	virtual ~StringObject ();
+
+	std::string string;
 };
 
 }}

@@ -23,6 +23,8 @@ Cell Cell::Int (Int_t n)
 { return Cell { core_int, .dataInt = n }; }
 Cell Cell::Real (Real_t n)
 { return Cell { core_real, .dataReal = n }; }
+Cell Cell::String (const std::string& s)
+{ return Cell { core_string, .obj = s.empty() ? nullptr : new StringObject(s) }; }
 Cell Cell::Object (Env::Type* type, GC::Object* obj)
 { return Cell { type, .obj = obj }; }
 Cell Cell::Enum (Env::Type* type, size_t nfields, Env::Function* ctor)
@@ -92,6 +94,13 @@ std::string Cell::str () const
 		else
 			ss << dataReal;
 	}
+	else if (type == core_string)
+	{
+		if (obj == nullptr)
+			ss << "\"\"";
+		else
+			ss << "\"" << ((StringObject*) obj)->string << "\"";
+	}
 	else
 	{
 		ss << "<" << type->name << ">";
@@ -134,5 +143,9 @@ void SimpleObject::set (size_t i, Cell val)
 	children[i].release();
 	children[i] = val.retain();
 }
+
+StringObject::StringObject (const std::string& _string)
+	: string(_string) {}
+StringObject::~StringObject () {}
 
 }}

@@ -173,7 +173,6 @@ void Exec::step (Thread& th)
 		break;
 
 	// UNIMPLEMENTED VALUE RETURNING
-	case Cmd::String:
 	case Cmd::GetGlob:
 	case Cmd::Func:
 	//
@@ -186,6 +185,10 @@ void Exec::step (Thread& th)
 		break;
 	case Cmd::False:
 		th.push(a = Cell::Bool(false));
+		break;
+	case Cmd::String:
+		th.push(a = Cell::String(*cur.string));
+		a.release();
 		break;
 	case Cmd::Load:
 		th.push(a = th.get(frame_pos + cur.index));
