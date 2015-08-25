@@ -23,7 +23,28 @@ Cell Cell::Int (Int_t n)
 { return Cell { core_int, .dataInt = n }; }
 Cell Cell::Object (Env::Type* type, GC::Object* obj)
 { return Cell { type, .obj = obj }; }
+Cell Cell::Enum (Env::Type* type, size_t nfields, Env::Function* ctor)
+{
+	if (nfields > 0)
+		return Cell::Object(type, new SimpleObject(nfields, ctor));
+	else
+		return Cell { type, .dataInt = 1 | Int_t(ctor) };
+}
 
+
+bool Cell::isEnum (Env::Function* ctor) const
+{
+	if (dataInt & 1)
+		return (dataInt & ~1) == Int_t(ctor);
+	else if (simple)
+		return simple->ctor == ctor;
+	else
+		return false;
+}
+Cell& Cell::field (size_t i)
+{
+	return simple->children[i];
+}
 
 void Cell::mark ()
 {
@@ -50,17 +71,14 @@ void Cell::release ()
 }
 
 
-SimpleObject::SimpleObject (size_t nchilds)
+SimpleObject::SimpleObject (size_t nchilds, Env::Function* _ctor)
+	: ctor(_ctor)
 {
 	children.reserve(nchilds);
 	for (size_t i = 0; i < nchilds; i++)
 		children.push_back(Cell::Unit());
 }
 SimpleObject::~SimpleObject () { }
-
-EnumObject::EnumObject (Env::Function* _ctor, size_t n)
-	: SimpleObject(n), ctor(_ctor) {}
-EnumObject::~EnumObject () {}
 
 
 }}

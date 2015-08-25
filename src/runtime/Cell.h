@@ -11,7 +11,6 @@ class Global;
 namespace Run {
 
 struct SimpleObject;
-struct EnumObject;
 
 struct Cell
 {
@@ -24,6 +23,7 @@ struct Cell
 		Char_t dataChar;
 		bool dataBool;
 		GC::Object* obj;
+		SimpleObject* simple;
 		void* data;
 	};
 
@@ -37,23 +37,19 @@ struct Cell
 	static Cell Int (Int_t n);
 	static Cell Long (Long_t n);
 	static Cell Object (Env::Type* type, GC::Object* obj);
+	static Cell Enum (Env::Type* type, size_t nfields, Env::Function* ctor = nullptr);
+
+	bool isEnum (Env::Function* ctor) const;
+	Cell& field (size_t i);
 };
 
 struct SimpleObject : public GC::Object
 {
-	SimpleObject (size_t nchilds);
+	SimpleObject (size_t nchilds, Env::Function* ctor = nullptr);
 	virtual ~SimpleObject ();
 
+	Env::Function* ctor;
 	std::vector<Cell> children;
 };
-
-struct EnumObject : public SimpleObject
-{
-	EnumObject (Env::Function* ctor, size_t nchilds);
-	virtual ~EnumObject ();
-
-	Env::Function* ctor;
-};
-
 
 }}
