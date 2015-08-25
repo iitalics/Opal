@@ -16,11 +16,13 @@ void Cell::initTypes ()
 
 // constructors
 Cell Cell::Unit ()
-{ return Cell { core_unit }; }
+{ return Cell { core_unit, .obj = nullptr }; }
 Cell Cell::Bool (bool b)
 { return Cell { core_bool, .dataBool = b }; }
 Cell Cell::Int (Int_t n)
 { return Cell { core_int, .dataInt = n }; }
+Cell Cell::Real (Real_t n)
+{ return Cell { core_real, .dataReal = n }; }
 Cell Cell::Object (Env::Type* type, GC::Object* obj)
 { return Cell { type, .obj = obj }; }
 Cell Cell::Enum (Env::Type* type, size_t nfields, Env::Function* ctor)
@@ -40,10 +42,6 @@ bool Cell::isEnum (Env::Function* ctor) const
 		return simple->ctor == ctor;
 	else
 		return false;
-}
-Cell& Cell::field (size_t i)
-{
-	return simple->children[i];
 }
 
 void Cell::mark ()
@@ -70,6 +68,49 @@ void Cell::release ()
 	}
 }
 
+std::string Cell::str () const
+{
+	/*
+		5
+		5.0
+		true/false
+		"foo"
+		<range_iter> [start = 0, end = 10]
+	*/
+	std::ostringstream ss;
+
+	if (type == core_unit)
+		return "()";
+	else if (type == core_bool)
+		return dataBool ? "true" : "false";
+	else if (type == core_int)
+		ss << dataInt;
+	else if (type == core_real)
+	{
+		if (dataReal == Int_t(dataReal))
+			ss << Int_t(dataReal) << ".0";
+		else
+			ss << dataReal;
+	}
+	else
+	{
+		ss << "<" << type->name << ">";
+		if (type->userCreate && type->data.nfields > 0)
+		{
+			ss << " [";
+			for (size_t i = 0; i < type->data.nfields; i++)
+			{
+				if (i > 0)
+					ss << ", ";
+				ss << type->data.fields[i].name << " = "
+				   << simple->get(i).str();
+			}
+			ss << "]";
+		}
+	}
+	return ss.str();
+}
+
 
 SimpleObject::SimpleObject (size_t nchilds, Env::Function* _ctor)
 	: ctor(_ctor)
@@ -78,7 +119,20 @@ SimpleObject::SimpleObject (size_t nchilds, Env::Function* _ctor)
 	for (size_t i = 0; i < nchilds; i++)
 		children.push_back(Cell::Unit());
 }
-SimpleObject::~SimpleObject () { }
+SimpleObject::~SimpleObject ()
+{
+	for (auto ch : children)
+		ch.release();
+}
 
+Cell SimpleObject::get (size_t i)
+{
+	return children[i];
+}
+void SimpleObject::set (size_t i, Cell val)
+{
+	children[i].release();
+	children[i] = val.retain();
+}
 
 }}

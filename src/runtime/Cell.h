@@ -3,12 +3,12 @@
 #include "GC.h"
 namespace Opal {
 namespace Env {
-;
 class Type;
 class Function;
 class Global;
 }
 namespace Run {
+;
 
 struct SimpleObject;
 
@@ -35,12 +35,15 @@ struct Cell
 	static Cell Unit ();
 	static Cell Bool (bool b);
 	static Cell Int (Int_t n);
+	static Cell Real (Real_t n);
 	static Cell Long (Long_t n);
 	static Cell Object (Env::Type* type, GC::Object* obj);
-	static Cell Enum (Env::Type* type, size_t nfields, Env::Function* ctor = nullptr);
+	static Cell Enum (Env::Type* type, size_t nfields,
+		Env::Function* ctor = nullptr);
 
 	bool isEnum (Env::Function* ctor) const;
-	Cell& field (size_t i);
+
+	std::string str () const;
 };
 
 struct SimpleObject : public GC::Object
@@ -50,6 +53,9 @@ struct SimpleObject : public GC::Object
 
 	Env::Function* ctor;
 	std::vector<Cell> children;
+
+	Cell get (size_t i);
+	void set (size_t i, Cell c);
 };
 
 }}
