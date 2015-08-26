@@ -29,6 +29,7 @@ Type* Type::function (size_t argc)
 	ty->data.fields = nullptr;
 	ty->data.nfields = 0;
 	_functions[argc] = ty;
+	coreMod->types.push_back(ty);
 	return ty;
 }
 Type* Type::tuple (size_t argc)
@@ -53,6 +54,7 @@ Type* Type::tuple (size_t argc)
 		ty->data.fields[i] = Infer::Var { name, type };
 	}
 	_tuples[argc] = ty;
+	coreMod->types.push_back(ty);
 	return ty;
 }
 Type* Type::core (const std::string& name)
