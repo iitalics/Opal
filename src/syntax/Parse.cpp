@@ -139,20 +139,15 @@ fn_decl:
 	"fn" ID "(" [var {"," var}] ")" fn_body
 
 fn_body:
-	"=" exp
 	block_exp
 */
 static ExpPtr parseFuncBody (Scanner& scan)
 {
 	scan.expect({ EQUAL, LCURL });
 
-	if (scan.get() == EQUAL)
-	{
-		scan.shift();
-		return parseExp(scan);
-	}
-	else
-		return parseBlockExp(scan);
+	// TODO: "extern"
+
+	return parseBlockExp(scan);
 }
 static DeclPtr parseFuncDecl (Scanner& scan, const Var& impl)
 {

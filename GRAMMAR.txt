@@ -33,9 +33,8 @@ fn_decl:
 fn_sig:
 	"fn" ID "(" [var {"," var}] ")"
 fn_body:
-	"=" exp
-	"extern" STRING ":" type
 	block_exp
+	"extern" STRING "->" type
 
 
 let_decl:
