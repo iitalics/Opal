@@ -28,7 +28,11 @@ struct Package
 	template <typename T>
 	T get (const std::string& key)
 	{
-		return (T) _contents[key];
+		auto it = _contents.find(key);
+		if (it == _contents.end())
+			return (T) nullptr;
+		else
+			return (T) it->second;
 	}
 
 	// private constructor

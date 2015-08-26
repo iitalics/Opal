@@ -5,24 +5,19 @@
 using namespace Opal;
 
 
-static void proc_int_add (Run::Thread& th)
+static void foo (Run::Thread& th)
 {
-	auto b = th.pop().dataInt;
-	auto a = th.pop().dataInt;
-	th.push(Run::Cell::Int(a + b));
+	std::cout << "===> foo! <===" << std::endl;
+	th.push(Run::Cell::Unit());
 }
-static void proc_int_sub (Run::Thread& th)
+static void loadPackage (Env::Package& pkg)
 {
-	auto b = th.pop().dataInt;
-	auto a = th.pop().dataInt;
-	th.push(Run::Cell::Int(a - b));
+	pkg.put("foo", foo);
+
+	std::cout << "load package '" << pkg.name() << "' is a success" << std::endl;
 }
-static void proc_int_cmp (Run::Thread& th)
-{
-	auto b = th.pop().dataInt;
-	auto a = th.pop().dataInt;
-	th.push(Run::Cell::Int(a < b ? (-1) : (a > b) ? 1 : 0));
-}
+static Env::PackageLoad _1("opal.test", loadPackage);
+
 
 
 int main ()
@@ -32,36 +27,8 @@ int main ()
 	Run::Thread thread;
 	try
 	{
-		auto core = Env::Module::getCore();
 		Infer::Analysis::initTypes();
 		Run::Cell::initTypes();
-
-		auto core_int = core->getType("int");
-		auto intType = Infer::Type::concrete(core_int, {});
-
-		// define native functions
-		//  TODO: refactor this
-		auto fn_int_add = new Env::Function(Env::Function::NativeFunction, "add", core);
-		fn_int_add->nativeFunc = proc_int_add;
-		fn_int_add->args = { { "x", intType }, { "y", intType } };
-		fn_int_add->ret = intType;
-		fn_int_add->parent = core_int;
-
-		auto fn_int_cmp = new Env::Function(Env::Function::NativeFunction, "cmp", core);
-		fn_int_cmp->nativeFunc = proc_int_cmp;
-		fn_int_cmp->args = { { "x", intType }, { "y", intType } };
-		fn_int_cmp->ret = intType;
-		fn_int_cmp->parent = core_int;
-
-		auto fn_int_sub = new Env::Function(Env::Function::NativeFunction, "sub", core);
-		fn_int_sub->nativeFunc = proc_int_sub;
-		fn_int_sub->args = { { "x", intType }, { "y", intType } };
-		fn_int_sub->ret = intType;
-		fn_int_sub->parent = core_int;
-
-		core_int->methods.push_back(fn_int_add);
-		core_int->methods.push_back(fn_int_cmp);
-		core_int->methods.push_back(fn_int_sub);
 
 		// load some code
 		auto nm = Env::loadSource("tests/runtime.opal");

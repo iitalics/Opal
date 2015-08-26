@@ -237,14 +237,36 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 					fn->declSpan, fndecl->span);
 	}
 
+	bool ext = fndecl->isExtern;
+
 	// ++ memory allocated here ++
 	auto fn = new Function(
-		Function::CodeFunction, // TODO: external functions
+		ext ? Function::NativeFunction
+		    : Function::CodeFunction,
 		fndecl->name,
 		mod,
 		fndecl->span);
 	fn->nm = nm;
-	fn->body = fndecl->body;
+
+	// external function (native)
+	if (ext)
+	{
+		auto pkg = Package::byName(fndecl->pkg, fndecl->span);
+		auto nativefn = pkg.get<Run::NativeFn_t>(fndecl->key);
+
+		if (nativefn == nullptr)
+		{
+			std::ostringstream ss;
+			ss << "undefined external function '" << fndecl->key << "'";
+			throw SourceError(ss.str(), fndecl->span);
+		}
+
+		fn->nativeFunc = nativefn;
+		fn->ret = Infer::Type::fromAST(fndecl->ret, ctx);
+		fn->body = nullptr;
+	}
+	else // normal code function
+		fn->body = fndecl->body;
 
 	if (implBase != nullptr)
 		fn->args.push_back(impl);
