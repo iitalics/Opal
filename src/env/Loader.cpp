@@ -336,6 +336,8 @@ static void codeGenAll ()
 
 void finishModuleLoad ()
 {
+	// load external packages
+	PackageLoad::finish();
 	// declare Types from TypeDecls and IFaceDecls
 	//   (check for duplicates)
 	declareTypes();
