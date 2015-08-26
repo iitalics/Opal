@@ -34,7 +34,7 @@ fn_sig:
 	"fn" ID "(" [var {"," var}] ")"
 fn_body:
 	block_exp
-	"extern" STRING "->" type
+	"extern" "(" STRING ")" STRING "->" type
 
 
 let_decl:
@@ -42,7 +42,11 @@ let_decl:
 
 
 type_decl:
-	"type" type "{" [var {"," var}] "}"
+	"type" type type_body
+type_body:
+	"{" [var {"," var}] "}"
+	"extern" true
+	"extern" false
 
 
 iface_decl:
@@ -135,7 +139,7 @@ list_exp:
 	"[" [exp {"," exp}] "]"
 
 lambda_exp:
-	"fn" "(" [ID {"," ID}] ")" fn_body
+	"fn" "(" [ID {"," ID}] ")" block_exp
 
 object_exp:
 	"new" type "{" [init {"," init}] "}"

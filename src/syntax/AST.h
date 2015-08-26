@@ -385,14 +385,30 @@ class FuncDecl : public Decl
 public:
 	std::string name;
 	std::vector<Var> args;
+
+	bool isExtern;
+	std::string pkg;
+	std::string key;
+	TypePtr ret;
+
 	ExpPtr body;
+
 	Var impl;
 
 	inline FuncDecl (const std::string& _name, 
 			const std::vector<Var>& _args, 
 			ExpPtr _body)
 		: name(_name), args(_args),
-		  body(_body), impl { "", nullptr } {}
+		  isExtern(false), ret(nullptr), body(_body),
+		  impl { "", nullptr } {}
+	inline FuncDecl (const std::string& _name,
+			const std::vector<Var>& _args, 
+			const std::string& _pkg, const std::string& _key,
+			TypePtr _ret)
+		: name(_name), args(_args),
+		  isExtern(true), pkg(_pkg), key(_key), ret(_ret),
+		  impl { "", nullptr } {}
+
 	virtual ~FuncDecl ();
 };
 
@@ -418,12 +434,19 @@ public:
 	std::string name;
 	std::vector<std::string> args;
 
+	bool isExtern;
+	bool gcCollect;
+
 	std::vector<Var> fields;
 
 	inline TypeDecl (const std::string& _name,
 			const std::vector<std::string>& _args,
 			const std::vector<Var>& _fields)
-		: name(_name), args(_args), fields(_fields) {}
+		: name(_name), args(_args), isExtern(false), fields(_fields) {}
+	inline TypeDecl (const std::string& _name,
+			const std::vector<std::string>& _args,
+			bool _gc)
+		: name(_name), args(_args), isExtern(true), gcCollect(_gc) {}
 	virtual ~TypeDecl ();
 };
 

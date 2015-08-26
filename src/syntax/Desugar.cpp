@@ -104,7 +104,11 @@ void desugar (AST::DeclPtr& decl)
 			desugar(fndecl->impl.type);
 		for (auto& a : fndecl->args)
 			desugar(a.type);
-		desugar(fndecl->body);
+
+		if (fndecl->isExtern)
+			desugar(fndecl->ret);
+		else
+			desugar(fndecl->body);
 	}
 	else if (auto tydecl = dynamic_cast<AST::TypeDecl*>(decl.get()))
 	{

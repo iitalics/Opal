@@ -140,23 +140,35 @@ fn_decl:
 
 fn_body:
 	block_exp
+	"extern" "(" STRING ")" STRING "->" type
 */
-static ExpPtr parseFuncBody (Scanner& scan)
+static FuncDecl* parseFuncBody (Scanner& scan,
+		const std::string& name, const std::vector<Var>& args)
 {
-	scan.expect({ EQUAL, LCURL });
+	scan.expect({ LCURL, KW_extern });
 
-	// TODO: "extern"
+	if (scan.get() == KW_extern)
+	{
+		scan.shift();
+		scan.eat(LPAREN);
+		auto pkg = scan.eat(STRING).string;
+		scan.eat(RPAREN);
+		auto key = scan.eat(STRING).string;
+		scan.eat(ARROW);
+		auto ret = parseType(scan);
 
-	return parseBlockExp(scan);
+		return new FuncDecl(name, args, pkg, key, ret);
+	}
+	else
+		return new FuncDecl(name, args, parseBlockExp(scan));
 }
 static DeclPtr parseFuncDecl (Scanner& scan, const Var& impl)
 {
 	auto span = scan.shift().span;
 	auto name = scan.eat(ID).string;
 	auto args = commaList<Var>(scan, parseVar, LPAREN, RPAREN);
-	auto body = parseFuncBody(scan);
 
-	auto fn = new FuncDecl(name, args, body);
+	auto fn = parseFuncBody(scan, name, args);
 	fn->impl = impl;
 	fn->span = span;
 	return DeclPtr(fn);
@@ -905,17 +917,18 @@ static ExpPtr parseLet (Scanner& scan)
 
 /*
 lambda_exp:
-	"fn" "(" [ID {"," ID}] ")" fn_body
+	"fn" "(" [ID {"," ID}] ")" block_exp
 */
 static std::string parseLambdaArg (Scanner& scan)
 {
+	// TODO: optional type
 	return scan.eat(ID).string;
 }
 static ExpPtr parseLambda (Scanner& scan)
 {
 	auto span = scan.shift().span;
 	auto args = commaList(scan, parseLambdaArg, LPAREN, RPAREN);
-	auto body = parseFuncBody(scan);
+	auto body = parseBlockExp(scan);
 	auto res = ExpPtr(new LambdaExp(args, body));
 	res->span = span;
 	return res;
