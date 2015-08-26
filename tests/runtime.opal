@@ -1,33 +1,52 @@
 use Core
 
-pub type rect {
-	width : int,
-	height : int
-}
-pub type pt {
-	x : int, y : int
+
+
+fn sum (n : int) {
+	if n > 0 {
+		n + sum(n - 1)
+	} else {
+		0
+	}
 }
 
-impl rect {
-	fn perim () {
-		self.width + self.width +
-		self.height + self.height
-	}
-	fn draw (pt : pt) { ; }
+type counter {
+	n : int,
+	sum : int
 }
-impl (pt, rect) {
-	fn draw () {
-		let p = self.a
-		let r = self.b
-		r.draw(p)
+impl counter {
+	fn next () {
+		let prev = self.n
+		self.n = prev + 1
+		self.sum = self.sum + prev
+		prev
 	}
+	fn repeat (n : int) {
+		if n > 0 {
+			self.next()
+			self.repeat(n - 1)
+		}
+	}
+}
+fn counter (start : int) {
+	new counter { n = start, sum = 0 }
 }
 
 fn main () {
-	let shape =
-		(new pt { x = 0, y = 0 },
-		 new rect { width = 100, height = 120 })
+	let N = 5
 
-	shape.draw()
-	shape.b.draw(new pt { x = 10, y = 10 })
+	// use recursive algorithm
+	let a = sum(N)
+
+	// use counter object
+	let cn = counter(1)
+	cn.repeat(N)
+	let b = cn.sum
+
+	// check equality
+	if a > b or a < b {
+		"invalid!"
+	} else {
+		"correct answer!"
+	}
 }
