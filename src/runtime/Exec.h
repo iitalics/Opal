@@ -94,6 +94,8 @@ public:
 	void push (Cell cell);
 	void units (size_t n);
 	void remove (size_t start, size_t end);
+	Cell make (Env::Type* ty, size_t nfields,
+				Env::Function* ctor = nullptr);
 
 	// execution utilities
 	void call (const Code& code);

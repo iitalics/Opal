@@ -263,7 +263,11 @@ void CodeGen::_generate (AST::CompareExp* e)
 void CodeGen::_generate (AST::FieldExp* e)
 {
 	if (e->method != nullptr)
-		throw unimplement(e->span);
+	{
+		generate(e->children[0]);
+		add({ Cmd::Int, .int_val = 1 });
+		add({ Cmd::Func, .func = e->method });
+	}
 	else
 	{
 		generate(e->children[0]);

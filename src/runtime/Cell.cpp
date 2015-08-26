@@ -101,6 +101,10 @@ std::string Cell::str () const
 		else
 			ss << "\"" << ((StringObject*) obj)->string << "\"";
 	}
+	else if (type->isFunction())
+	{
+		ss << "<function>";
+	}
 	else
 	{
 		ss << "<" << type->name << ">";

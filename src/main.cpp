@@ -17,6 +17,12 @@ static void proc_int_sub (Run::Thread& th)
 	auto a = th.pop().dataInt;
 	th.push(Run::Cell::Int(a - b));
 }
+static void proc_int_cmp (Run::Thread& th)
+{
+	auto b = th.pop().dataInt;
+	auto a = th.pop().dataInt;
+	th.push(Run::Cell::Int(a < b ? (-1) : (a > b) ? 1 : 0));
+}
 
 
 int main ()
@@ -42,7 +48,7 @@ int main ()
 		fn_int_add->parent = core_int;
 
 		auto fn_int_cmp = new Env::Function(Env::Function::NativeFunction, "cmp", core);
-		fn_int_cmp->nativeFunc = proc_int_sub;
+		fn_int_cmp->nativeFunc = proc_int_cmp;
 		fn_int_cmp->args = { { "x", intType }, { "y", intType } };
 		fn_int_cmp->ret = intType;
 		fn_int_cmp->parent = core_int;

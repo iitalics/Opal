@@ -105,7 +105,17 @@ void Thread::remove (size_t st, size_t end)
 
 	_stack.erase(_stack.begin() + st, _stack.begin() + end);
 }
-
+Cell Thread::make (Env::Type* ty, size_t nfields, Env::Function* ctor)
+{
+	auto obj = Cell::Enum(ty, nfields, ctor);
+	for (size_t i = 0; i < nfields; i++)
+	{
+		auto a = pop();
+		obj.simple->set(nfields - 1 - i, a);
+		a.release();
+	}
+	return obj;
+}
 void Thread::call (const Code& code)
 {
 	_calls.push_back(Exec {});
@@ -168,7 +178,9 @@ void Exec::step (Thread& th)
 	auto cur = program[pc++];
 //	std::cout << "[" << (pc - 1) << "] " << cmds[cur.cmd] << std::endl;
 
+	// general use variables
 	Cell a, b;
+	size_t n;
 
 	switch (cur.cmd)
 	{
@@ -181,7 +193,6 @@ void Exec::step (Thread& th)
 
 	// UNIMPLEMENTED VALUE RETURNING
 	case Cmd::GetGlob:
-	case Cmd::Func:
 	//
 
 	case Cmd::Unit:
@@ -237,12 +248,10 @@ void Exec::step (Thread& th)
 		th.call(cur.func);
 		break;
 	case Cmd::Tail:
-		{
-			size_t argc = cur.func->args.size();
-			th.remove(frame_pos, th.size() - argc);
-			th.call(cur.func);
-			break;
-		}
+		n = cur.func->args.size(); // argc
+		th.remove(frame_pos, th.size() - n);
+		th.call(cur.func);
+		break;
 	case Cmd::Prelude:
 		a = th.pop();
 		for (auto ch : a.simple->children)
@@ -254,7 +263,7 @@ void Exec::step (Thread& th)
 		{
 			size_t argc = cur.count;
 			size_t idx = th.size() - 1 - argc;
-			a = th.get(idx);
+			a = th.get(idx).retain();
 			th.remove(idx, idx + 1);
 			th.call(a.simple->ctor);
 			a.release();
@@ -280,18 +289,19 @@ void Exec::step (Thread& th)
 		a.release();
 		break;
 	case Cmd::Tuple:
-		{
-			size_t n = cur.count;
-			a = Cell::Enum(Env::Type::tuple(n), n);
-			for (size_t i = n; i-- > 0; )
-			{
-				b = th.pop();
-				a.simple->set(i, b);
-				b.release();
-			}
-			th.push(a);
-			a.release();
-		}
+		n = cur.count;
+		a = th.make(Env::Type::tuple(n), n);
+		th.push(a);
+		a.release();
+		break;
+	case Cmd::Func:
+		b = th.pop();
+		n = b.dataInt;
+		b.release();
+		a = th.make(Env::Type::function(cur.func->args.size()), n, cur.func);
+		th.push(a);
+		a.release();
+		break;
 	case Cmd::Ret:
 		th.remove(frame_pos, th.size() - 1);
 		th.ret();
