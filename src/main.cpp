@@ -31,7 +31,7 @@ int main ()
 		Run::Cell::initTypes();
 
 		// load some code
-		auto nm = Env::loadSource("tests/runtime.opal");
+		auto nm = Env::loadSource("tests/external.opal");
 		Env::finishModuleLoad();
 
 		// find 'main' function
