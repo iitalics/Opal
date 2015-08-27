@@ -55,14 +55,14 @@ protected:
 //  a static PackageLoad object, which tells
 //  Opal to request that this new package be made
 /* e.g.
-	void loadMyPackage (Env::Package& pkg)
+	static void loadMyPackage (Env::Package& pkg)
 	{
 		// loading code
 		pkg.put(..., ...);
 	}
 
 	// package request
-	Env::PackageLoad _("my.package", loadMyPackage);
+	static Env::PackageLoad _("my.package", loadMyPackage);
 */
 struct PackageLoad
 {
