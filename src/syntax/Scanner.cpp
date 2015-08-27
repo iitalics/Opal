@@ -119,6 +119,7 @@ std::string Token::str (int kind)
 	case LONG:        return LQ "<number/long>" RQ;
 	case INT:         return LQ "<number>" RQ;
 	case STRING:      return LQ "<string>" RQ;
+	case CHAR:        return LQ "<char>" RQ;
 	default: break;
 	}
 
@@ -141,6 +142,12 @@ std::string Token::str () const
 {
 	if (kind == ID)
 		return LQ + string + RQ;
+	if (kind == CHAR)
+	{
+		std::ostringstream ss;
+		ss << "\'" << val_char << "\'";
+		return ss.str();
+	}
 	else if (kind == POLYID)
 		return LQ "#" + string + RQ;
 	else
@@ -249,6 +256,17 @@ void Scanner::_read (Token& out)
 		out.kind = END_OF_FILE;
 	else if (at(0) == QUOTE_CHAR)
 		_readString(out);
+	else if (at(0) == SQUOTE_CHAR)
+	{
+		// '<char>'
+		adv(1);
+		out.kind = CHAR;
+		out.val_char = _readChar();
+		if (at(0) != SQUOTE_CHAR)
+			throw SourceError("excess characters in char literal",
+				Span(_file, _pos));
+		adv(1);
+	}
 	else if (is_digit(at(0)) || (at(0) == '.' && is_digit(at(1))))
 		_readNumber(out);
 	else if (is_ident(at(0)) || at(0) == POLY_ID_CHAR)

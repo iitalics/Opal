@@ -17,6 +17,7 @@ enum
 	REAL,
 	LONG,
 	STRING,
+	CHAR,
 	LBRACK, RBRACK,
 	LCURL, RCURL,
 	LPAREN, RPAREN,
@@ -66,6 +67,7 @@ struct Token
 		Int_t val_int;
 		Long_t val_long;
 		Real_t val_real;
+		Char_t val_char;
 		bool val_bool;
 	};
 
