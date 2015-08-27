@@ -62,7 +62,7 @@ static void foo_str (Run::Thread& th)
 static void loadPackage (Env::Package& pkg)
 {
 	// get type from module
-	auto fooMod = Env::Module::get("Foo");
+	auto fooMod = Env::Module::get("Test");
 	if (!(Foo::type = fooMod->getType("foo")))
 		throw SourceError("no foo type!");
 

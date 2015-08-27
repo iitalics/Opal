@@ -1,4 +1,4 @@
-module Foo
+module Test
 use Core
 
 // int types. TODO: declare these seperately
