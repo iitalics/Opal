@@ -6,6 +6,8 @@
 namespace Opal { namespace Env {
 ;
 
+#define SILENT_LOADER
+
 
 static SourceError DupError (const std::string& kind,
 		const std::string& name, const Span& s1, const Span& s2)
@@ -126,7 +128,13 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 	size_t nfields = tydecl->fields.size();
 	type->data.nfields = nfields;
 	type->data.fields = new Infer::Var[nfields];
-	type->userCreate = true;
+	if (tydecl->isExtern)
+	{
+		type->userCreate = false;
+		type->gc_collected = tydecl->gcCollect;
+	}
+	else
+		type->userCreate = true;
 
 	// create fields from AST
 	for (size_t i = 0; i < nfields; i++)
@@ -142,7 +150,9 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 		type->data.fields[i] =
 			Infer::Var::fromAST(tydecl->fields[i], ctx);
 	}
+#ifndef SILENT_LOADER
 	std::cout << "created type " << type->fullname().str() << std::endl;
+#endif
 }
 static void createIFace (Namespace* nm, Module* mod, AST::IFaceDecl* ifdecl)
 {
@@ -186,7 +196,9 @@ static void createIFace (Namespace* nm, Module* mod, AST::IFaceDecl* ifdecl)
 
 		fnsig.ret = Infer::Type::fromAST(fn.ret, ctx);
 	}
+#ifndef SILENT_LOADER
 	std::cout << "created iface " << type->fullname().str() << std::endl;
+#endif
 }
 static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 {
@@ -281,13 +293,17 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 	if (global != nullptr)
 	{
 		global->func = fn;
+#ifndef SILENT_LOADER
 		std::cout << "created global function " << global->fullname().str() << std::endl;
+#endif
 	}
 	if (implBase != nullptr)
 	{
 		fn->parent = implBase;
 		implBase->methods.push_back(fn);
+#ifndef SILENT_LOADER
 		std::cout << "created method " << implBase->fullname().str() << "." << fn->name << std::endl;
+#endif
 	}
 }
 static void create (Namespace* nm, AST::DeclPtr decl)
@@ -358,11 +374,11 @@ static void codeGenAll ()
 
 void finishModuleLoad ()
 {
-	// load external packages
-	PackageLoad::finish();
 	// declare Types from TypeDecls and IFaceDecls
 	//   (check for duplicates)
 	declareTypes();
+	// load external packages
+	PackageLoad::finish();
 	// create Types and Globals
 	//   (check for duplicate globals/methods)
 	//   (check that referenced types exist and are used properly)

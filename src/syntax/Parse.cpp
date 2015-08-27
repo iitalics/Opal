@@ -212,8 +212,11 @@ static std::vector<Span> parseTypeSig (Scanner& scan,
 
 /*
 type_decl:
-	"type" type "=" type
-	"type" type "{" [var {"," var}] "}"
+	"type" type type_body
+type_body:
+	"{" [var {"," var}] "}"
+	"extern" true
+	"extern" false
 */
 static DeclPtr parseTypeDecl (Scanner& scan)
 {
@@ -226,9 +229,21 @@ static DeclPtr parseTypeDecl (Scanner& scan)
 
 	if (scan.get() == LCURL)
 	{
+		// struct type
 		auto mems = commaList(scan, parseVar, LCURL, RCURL);
 		res = new TypeDecl(name, args, mems);
 	}
+	else if (scan.get() == KW_extern)
+	{
+		// external type
+		scan.shift();
+		bool gc = (scan.get() == KW_true);
+		scan.expect({ KW_true, KW_false });
+		scan.shift();
+
+		res = new TypeDecl(name, args, gc);
+	}
+	// TODO: enum type
 	else
 	{
 		scan.expect({ LCURL, EQUAL });
