@@ -67,7 +67,7 @@ static void real_add (Run::Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Int(a.dataReal + b.dataReal);
+	auto c = Run::Cell::Real(a.dataReal + b.dataReal);
 	th.push(c);
 	// no release
 }
@@ -75,7 +75,7 @@ static void real_sub (Run::Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Int(a.dataReal - b.dataReal);
+	auto c = Run::Cell::Real(a.dataReal - b.dataReal);
 	th.push(c);
 	// no release
 }
@@ -83,7 +83,7 @@ static void real_mul (Run::Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Int(a.dataReal * b.dataReal);
+	auto c = Run::Cell::Real(a.dataReal * b.dataReal);
 	th.push(c);
 	// no release
 }
@@ -92,7 +92,7 @@ static void real_div (Run::Thread& th)
 	auto b = th.pop();
 	auto a = th.pop();
 	// if (b.dataReal == 0) throw ...
-	auto c = Run::Cell::Int(a.dataReal / b.dataReal);
+	auto c = Run::Cell::Real(a.dataReal / b.dataReal);
 	th.push(c);
 	// no release
 }
@@ -100,21 +100,77 @@ static void real_mod (Run::Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Int(std::fmod(a.dataReal, b.dataReal));
+	auto c = Run::Cell::Real(std::fmod(a.dataReal, b.dataReal));
 	th.push(c);
 	// no release
 }
 static void real_succ (Run::Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Int(a.dataReal + 1.0);
+	auto b = Run::Cell::Real(a.dataReal + 1.0);
 	th.push(b);
 	// no release
 }
 static void real_pred (Run::Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Int(a.dataReal - 1.0);
+	auto b = Run::Cell::Real(a.dataReal - 1.0);
+	th.push(b);
+	// no release
+}
+
+static void long_add (Run::Thread& th)
+{
+	auto b = th.pop();
+	auto a = th.pop();
+	auto c = Run::Cell::Long(a.dataLong + b.dataLong);
+	th.push(c);
+	// no release
+}
+static void long_sub (Run::Thread& th)
+{
+	auto b = th.pop();
+	auto a = th.pop();
+	auto c = Run::Cell::Long(a.dataLong - b.dataLong);
+	th.push(c);
+	// no release
+}
+static void long_mul (Run::Thread& th)
+{
+	auto b = th.pop();
+	auto a = th.pop();
+	auto c = Run::Cell::Long(a.dataLong * b.dataLong);
+	th.push(c);
+	// no release
+}
+static void long_div (Run::Thread& th)
+{
+	auto b = th.pop();
+	auto a = th.pop();
+	// if (b.dataLong == 0) throw ...
+	auto c = Run::Cell::Long(a.dataLong / b.dataLong);
+	th.push(c);
+	// no release
+}
+static void long_mod (Run::Thread& th)
+{
+	auto b = th.pop();
+	auto a = th.pop();
+	auto c = Run::Cell::Long(a.dataLong %b.dataLong);
+	th.push(c);
+	// no release
+}
+static void long_succ (Run::Thread& th)
+{
+	auto a = th.pop();
+	auto b = Run::Cell::Long(a.dataLong + 1.0);
+	th.push(b);
+	// no release
+}
+static void long_pred (Run::Thread& th)
+{
+	auto a = th.pop();
+	auto b = Run::Cell::Long(a.dataLong - 1.0);
 	th.push(b);
 	// no release
 }
@@ -136,7 +192,14 @@ static void loadPackage (Env::Package& pkg)
 	.put("real.div", real_div)
 	.put("real.mod", real_mod)
 	.put("real.succ", real_succ)
-	.put("real.pred", real_pred);
+	.put("real.pred", real_pred)
+	.put("long.add", long_add)
+	.put("long.sub", long_sub)
+	.put("long.mul", long_mul)
+	.put("long.div", long_div)
+	.put("long.mod", long_mod)
+	.put("long.succ", long_succ)
+	.put("long.pred", long_pred);
 
 	std::cout << "load package '" << pkg.name() << "' is a success" << std::endl;
 }
