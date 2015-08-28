@@ -76,7 +76,7 @@ void CodeGen::generate (AST::ExpPtr e)
 {
 	if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get())) _generate(e2);
-	else if (auto e2 = dynamic_cast<AST::IntExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::NumberExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get())) _generate(e2);
@@ -90,12 +90,10 @@ void CodeGen::generate (AST::ExpPtr e)
 
 	else if (auto e2 = dynamic_cast<AST::StringExp*>(e.get()))
 		add({ Cmd::String, .string = new std::string(e2->value) });
-
-	else if (auto e2 = dynamic_cast<AST::RealExp*>(e.get()))
-		add({ Cmd::Real, .real_val = e2->value });
-
 	else if (auto e2 = dynamic_cast<AST::BoolExp*>(e.get()))
 		add(e2->value ? Cmd::True : Cmd::False);
+	else if (auto e2 = dynamic_cast<AST::CharExp*>(e.get()))
+		add({ Cmd::Char, .char_val = e2->value });
 
 	else
 		throw unimplement(e->span);
@@ -121,12 +119,26 @@ void CodeGen::_generate (AST::VarExp* e)
 	else
 		add({ Cmd::Load, .var = var(e->varId) });
 }
-void CodeGen::_generate (AST::IntExp* e)
+void CodeGen::_generate (AST::NumberExp* e)
 {
-	if (e->castReal)
-		add({ Cmd::Real, .real_val = Real_t(e->value) });
-	else
-		add({ Cmd::Int, .int_val = e->value });
+	switch (e->kind)
+	{
+	case AST::NumberExp::Int:
+		add({ Cmd::Int, .int_val = e->intValue });
+		break;
+
+	case AST::NumberExp::Real:
+		add({ Cmd::Real, .real_val = e->realValue });
+		break;
+
+	case AST::NumberExp::Long:
+		add({ Cmd::Long, .long_val = e->longValue });
+		break;
+
+	default:
+		add(Cmd::Unit);
+		break;
+	}
 }
 void CodeGen::_generate (AST::CallExp* e)
 {

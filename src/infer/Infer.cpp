@@ -4,20 +4,25 @@ namespace Opal { namespace Infer {
 ;
 
 // cache core types required by the inferer
-static Env::Type* core_unit, *core_int, *core_bool, *core_real, *core_string;
-static TypePtr unitType, intType, boolType, realType, stringType;
+static Env::Type* core_unit, *core_int, *core_bool, *core_char,
+                 *core_real, *core_long, *core_string;
+static TypePtr unitType, intType, boolType, charType, realType, longType, stringType;
 void Analysis::initTypes ()
 {
 	core_unit = Env::Type::core("unit");
 	core_int = Env::Type::core("int");
 	core_bool = Env::Type::core("bool");
+	core_char = Env::Type::core("char");
 	core_real = Env::Type::core("real");
+	core_long = Env::Type::core("long");
 	core_string = Env::Type::core("string");
 
 	unitType = Type::concrete(core_unit, TypeList());
 	intType = Type::concrete(core_int, TypeList());
 	boolType = Type::concrete(core_bool, TypeList());
+	charType = Type::concrete(core_char, TypeList());
 	realType = Type::concrete(core_real, TypeList());
+	longType = Type::concrete(core_long, TypeList());
 	stringType = Type::concrete(core_string, TypeList());
 }
 
@@ -27,15 +32,15 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 {
 	if (dynamic_cast<AST::StringExp*>(e.get()))
 		unify(dest, stringType, e->span);
-	if (dynamic_cast<AST::RealExp*>(e.get()))
-		unify(dest, realType, e->span);
 	if (dynamic_cast<AST::BoolExp*>(e.get()))
 		unify(dest, boolType, e->span);
+	if (dynamic_cast<AST::CharExp*>(e.get()))
+		unify(dest, charType, e->span);
 	if (dynamic_cast<AST::GotoExp*>(e.get()))
 		; // assume this theoretically returns the right thing always
 	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get()))
 		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::IntExp*>(e.get()))
+	else if (auto e2 = dynamic_cast<AST::NumberExp*>(e.get()))
 		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get()))
 		_infer(e2, dest);
@@ -96,27 +101,41 @@ void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 	unify(dest, type, e->span);
 }
 
-void Analysis::_infer (AST::IntExp* e, TypePtr dest)
+void Analysis::_infer (AST::NumberExp* e, TypePtr dest)
 {
-	// implicitly casts to real/long if necessary
-	if (dest->kind == Type::Concrete)
+	// int literals implicitly casts to real or long
+	if (e->kind == AST::NumberExp::Int && dest->kind == Type::Concrete)
 	{
 		if (dest->base == core_real)
 		{
-			e->castReal = true;
+			e->castReal();
 			return;
 		}
-/*		else if (dest->base == core_long)
+		else if (dest->base == core_long)
 		{
-			e->castLong = true;
+			e->castLong();
 			return;
-		}*/
-		else if (dest->base == core_int)
-			return;
+		}
 	}
+	else
+	{
+		switch (e->kind)
+		{
+		case AST::NumberExp::Int:
+			unify(dest, intType, e->span);
+			break;
 
-	// defaults to Core::int
-	unify(dest, intType, e->span);
+		case AST::NumberExp::Real:
+			unify(dest, realType, e->span);
+			break;
+
+		case AST::NumberExp::Long:
+			unify(dest, longType, e->span);
+			break;
+
+		default: break;
+		}
+	}
 }
 
 void Analysis::_infer (AST::FieldExp* e, TypePtr dest)

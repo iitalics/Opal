@@ -3,26 +3,33 @@
 #include "../env/Env.h"
 namespace Opal { namespace Run {
 
-static Env::Type* core_unit, *core_int, *core_bool, *core_real, *core_string;
+static Env::Type* core_unit, *core_int, *core_bool, *core_char,
+                 *core_real, *core_long, *core_string;
 
 void Cell::initTypes ()
 {
 	core_unit = Env::Type::core("unit");
 	core_int = Env::Type::core("int");
-	core_bool = Env::Type::core("bool");
 	core_real = Env::Type::core("real");
+	core_long = Env::Type::core("long");
+	core_bool = Env::Type::core("bool");
+	core_char = Env::Type::core("char");
 	core_string = Env::Type::core("string");
 }
 
 // constructors
 Cell Cell::Unit ()
 { return Cell { core_unit, .obj = nullptr }; }
-Cell Cell::Bool (bool b)
-{ return Cell { core_bool, .dataBool = b }; }
 Cell Cell::Int (Int_t n)
 { return Cell { core_int, .dataInt = n }; }
 Cell Cell::Real (Real_t n)
 { return Cell { core_real, .dataReal = n }; }
+Cell Cell::Long (Long_t n)
+{ return Cell { core_long, .dataLong = n }; }
+Cell Cell::Bool (bool b)
+{ return Cell { core_bool, .dataBool = b }; }
+Cell Cell::Char (Char_t c)
+{ return Cell { core_char, .dataChar = c }; }
 Cell Cell::String (const std::string& s)
 { return Cell { core_string, .obj = s.empty() ? nullptr : new StringObject(s) }; }
 Cell Cell::Object (Env::Type* type, GC::Object* obj)
@@ -87,6 +94,10 @@ std::string Cell::str () const
 		return dataBool ? "true" : "false";
 	else if (type == core_int)
 		ss << dataInt;
+	else if (type == core_long)
+		ss << dataLong << "L";
+	else if (type == core_char)
+		ss << "\'" << dataChar << "\'";
 	else if (type == core_real)
 	{
 		if (dataReal == Int_t(dataReal))

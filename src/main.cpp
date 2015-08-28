@@ -115,6 +115,8 @@ int main ()
 			std::cout << "result: " << res.str() << std::endl;
 			res.release();
 		}
+		else
+			std::cout << "empty stack!" << std::endl;
 
 		// bye
 		// TODO: destroy everything?

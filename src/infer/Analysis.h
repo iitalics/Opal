@@ -94,7 +94,7 @@ private:
 
 	// OOP is for losers
 	void _infer (AST::VarExp* e, TypePtr dest);
-	void _infer (AST::IntExp* e, TypePtr dest);
+	void _infer (AST::NumberExp* e, TypePtr dest);
 	void _infer (AST::FieldExp* e, TypePtr dest);
 	void _infer (AST::CallExp* e, TypePtr dest);
 	void _infer (AST::BlockExp* e, TypePtr dest);

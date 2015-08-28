@@ -64,26 +64,28 @@ public:
 	virtual ~VarExp ();
 	virtual std::string str (int ident) const;
 };
-class IntExp : public Exp
+class NumberExp : public Exp
 {
 public:
-	Int_t value;
+	enum Kind { Int, Real, Long };
 
-	bool castReal;
-	bool castLong;
+	Kind kind;
+	union {
+		Int_t intValue;
+		Real_t realValue;
+		Long_t longValue;
+	};
 
-	explicit inline IntExp (Int_t _value)
-		: value(_value), castReal(false),
-		  castLong(false) {}
-	virtual ~IntExp();
-	virtual std::string str (int ident) const;
-};
-class RealExp : public Exp
-{
-public:
-	Real_t value;
-	explicit inline RealExp (Real_t _value) : value(_value) {}
-	virtual ~RealExp ();
+	void castReal ();
+	void castLong ();
+
+	explicit inline NumberExp (Int_t v)
+		: kind(Int), intValue(v) {}
+	explicit inline NumberExp (Real_t v)
+		: kind(Real), realValue(v) {}
+	explicit inline NumberExp (Long_t v)
+		: kind(Long), longValue(v) {}
+	virtual ~NumberExp ();
 	virtual std::string str (int ident) const;
 };
 class StringExp : public Exp
@@ -101,6 +103,15 @@ public:
 	explicit inline BoolExp (bool _value) : value(_value) {}
 	virtual ~BoolExp ();
 	virtual std::string str (int ident) const;
+};
+class CharExp : public Exp
+{
+public:
+	Char_t value;
+	explicit inline CharExp (Char_t _value)
+		: value(_value) {}
+	virtual ~CharExp ();
+	virtual std::string str (int indent) const;
 };
 class TupleExp : public Exp
 {

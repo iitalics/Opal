@@ -38,7 +38,7 @@ private:
 	static bool _noValue (AST::ExpPtr e);
 	void _generate (AST::BlockExp* e);
 	void _generate (AST::VarExp* e);
-	void _generate (AST::IntExp* e);
+	void _generate (AST::NumberExp* e);
 	void _generate (AST::CallExp* e);
 	void _generate (AST::LetExp* e);
 	void _generate (AST::AssignExp* e);

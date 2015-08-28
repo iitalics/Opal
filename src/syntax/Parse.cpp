@@ -644,11 +644,15 @@ static ExpPtr parseTerm (Scanner& scan)
 		res->span = span;
 		break;
 	case INT:
-		res = ExpPtr(new IntExp(scan.shift().val_int));
+		res = ExpPtr(new NumberExp(scan.shift().val_int));
 		res->span = span;
 		break;
 	case REAL:
-		res = ExpPtr(new RealExp(scan.shift().val_real));
+		res = ExpPtr(new NumberExp(scan.shift().val_real));
+		res->span = span;
+		break;
+	case LONG:
+		res = ExpPtr(new NumberExp(scan.shift().val_long));
 		res->span = span;
 		break;
 	case STRING:
@@ -663,6 +667,10 @@ static ExpPtr parseTerm (Scanner& scan)
 	case KW_false:
 		scan.shift();
 		res = ExpPtr(new BoolExp(false));
+		res->span = span;
+		break;
+	case CHAR:
+		res = ExpPtr(new CharExp(scan.shift().val_char));
 		res->span = span;
 		break;
 	case LPAREN:

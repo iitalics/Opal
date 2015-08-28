@@ -19,7 +19,8 @@ struct Cmd
 		// operations
 		NoOp = 0,
 		Load, Store, Dupl, Drop,
-		Int, Real, String, Unit, True, False,
+		Int, Real, Long, String, Unit,
+		True, False, Char,
 		Jump, Else, Compare, IsEnum,
 		Call, Tail, Prelude, Apply,
 		Get, Set, GetGlob, SetGlob,
@@ -38,6 +39,8 @@ struct Cmd
 		// operand
 		Int_t int_val; // Int
 		Real_t real_val; // Real
+		Long_t long_val;
+		Char_t char_val;
 		int cmp_flags; // Compare
 
 		size_t var; // Load, Store

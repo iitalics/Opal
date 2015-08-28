@@ -33,10 +33,11 @@ struct Cell
 
 	static void initTypes ();
 	static Cell Unit ();
-	static Cell Bool (bool b);
 	static Cell Int (Int_t n);
 	static Cell Real (Real_t n);
 	static Cell Long (Long_t n);
+	static Cell Bool (bool b);
+	static Cell Char (Char_t c);
 	static Cell String (const std::string& s);
 	static Cell Object (Env::Type* type, GC::Object* obj);
 	static Cell Enum (Env::Type* type, size_t nfields,

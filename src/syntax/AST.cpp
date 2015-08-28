@@ -28,14 +28,43 @@ Exp::~Exp () {}
 std::string Exp::str (int ind) const { return "<exp>"; }
 VarExp::~VarExp () {}
 std::string VarExp::str (int ind) const { return name.str(); }
-IntExp::~IntExp () {}
-std::string IntExp::str (int ind) const { return to_string(value); }
-RealExp::~RealExp () {}
-std::string RealExp::str (int ind) const { return to_string(value); }
+NumberExp::~NumberExp () {}
+std::string NumberExp::str (int ind) const
+{
+	switch (kind)
+	{
+	case Real:
+		if (realValue == Int_t(realValue))
+			return to_string(realValue) + ".0";
+		else
+			return to_string(realValue);
+
+	case Long: return to_string(longValue) + "L";
+	default:
+	case Int: return to_string(intValue);
+	}
+}
+void NumberExp::castReal ()
+{
+	kind = Real;
+	realValue = Real_t(intValue);
+}
+void NumberExp::castLong ()
+{
+	kind = Long;
+	longValue = Real_t(intValue);
+}
 StringExp::~StringExp () {}
 std::string StringExp::str (int ind) const { return "\"" + value + "\""; }
 BoolExp::~BoolExp () {}
 std::string BoolExp::str (int ind) const { return value ? "true" : "false"; }
+CharExp::~CharExp () {}
+std::string CharExp::str (int ind) const
+{
+	std::ostringstream ss;
+	ss << "\'" << value << "\'";
+	return ss.str();
+}
 TupleExp::~TupleExp () {}
 std::string TupleExp::str (int ind) const
 {

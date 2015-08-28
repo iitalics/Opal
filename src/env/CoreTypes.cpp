@@ -70,6 +70,7 @@ static void makePrimitives ()
 
 	auto intType = new Type("int", coreMod, 0, false);
 	auto realType = new Type("real", coreMod, 0, false);
+	auto longType = new Type("long", coreMod, 0, false);
 	auto boolType = new Type("bool", coreMod, 0, false);
 	auto charType = new Type("char", coreMod, 0, false);
 	auto stringType = new Type("string", coreMod, 0, false);
@@ -78,6 +79,7 @@ static void makePrimitives ()
 	// TODO: GC info, default initializers
 	intType->gc_collected = false;
 	realType->gc_collected = false;
+	longType->gc_collected = false;
 	boolType->gc_collected = false;
 	charType->gc_collected = false;
 	unitType->gc_collected = false;
@@ -86,6 +88,7 @@ static void makePrimitives ()
 	coreMod->types.insert(coreMod->types.begin(),
 		{ intType,
 		  realType,
+		  longType,
 		  boolType,
 		  charType,
 		  stringType,

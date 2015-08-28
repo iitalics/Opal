@@ -166,9 +166,9 @@ void Exec::begin (Thread& th, const Code& code)
 void Exec::step (Thread& th)
 {
 	static std::string cmds[] = {
-		"noop", "load", "store", "dupl",
-		"drop", "int", "real", "string", "unit",
-		"true", "false", "jump", "else",
+		"noop", "load", "store", "dupl", "drop",
+		"int", "real", "long", "string", "unit",
+		"true", "false", "char", "jump", "else",
 		"compare", "isenum", "call", "tail",
 		"prelude", "apply", "get", "set",
 		"getg", "setg", "object", "tuple",
@@ -190,6 +190,18 @@ void Exec::step (Thread& th)
 	case Cmd::Real:
 		th.push(a = Cell::Real(cur.real_val));
 		break;
+	case Cmd::Long:
+		th.push(a = Cell::Long(cur.long_val));
+		break;
+	case Cmd::Char:
+		th.push(a = Cell::Char(cur.char_val));
+		break;
+	case Cmd::True:
+		th.push(a = Cell::Bool(true));
+		break;
+	case Cmd::False:
+		th.push(a = Cell::Bool(false));
+		break;
 
 	// UNIMPLEMENTED VALUE RETURNING
 	case Cmd::GetGlob:
@@ -197,12 +209,6 @@ void Exec::step (Thread& th)
 
 	case Cmd::Unit:
 		th.push(a = Cell::Unit());
-		break;
-	case Cmd::True:
-		th.push(a = Cell::Bool(true));
-		break;
-	case Cmd::False:
-		th.push(a = Cell::Bool(false));
 		break;
 	case Cmd::String:
 		th.push(a = Cell::String(*cur.string));
