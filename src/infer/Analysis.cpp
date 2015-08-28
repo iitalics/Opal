@@ -245,7 +245,7 @@ TypePtr Analysis::_findIFaceFunc (TypePtr obj, TypePtr iface, const std::string&
 	for (size_t i = 0; i < base->iface.nfuncs; i++)
 		if (base->iface.funcs[i].name == name)
 		{
-			out = nullptr; // TOOD: FIX THIS
+			out = base->methods[i];
 			return _inst(obj, base->iface.funcs[i].getType(), obj);
 		}
 

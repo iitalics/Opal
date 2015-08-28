@@ -134,7 +134,26 @@ void Thread::call (Env::Function* func)
 		break;
 
 	case Env::Function::IFaceFunction:
-		throw SourceError("iface call unimplemented", func->declSpan);
+		{
+			auto name = func->ifaceSig->name;
+			auto argc = func->ifaceSig->argc;
+
+			auto self = get(size() - argc - 1);
+			auto actualType = self.type;
+
+			for (auto m : actualType->methods)
+				if (m->name == name)
+				{
+					call(m);
+					return;
+				}
+
+			// well formed native code should prevent this from
+			//  ever happening
+			throw SourceError("cannot find iface function: " + name,
+				{ "of type: " + actualType->fullname().str() },
+				func->declSpan);
+		}
 	case Env::Function::EnumFunction:
 		throw SourceError("enum call unimplemented", func->declSpan);
 	default:

@@ -195,6 +195,19 @@ static void createIFace (Namespace* nm, Module* mod, AST::IFaceDecl* ifdecl)
 			fnsig.args[j] = Infer::Type::fromAST(fn.args[j], ctx);
 
 		fnsig.ret = Infer::Type::fromAST(fn.ret, ctx);
+
+		// create callable method
+		// ++ memory allocated here ++
+		auto method = new Function(
+			Function::IFaceFunction,
+			fn.name,
+			mod,
+			ifdecl->span);
+		method->nm = nm;
+		method->ret = fnsig.ret;
+		method->ifaceSig = &fnsig;
+		method->parent = type;
+		type->methods.push_back(method);
 	}
 #ifndef SILENT_LOADER
 	std::cout << "created iface " << type->fullname().str() << std::endl;
