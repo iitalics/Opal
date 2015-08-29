@@ -30,16 +30,16 @@ Cell Cell::Bool (bool b)
 { return Cell { core_bool, .dataBool = b }; }
 Cell Cell::Char (Char_t c)
 { return Cell { core_char, .dataChar = c }; }
-Cell Cell::String (const std::string& s)
-{ return Cell { core_string, .obj = s.empty() ? nullptr : new StringObject(s) }; }
 Cell Cell::Object (Env::Type* type, GC::Object* obj)
 { return Cell { type, .obj = obj }; }
+Cell Cell::String (const std::string& s)
+{
+	return Cell::Object(core_string,
+		s.empty() ? nullptr : new StringObject(s));
+}
 Cell Cell::Enum (Env::Type* type, size_t nfields, Env::Function* ctor)
 {
-	if (nfields > 0)
-		return Cell::Object(type, new SimpleObject(nfields, ctor));
-	else
-		return Cell { type, .dataInt = 1 | Int_t(ctor) };
+	return Cell::Object(type, new SimpleObject(nfields, ctor));
 }
 
 
@@ -114,7 +114,7 @@ std::string Cell::str () const
 	}
 	else if (type->isFunction())
 	{
-		ss << "<function>";
+		ss << "<function> " << simple->ctor->fullname().str() << std::endl;
 	}
 	else
 	{
