@@ -49,7 +49,7 @@ Run::Code CodeGen::output ()
 			prgm[i].dest_pc = _labels[_program[i].index];
 	}
 
-	return Run::Code(prgm, _nargs, _localEnv->size());
+	return Run::Code(prgm, _nargs, _localEnv->size() - _nargs);
 }
 bool CodeGen::_noValue (AST::ExpPtr e)
 {
@@ -323,10 +323,8 @@ void CodeGen::_generate (AST::LambdaExp* e)
 
 	// create lambda
 	auto fn = _mod->makeLambda(e->span);
-	for (auto ref : lamEnv->refs)
-		fn->args.push_back(Infer::Var { ref->name, ref->type });
-	for (auto def : lamEnv->defs)
-		fn->args.push_back(Infer::Var { def->name, def->type });
+	for (size_t i = 0, len = e->args.size(); i < len; i++)
+		fn->args.push_back({ e->args[i].name, lamEnv->defs[i]->type });
 
 	fn->body = e->children[0];
 	fn->localEnv = lamEnv;
