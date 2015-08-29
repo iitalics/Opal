@@ -34,7 +34,7 @@ private:
 	std::vector<Run::Cmd> _program;
 	std::vector<size_t> _labels;
 	size_t _nargs;
-	Infer::LocalEnv* _env;
+	Infer::LocalEnv* _localEnv;
 
 	static bool _noValue (AST::ExpPtr e);
 	void _generate (AST::BlockExp* e);

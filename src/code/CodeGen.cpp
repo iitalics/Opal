@@ -5,7 +5,7 @@ namespace Opal { namespace Code {
 using Cmd = Run::Cmd;
 
 CodeGen::CodeGen (Env::Function* func)
-	: _nargs(func->args.size()), _env(func->localEnv)
+	: _nargs(func->args.size()), _localEnv(func->localEnv)
 {
 	generate(func->body);
 	add(Cmd::Ret);
@@ -32,7 +32,7 @@ void CodeGen::place (Label label)
 }
 size_t CodeGen::var (Infer::LocalVar* var)
 {
-	return _env->index(var);
+	return _localEnv->index(var);
 }
 Run::Code CodeGen::output ()
 {
@@ -48,7 +48,7 @@ Run::Code CodeGen::output ()
 			prgm[i].dest_pc = _labels[_program[i].index];
 	}
 
-	return Run::Code(prgm, _nargs, _env->size());
+	return Run::Code(prgm, _nargs, _localEnv->size());
 }
 bool CodeGen::_noValue (AST::ExpPtr e)
 {
