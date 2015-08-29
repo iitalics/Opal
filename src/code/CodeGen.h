@@ -26,8 +26,10 @@ public:
 	Label label ();
 	void place (Label label);
 	size_t var (Infer::LocalVar* var);
-	Run::Code output ()
+	Run::Code output ();
 	void generate (AST::ExpPtr e);
+
+	void showCode ();
 private:
 	Env::Module* _mod;
 	std::vector<Run::Cmd> _program;

@@ -11,6 +11,7 @@ CodeGen::CodeGen (Env::Function* func)
 	add(Cmd::Ret);
 
 	std::cout << "generated code: " << func->fullname().str() << std::endl;
+	showCode();
 }
 CodeGen::~CodeGen () {}
 
@@ -112,7 +113,15 @@ void CodeGen::_generate (AST::VarExp* e)
 	// TODO: boxing and unboxing
 
 	if (e->global != nullptr)
-		add({ Cmd::SetGlob, .global = e->global });
+	{
+		if (e->global->isFunc)
+		{
+			add({ Cmd::Int, .int_val = 0 });
+			add({ Cmd::Func, .func = e->global->func });
+		}
+		else
+			add({ Cmd::GetGlob, .global = e->global });
+	}
 	else
 		add({ Cmd::Load, .var = var(e->var) });
 }
