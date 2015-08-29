@@ -21,6 +21,14 @@ using TypePtr = std::shared_ptr<Type>;
 using TypeList = std::vector<TypePtr>;
 using DeclPtr = std::shared_ptr<Decl>;
 
+
+struct Var
+{
+	std::string name;
+	TypePtr type;
+	Span span;
+};
+
 struct Name
 {
 	std::string name;
@@ -130,10 +138,10 @@ public:
 class LambdaExp : public Exp
 {
 public:
-	std::vector<std::string> args;
+	std::vector<Var> args;
 
 	inline LambdaExp (
-			const std::vector<std::string>& _args,
+			const std::vector<Var>& _args,
 			ExpPtr body)
 		: Exp({ body }),
 		  args(_args) {}
@@ -306,6 +314,8 @@ ExpPtr methodCall (ExpPtr obj, const std::string& method,
 
 
 
+
+
 class Type
 {
 public:
@@ -367,13 +377,6 @@ public:
 };
 
 
-
-struct Var
-{
-	std::string name;
-	TypePtr type;
-	Span span;
-};
 
 class Decl
 {

@@ -89,6 +89,12 @@ void desugar (AST::ExpPtr& e)
 	{
 		desugar(obj->objType);
 	}
+	else if (auto lam = dynamic_cast<AST::LambdaExp*>(e.get()))
+	{
+		for (auto arg : lam->args)
+			if (arg.type != nullptr)
+				desugar(arg.type);
+	}
 
 	for (auto& c : e->children)
 		desugar(c);

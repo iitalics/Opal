@@ -308,6 +308,8 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 		global->func = fn;
 #ifndef SILENT_LOADER
 		std::cout << "created global function " << global->fullname().str() << std::endl;
+		if (!ext)
+			std::cout << fn->body->str() << std::endl;
 #endif
 	}
 	if (implBase != nullptr)

@@ -58,6 +58,8 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get()))
 		_infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::LambdaExp*>(e.get()))
+		_infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get()))
 		_infer(e2);
 	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get()))
@@ -417,6 +419,41 @@ void Analysis::_infer (AST::ObjectExp* e, TypePtr dest)
 
 	e->base = type->base;
 	unify(dest, type, e->span);
+}
+
+void Analysis::_infer (AST::LambdaExp* e, TypePtr dest)
+{
+	auto ret = Type::poly();
+	auto args = TypeList(ret);
+
+	for (size_t i = 0, len = e->args.size(); i < len; i++)
+	{
+		auto arg = e->args[len - i - 1];
+		TypePtr argType;
+
+		if (arg.type == nullptr)
+			argType = Type::poly();
+		else
+			argType = Type::fromAST(arg.type, _ctx);
+
+		args = TypeList(argType, args);
+	}
+
+	auto model = Type::concrete(
+		Env::Type::function(e->args.size()),
+		args);
+
+	// unify with model
+	unify(dest, model, e->span);
+
+	// infer body
+	size_t nstack = stack.size();
+
+	for (size_t i = 0, len = e->args.size(); i < len; ++args, i++)
+		let(e->args[i].name, args.head());
+
+	infer(e->children[0], ret);
+	stack.resize(nstack);
 }
 
 void Analysis::_infer (AST::ReturnExp* e)

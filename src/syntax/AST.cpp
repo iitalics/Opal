@@ -102,7 +102,9 @@ std::string LambdaExp::str (int ind) const
 	{
 		if (i > 0)
 			ss << ", ";
-		ss << args[i];
+		ss << args[i].name;
+		if (args[i].type != nullptr)
+			ss << " : " << args[i].type->str();
 	}
 	ss << ") ";
 	if (!children[0]->is<BlockExp>())

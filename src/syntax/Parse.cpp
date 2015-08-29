@@ -942,10 +942,19 @@ static ExpPtr parseLet (Scanner& scan)
 lambda_exp:
 	"fn" "(" [ID {"," ID}] ")" block_exp
 */
-static std::string parseLambdaArg (Scanner& scan)
+static Var parseLambdaArg (Scanner& scan)
 {
-	// TODO: optional type
-	return scan.eat(ID).string;
+	auto name = scan.eat(ID).string;
+	TypePtr type = nullptr;
+
+	// types optional
+	if (scan.get() == COLON)
+	{
+		scan.shift();
+		type = parseType(scan);
+	}
+
+	return Var { name, type };
 }
 static ExpPtr parseLambda (Scanner& scan)
 {
