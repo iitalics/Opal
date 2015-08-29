@@ -446,13 +446,20 @@ void Analysis::_infer (AST::LambdaExp* e, TypePtr dest)
 	// unify with model
 	unify(dest, model, e->span);
 
-	// infer body
+	// save old environment
 	size_t nstack = stack.size();
+	auto oldEnv = env;
 
+	// create new environemnt
+	env = e->env = new LocalEnv();
 	for (size_t i = 0, len = e->args.size(); i < len; ++args, i++)
 		let(e->args[i].name, args.head());
 
+	// infer body
 	infer(e->children[0], ret);
+
+	// reset
+	env = oldEnv;
 	stack.resize(nstack);
 }
 
@@ -464,17 +471,19 @@ void Analysis::_infer (AST::ReturnExp* e)
 
 void Analysis::_infer (AST::LetExp* e)
 {
+	// determine type
 	TypePtr type = Type::poly();
 	infer(e->children[0], type);
 
+	// create variable
 	e->var = let(e->name, type);
 }
 
 void Analysis::_infer (AST::AssignExp* e)
 {
-	// easy
 	auto type = Type::poly();
 
+	// unify left and right hand expressions
 	auto lh = e->children[0];
 	infer(lh, type);
 	infer(e->children[1], type);
