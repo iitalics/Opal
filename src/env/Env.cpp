@@ -105,7 +105,13 @@ Function::Function (Kind _kind, const std::string& _name, Module* _mod,
 {
 	parent = nullptr;
 	ret = nullptr;
-	analysis = nullptr;
+
+	if (kind == CodeFunction)
+	{
+		analysis = nullptr;
+		code.program = nullptr;
+		localEnv = nullptr;
+	}
 }
 void Function::infer (Infer::Analysis* calledBy)
 {
@@ -206,7 +212,10 @@ Global::~Global ()
 Function::~Function ()
 {
 	if (kind == CodeFunction)
+	{
 		code.destroy();
+		delete localEnv;
+	}
 }
 
 

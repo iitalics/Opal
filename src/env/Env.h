@@ -6,6 +6,7 @@
 namespace Opal {
 namespace Infer {
 class Analysis;
+struct LocalEnv;
 }
 namespace Env {
 ;
@@ -159,6 +160,7 @@ public:
 		{
 			Infer::Analysis* analysis;
 			Run::Code code;
+			Infer::LocalEnv* localEnv;
 		};
 		Run::NativeFn_t nativeFunc;
 		IFaceSignature* ifaceSig;

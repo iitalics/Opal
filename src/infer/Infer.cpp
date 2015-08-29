@@ -71,11 +71,11 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 {
 	Env::Global* global;
-	int id;
+	LocalVar* var;
 	TypePtr type;
 
 	auto name = e->name;
-	if (name.hasModule() || (id = get(name.name)) == -1)
+	if (name.hasModule() || (var = get(name.name)) == nullptr)
 	{
 		global = nm->getGlobal(name); // get global from namespace
 
@@ -96,8 +96,8 @@ void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 	}
 	else
 	{
-		e->varId = id;
-		type = allVars[id].type;
+		e->var = var;
+		type = var->type;
 	}
 
 	unify(dest, type, e->span);
@@ -467,15 +467,25 @@ void Analysis::_infer (AST::LetExp* e)
 	TypePtr type = Type::poly();
 	infer(e->children[0], type);
 
-	e->varId = let(e->name, type);
+	e->var = let(e->name, type);
 }
 
 void Analysis::_infer (AST::AssignExp* e)
 {
 	// easy
 	auto type = Type::poly();
-	infer(e->children[0], type);
+
+	auto lh = e->children[0];
+	infer(lh, type);
 	infer(e->children[1], type);
+
+	if (auto lhvar = dynamic_cast<AST::VarExp*>(lh.get()))
+	{
+		// if left hand is a local variable, let it be
+		//  known that it was mutated
+		if (auto var = lhvar->var)
+			var->didMut = true;
+	}
 }
 
 

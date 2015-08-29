@@ -5,6 +5,34 @@
 namespace Opal { namespace Infer {
 ;
 
+struct LocalVar
+{
+	LocalEnv* parent;
+	std::string name;
+	TypePtr type;
+	bool didMut;
+	bool didRef;
+
+	inline bool needsBox () const
+	{ return didMut && didRef; }
+};
+struct LocalEnv
+{
+	LocalEnv ();
+	~LocalEnv ();
+	bool isLambda;
+
+	// variables defined in this environment
+	std::vector<LocalVar*> defs;
+
+	// variables referenced by this environment
+	std::vector<LocalVar*> refs;
+
+	LocalVar* define (const std::string& name, TypePtr ty);
+	void ref (LocalVar* var);
+	size_t index (LocalVar* var) const;
+	size_t size () const;
+};
 
 class Analysis
 {
@@ -14,24 +42,17 @@ public:
 
 	static void initTypes ();
 
-	struct LocalVar
-	{
-		int id;
-		std::string name;
-		TypePtr type;
-		bool mut;
-	};
 	using Depends = std::set<Analysis*>;
 
 	TypePtr ret;
-	std::vector<LocalVar> allVars;
-	std::vector<int> stack;
+	LocalEnv* env;
+	std::vector<LocalVar*> stack;
 	Depends* depends;
 	Env::Function* parent;
 
 	// local variable lookup
-	int get (const std::string& name) const;
-	int let (const std::string& name, TypePtr type);
+	LocalVar* get (const std::string& name) const;
+	LocalVar* let (const std::string& name, TypePtr type);
 
 	// poly <-> param  type conversion utilities
 	TypePtr replaceParams (TypePtr ty, std::vector<TypePtr>& with);

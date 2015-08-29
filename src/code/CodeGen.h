@@ -1,7 +1,7 @@
 #pragma once
 #include "../runtime/Exec.h"
-#include "../env/Env.h"
 #include "../syntax/AST.h"
+#include "../infer/Analysis.h"
 namespace Opal { namespace Code {
 ;
 
@@ -25,7 +25,7 @@ public:
 	}
 	Label label ();
 	void place (Label label);
-	size_t var (int varID);
+	size_t var (Infer::LocalVar* var);
 	Run::Code output ();
 
 
@@ -33,7 +33,8 @@ public:
 private:
 	std::vector<Run::Cmd> _program;
 	std::vector<size_t> _labels;
-	size_t _nargs, _nvars;
+	size_t _nargs;
+	Infer::LocalEnv* _env;
 
 	static bool _noValue (AST::ExpPtr e);
 	void _generate (AST::BlockExp* e);

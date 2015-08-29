@@ -3,11 +3,13 @@
 #include <list.h>
 namespace Opal {
 namespace Env {
-;
 class Type;
 class Function;
 class Global;
-}
+} namespace Infer {
+struct LocalVar;
+struct LocalEnv;
+};
 namespace AST {
 ;
 
@@ -64,11 +66,11 @@ class VarExp : public Exp
 {
 public:
 	Name name;
-	int varId;
+	Infer::LocalVar* var;
 	Env::Global* global;
 
 	explicit inline VarExp (const Name& _name)
-		: name(_name), global(nullptr) {}
+		: name(_name), var(nullptr), global(nullptr) {}
 	virtual ~VarExp ();
 	virtual std::string str (int ident) const;
 };
@@ -139,12 +141,14 @@ class LambdaExp : public Exp
 {
 public:
 	std::vector<Var> args;
+	Infer::LocalEnv* env;
 
 	inline LambdaExp (
 			const std::vector<Var>& _args,
 			ExpPtr body)
 		: Exp({ body }),
-		  args(_args) {}
+		  args(_args),
+		  env(nullptr) {}
 	virtual ~LambdaExp ();
 	virtual std::string str (int ident) const;
 };
@@ -157,7 +161,7 @@ public:
 	std::vector<std::string> inits;
 
 	Env::Type* base;
-	std::vector<int> index;
+	std::vector<size_t> index;
 
 	ObjectExp (
 		TypePtr _objType,
@@ -179,10 +183,10 @@ class LetExp : public Exp
 {
 public:
 	std::string name;
-	int varId;
+	Infer::LocalVar* var;
 
 	inline LetExp (const std::string& _name, ExpPtr _init)
-		: Exp({ _init }), name(_name) {}
+		: Exp({ _init }), name(_name), var(nullptr) {}
 	virtual ~LetExp ();
 	virtual std::string str (int ident) const;
 };

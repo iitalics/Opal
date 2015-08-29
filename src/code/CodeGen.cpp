@@ -5,7 +5,7 @@ namespace Opal { namespace Code {
 using Cmd = Run::Cmd;
 
 CodeGen::CodeGen (Env::Function* func)
-	: _nargs(func->args.size()), _nvars(0)
+	: _nargs(func->args.size()), _env(func->localEnv)
 {
 	generate(func->body);
 	add(Cmd::Ret);
@@ -30,15 +30,9 @@ void CodeGen::place (Label label)
 	if (label < _labels.size())
 		_labels[label] = _program.size();
 }
-size_t CodeGen::var (int varID)
+size_t CodeGen::var (Infer::LocalVar* var)
 {
-	size_t var = varID;
-	if (var >= _nargs)
-	{
-		if (_nvars < var - _nargs + 1)
-			_nvars = var - _nargs + 1;
-	}
-	return var;
+	return _env->index(var);
 }
 Run::Code CodeGen::output ()
 {
@@ -54,7 +48,7 @@ Run::Code CodeGen::output ()
 			prgm[i].dest_pc = _labels[_program[i].index];
 	}
 
-	return Run::Code(prgm, _nargs, _nvars);
+	return Run::Code(prgm, _nargs, _env->size());
 }
 bool CodeGen::_noValue (AST::ExpPtr e)
 {
@@ -114,10 +108,12 @@ void CodeGen::_generate (AST::BlockExp* e)
 }
 void CodeGen::_generate (AST::VarExp* e)
 {
+	// TODO: boxing and unboxing
+
 	if (e->global != nullptr)
 		add({ Cmd::SetGlob, .global = e->global });
 	else
-		add({ Cmd::Load, .var = var(e->varId) });
+		add({ Cmd::Load, .var = var(e->var) });
 }
 void CodeGen::_generate (AST::NumberExp* e)
 {
@@ -166,7 +162,7 @@ void CodeGen::_generate (AST::CallExp* e)
 void CodeGen::_generate (AST::LetExp* e)
 {
 	generate(e->children[0]);
-	add({ Cmd::Store, .var = var(e->varId) });
+	add({ Cmd::Store, .var = var(e->var) });
 }
 void CodeGen::_generate (AST::AssignExp* e)
 {
@@ -196,7 +192,7 @@ void CodeGen::_generate (AST::AssignExp* e)
 			add({ Cmd::SetGlob, .global = varexp->global });
 		}
 		else
-			add({ Cmd::Store, .var = var(varexp->varId) });
+			add({ Cmd::Store, .var = var(varexp->var) });
 	}
 	else
 		add(Cmd::Drop);

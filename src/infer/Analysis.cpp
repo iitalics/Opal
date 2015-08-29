@@ -8,6 +8,7 @@ Analysis::Analysis (Env::Function* fn, Analysis* _call)
 	: parent(fn), nm(fn->nm), _ctx(nm), _calledBy(_call), _finished(false)
 {
 	ret = parent->ret = Type::poly();
+	env = parent->localEnv = new LocalEnv();
 
 	depends = new Depends();
 	depends->insert(this);
@@ -96,28 +97,77 @@ TypePtr Analysis::polyToParam (TypePtr type,
 
 
 // local scope variables
-int Analysis::get (const std::string& name) const
+LocalVar* Analysis::get (const std::string& name) const
 {
-	for (int i = stack.size(); i-- > 0;)
+	for (size_t i = 0, len = stack.size(); i < len; i++)
 	{
-		auto id = stack[i];
-		if (allVars[id].name == name)
-			return id;
+		auto var = stack[len - i - 1];
+		if (var->name == name)
+		{
+			// possibly set ref flag
+			env->ref(var);
+			return var;
+		}
 	}
+	return nullptr;
+}
+LocalVar* Analysis::let (const std::string& name, TypePtr type)
+{
+	auto var = env->define(name, type);
+	stack.push_back(var);
+	return var;
+}
+
+
+
+
+// LocalEnv
+LocalEnv::LocalEnv () {}
+LocalEnv::~LocalEnv ()
+{
+	for (auto var : defs)
+		delete var;
+}
+LocalVar* LocalEnv::define (const std::string& name, TypePtr ty)
+{
+	auto var = new LocalVar {
+		.parent = this,
+		.name = name, .type = ty,
+		.didMut = false, .didRef = false
+	};
+	defs.push_back(var);
+	return var;
+}
+void LocalEnv::ref (LocalVar* var)
+{
+	if (var->parent == this) return;
+
+	for (auto var2 : refs)
+		if (var2 == var)
+			return;
+	refs.push_back(var);
+	var->didRef = true;
+}
+size_t LocalEnv::index (LocalVar* var) const
+{
+	// refs first, then defs. so that currying works
+	size_t nrefs = refs.size();
+	size_t ndefs = defs.size();
+
+	for (size_t i = 0; i < nrefs; i++)
+		if (refs[i] == var)
+			return i;
+	for (size_t i = 0 ; i < ndefs; i++)
+		if (defs[i] == var)
+			return i + nrefs;
 	return -1;
 }
-int Analysis::let (const std::string& name, TypePtr type)
+size_t LocalEnv::size () const
 {
-	int id = allVars.size();
-	allVars.push_back({
-		id,
-		name,
-		type,
-		false
-	});
-	stack.push_back(id);
-	return id;
+	return refs.size() + defs.size();
 }
+
+
 
 
 // infer a different function

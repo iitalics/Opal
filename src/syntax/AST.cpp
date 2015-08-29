@@ -1,4 +1,5 @@
 #include "AST.h"
+#include "../infer/Analysis.h"
 namespace Opal { namespace AST {
 ;
 
@@ -93,7 +94,7 @@ std::string ListExp::str (int ind) const
 	ss << "]";
 	return ss.str();
 }
-LambdaExp::~LambdaExp () {}
+LambdaExp::~LambdaExp () { delete env; }
 std::string LambdaExp::str (int ind) const
 {
 	std::ostringstream ss;
