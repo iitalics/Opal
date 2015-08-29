@@ -26,11 +26,10 @@ public:
 	Label label ();
 	void place (Label label);
 	size_t var (Infer::LocalVar* var);
-	Run::Code output ();
-
-
+	Run::Code output ()
 	void generate (AST::ExpPtr e);
 private:
+	Env::Module* _mod;
 	std::vector<Run::Cmd> _program;
 	std::vector<size_t> _labels;
 	size_t _nargs;
@@ -50,9 +49,9 @@ private:
 	void _generate (AST::ReturnExp* e);
 	void _generate (AST::TupleExp* e);
 	void _generate (AST::ObjectExp* e);
+	void _generate (AST::LambdaExp* e);
 //	void _generate (AST::ConsExp* e);
 //	void _generate (AST::NilExp* e);
-//	void _generate (AST::LambdaExp* e);
 //	void _generate (AST::WhileExp* e);
 //	void _generate (AST::GotoExp* e);
 };

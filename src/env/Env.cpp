@@ -23,17 +23,6 @@ Module::Module (const std::string& _name)
 Module::Module ()
 	: Module(_unname()) {}
 
-Module::~Module ()
-{
-	if (_all == this)
-		_all = _next;
-
-	for (auto& ty : types)
-		delete ty;
-	for (auto& g : globals)
-		delete g;
-}
-
 
 static std::map<std::string, Module*> _modules;
 
@@ -64,6 +53,17 @@ Global* Module::getGlobal (const std::string& name) const
 			return g;
 
 	return nullptr;
+}
+Function* Module::makeLambda (const Span& span)
+{
+	std::ostringstream ss;
+	ss << "lam(" << _lambdas.size() << ")";
+
+	auto lam = new Function(Function::CodeFunction,
+		ss.str(), this, span);
+
+	_lambdas.push_back(lam);
+	return lam;
 }
 
 
@@ -196,6 +196,18 @@ void IFaceType::destroy ()
 IFaceSignature::~IFaceSignature ()
 {
 	delete[] args;
+}
+Module::~Module ()
+{
+	if (_all == this)
+		_all = _next;
+
+	for (auto& ty : types)
+		delete ty;
+	for (auto& g : globals)
+		delete g;
+	for (auto& f : _lambdas)
+		delete f;
 }
 Type::~Type ()
 {

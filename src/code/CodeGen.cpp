@@ -5,7 +5,7 @@ namespace Opal { namespace Code {
 using Cmd = Run::Cmd;
 
 CodeGen::CodeGen (Env::Function* func)
-	: _nargs(func->args.size()), _localEnv(func->localEnv)
+	: _mod(func->module), _nargs(func->args.size()), _localEnv(func->localEnv)
 {
 	generate(func->body);
 	add(Cmd::Ret);
@@ -81,6 +81,7 @@ void CodeGen::generate (AST::ExpPtr e)
 	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::TupleExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::LambdaExp*>(e.get())) _generate(e2);
 
 	else if (auto e2 = dynamic_cast<AST::StringExp*>(e.get()))
 		add({ Cmd::String, .string = new std::string(e2->value) });
@@ -305,6 +306,30 @@ void CodeGen::_generate (AST::ObjectExp* e)
 		generate(e->children[i]);
 		add({ Cmd::Set, .index = size_t(e->index[i]) });
 	}
+}
+void CodeGen::_generate (AST::LambdaExp* e)
+{
+	auto lamEnv = e->env;
+	e->env = nullptr;
+
+	// create lambda
+	auto fn = _mod->makeLambda(e->span);
+	for (auto ref : lamEnv->refs)
+		fn->args.push_back(Infer::Var { ref->name, ref->type });
+	for (auto def : lamEnv->defs)
+		fn->args.push_back(Infer::Var { def->name, def->type });
+
+	fn->body = e->children[0];
+	fn->localEnv = lamEnv;
+
+	// generate code for it
+	fn->code = generate(fn);
+
+	// generate code to make the lambda
+	for (auto ref : lamEnv->refs)
+		add({ Cmd::Load, .var = var(ref) });
+	add({ Cmd::Int, .int_val = Int_t(lamEnv->refs.size()) });
+	add({ Cmd::Func, .func = fn });
 }
 
 

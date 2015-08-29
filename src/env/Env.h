@@ -37,10 +37,14 @@ public:
 	Type* getType (const std::string& name) const;
 	Global* getGlobal (const std::string& name) const;
 
+	Function* makeLambda (const Span& span = Span());
+
 	bool loaded;
 protected:
-	Module* _next;
 	static Module* _all;
+
+	Module* _next;
+	std::vector<Function*> _lambdas;
 };
 
 struct DataType
