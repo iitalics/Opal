@@ -320,14 +320,10 @@ void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
 
 void Analysis::_infer (AST::CondExp* e, TypePtr dest)
 {
-	auto res = Type::poly();
-
 	infer(e->children[0], boolType);
-	infer(e->children[1], res);
+	infer(e->children[1], dest);
 	if (e->children.size() > 2)
-		infer(e->children[2], res);
-
-	unify(dest, res, e->span);
+		infer(e->children[2], dest);
 }
 
 void Analysis::_infer (AST::LazyOpExp* e, TypePtr dest)
