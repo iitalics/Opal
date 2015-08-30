@@ -34,11 +34,11 @@ pub fn test2_3 () { Test::test2_2 }
 //   Test::test3_2 -> Core::int
 //   Test::test3_3 -> Test::B[#a]
 pub type A {
-	a : int,
-	b : real
+   a : int,
+   b : real
 }
 pub type B[#a] {
-	a : #a
+   a : #a
 }
 pub fn test3_0 (obj : A) { obj.a }
 pub fn test3_1 (obj : B[#a]) { obj.a }
@@ -60,16 +60,16 @@ pub fn test3_3 (obj : B[B[#a]]) { obj.a }
 //   Test::test4_5 -> fn(#.0) -> #.0
 //   Test::test4_6  FAIL (uncomment)
 impl A {
-	fn x () { self.b }
-	fn y () { self }
+   fn x () { self.b }
+   fn y () { self }
 }
 impl B[int] {
-	fn t () { self.a }
-	fn s (x : #b) { x }
+   fn t () { self.a }
+   fn s (x : #b) { x }
 }
 impl B[#a] {
-	fn u () { self.a }
-	fn v (x : #b) { x }
+   fn u () { self.a }
+   fn v (x : #b) { x }
 }
 pub fn test4_0 (obj : A) { obj.x }
 pub fn test4_1 (obj : A) { obj.y }
