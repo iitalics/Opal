@@ -85,7 +85,7 @@ Module* loadModule (const std::string& moduleName)
 		ss << path << LIBS_NAME << "/" << moduleName << "/";
 		auto prefix = ss.str();
 
-		readDirectory(prefix, [=] (std::string file)
+		bool success = readDirectory(prefix, [=] (std::string file)
 		{
 			for (auto ext : validExts)
 				if (file.find(ext) != file.size() - ext.size())
@@ -93,6 +93,7 @@ Module* loadModule (const std::string& moduleName)
 
 			loadSource(prefix + file);
 		});
+		if (success) break;
 	}
 
 	return mod;
