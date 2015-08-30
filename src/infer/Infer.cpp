@@ -38,34 +38,20 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 		unify(dest, charType, e->span);
 	if (dynamic_cast<AST::GotoExp*>(e.get()))
 		; // assume this theoretically returns the right thing always
-	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::NumberExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::TupleExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::CondExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::LazyOpExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::LambdaExp*>(e.get()))
-		_infer(e2, dest);
-	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get()))
-		_infer(e2);
-	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get()))
-		_infer(e2);
-	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get()))
-		_infer(e2);
+	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::NumberExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::TupleExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::CondExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::LazyOpExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::LambdaExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get())) _infer(e2);
+	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get())) _infer(e2);
+	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get())) _infer(e2);
 }
 
 void Analysis::_infer (AST::VarExp* e, TypePtr dest)
