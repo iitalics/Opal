@@ -21,7 +21,7 @@ int main (int argc, char** argv)
 		Run::Cell::initTypes();
 
 		// load some code
-		auto nm = Env::loadSource("tests/external.opal");
+		auto nm = Env::loadSource("tests/lambda.opal");
 		Env::finishModuleLoad();
 
 		// find 'main' function
