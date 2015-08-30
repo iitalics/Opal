@@ -628,10 +628,13 @@ prefix_term:
 	STRING
 	bool_exp
 	tuple_exp
+	field
 	lambda_exp
 	object_exp
 	cond_exp
 	block_exp
+field:
+	"." ID
 */
 static ExpPtr parseTerm (Scanner& scan)
 {
@@ -692,6 +695,11 @@ static ExpPtr parseTerm (Scanner& scan)
 			res->span = span;
 			break;
 		}
+	case DOT:
+		scan.shift();
+		res = ExpPtr(new MethodExp(scan.eat(ID).string));
+		res->span = span;
+		break;
 	case KW_fn:
 		res = parseLambda(scan);
 		break;
@@ -722,8 +730,8 @@ static ExpPtr parseTerm (Scanner& scan)
 /*
 term_suffix:
 	"(" [exp {"," exp}] ")"
-	"." ID
 	"[" exp "]"
+	field
 */
 static ExpPtr parseSuffix (Scanner& scan, ExpPtr e)
 {

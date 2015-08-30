@@ -210,6 +210,11 @@ std::string FieldExp::str (int ind) const
 {
 	return children[0]->str(ind) + "." + name;
 }
+MethodExp::~MethodExp () {}
+std::string MethodExp::str (int ind) const
+{
+	return "." + name;
+}
 MemberExp::~MemberExp () {}
 std::string MemberExp::str (int ind) const
 {

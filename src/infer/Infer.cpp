@@ -32,11 +32,11 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 {
 	if (dynamic_cast<AST::StringExp*>(e.get()))
 		unify(dest, stringType, e->span);
-	if (dynamic_cast<AST::BoolExp*>(e.get()))
+	else if (dynamic_cast<AST::BoolExp*>(e.get()))
 		unify(dest, boolType, e->span);
-	if (dynamic_cast<AST::CharExp*>(e.get()))
+	else if (dynamic_cast<AST::CharExp*>(e.get()))
 		unify(dest, charType, e->span);
-	if (dynamic_cast<AST::GotoExp*>(e.get()))
+	else if (dynamic_cast<AST::GotoExp*>(e.get()))
 		; // assume this theoretically returns the right thing always
 	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::NumberExp*>(e.get())) _infer(e2, dest);
@@ -49,6 +49,7 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::LambdaExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::MethodExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get())) _infer(e2);
 	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get())) _infer(e2);
 	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get())) _infer(e2);
@@ -440,6 +441,45 @@ void Analysis::_infer (AST::LambdaExp* e, TypePtr dest)
 	// reset
 	env = oldEnv;
 	stack.resize(nstack);
+}
+
+void Analysis::_infer (AST::MethodExp* e, TypePtr dest)
+{
+	TypePtr selfty = nullptr;
+
+	if (dest->kind == Type::Concrete)
+	{
+		if (dest->base->isFunction() && dest->args.size() > 1)
+			selfty = dest->args[0];
+	}
+
+	if (!selfty)
+		selfty = Type::poly();
+
+	auto typeName = selfty->str();
+
+	Env::Function* fn;
+	auto fnty = _findMethod(selfty, e->name, fn);
+
+	// no such method
+	// TODO: this will happen often if 'selfty' is completely unknown
+	//       show a more helpful error message?
+	if (fnty == nullptr)
+	{
+		std::ostringstream ss;
+		ss << "undefined method '" << e->name << "'";
+		throw SourceError(ss.str(),
+			{ "type: " + typeName }, e->span);
+	}
+
+	// reconstruct 'fnty' with 'selfty' prepended to arguments
+	auto argc = fnty->args.size() - 1;
+	auto fnbase = Env::Type::function(argc + 1);
+	auto fnty2 = Type::concrete(fnbase, TypeList(selfty, fnty->args));
+
+	// finish things
+	unify(dest, fnty2, e->span);
+	e->method = fn;
 }
 
 void Analysis::_infer (AST::ReturnExp* e)

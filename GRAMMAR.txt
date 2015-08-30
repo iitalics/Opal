@@ -118,14 +118,15 @@ prefix_term:
 	bool_exp
 	tuple_exp
 	list_exp
+	field
 	lambda_exp
 	object_exp
 	cond_exp
 	block_exp
 term_suffix:
 	"(" [exp {"," exp}] ")"
-	"." ID
 	"[" exp "]"
+	field
 
 
 bool_exp:
@@ -137,6 +138,9 @@ tuple_exp:
 
 list_exp:
 	"[" [exp {"," exp}] "]"
+
+field:
+	"." ID
 
 lambda_exp:
 	"fn" "(" [ID {"," ID}] ")" block_exp

@@ -83,6 +83,7 @@ void CodeGen::generate (AST::ExpPtr e)
 	else if (auto e2 = dynamic_cast<AST::TupleExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::LambdaExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::MethodExp*>(e.get())) _generate(e2);
 
 	else if (auto e2 = dynamic_cast<AST::StringExp*>(e.get()))
 		add({ Cmd::String, .string = new std::string(e2->value) });
@@ -337,6 +338,11 @@ void CodeGen::_generate (AST::LambdaExp* e)
 		add({ Cmd::Load, .var = var(ref) });
 	add({ Cmd::Int, .int_val = Int_t(lamEnv->refs.size()) });
 	add({ Cmd::Func, .func = fn });
+}
+void CodeGen::_generate (AST::MethodExp* e)
+{
+	add({ Cmd::Int, .int_val = 0 });
+	add({ Cmd::Func, .func = e->method });
 }
 
 

@@ -125,6 +125,7 @@ private:
 	void _infer (AST::CompareExp* e, TypePtr dest);
 	void _infer (AST::ObjectExp* e, TypePtr dest);
 	void _infer (AST::LambdaExp* e, TypePtr dest);
+	void _infer (AST::MethodExp* e, TypePtr dest);
 	void _infer (AST::ReturnExp* e);
 	void _infer (AST::LetExp* e);
 	void _infer (AST::AssignExp* e);

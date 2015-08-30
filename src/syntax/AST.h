@@ -240,6 +240,17 @@ public:
 	virtual ~FieldExp ();
 	virtual std::string str (int ident) const;
 };
+class MethodExp : public Exp
+{
+public:
+	std::string name;
+	Env::Function* method;
+
+	inline MethodExp (const std::string& _name)
+		: name(_name), method(nullptr) {}
+	virtual ~MethodExp ();
+	virtual std::string str (int ident) const;
+};
 class MemberExp : public Exp
 {
 public:
