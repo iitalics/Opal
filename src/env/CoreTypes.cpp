@@ -73,8 +73,9 @@ static void makePrimitives ()
 	auto longType = new Type("long", coreMod, 0, false);
 	auto boolType = new Type("bool", coreMod, 0, false);
 	auto charType = new Type("char", coreMod, 0, false);
-	auto stringType = new Type("string", coreMod, 0, false);
 	auto unitType = new Type("unit", coreMod, 0, false);
+	auto boxType = new Type(".box", coreMod, 1, false);
+	auto stringType = new Type("string", coreMod, 0, false);
 
 	// TODO: GC info, default initializers
 	intType->gc_collected = false;
@@ -83,6 +84,7 @@ static void makePrimitives ()
 	boolType->gc_collected = false;
 	charType->gc_collected = false;
 	unitType->gc_collected = false;
+	boxType->gc_collected = true;
 	stringType->gc_collected = true;
 
 	coreMod->types.insert(coreMod->types.begin(),
@@ -91,8 +93,9 @@ static void makePrimitives ()
 		  longType,
 		  boolType,
 		  charType,
-		  stringType,
-		  unitType });
+		  unitType,
+		  boxType,
+		  stringType });
 }
 Module* Module::getCore ()
 {

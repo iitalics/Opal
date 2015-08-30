@@ -12,7 +12,7 @@ void CodeGen::showCode ()
 		"isenum", "call", "tail", "prelude",
 		"apply", "get", "set", "getglob",
 		"setglob", "object", "tuple", "func",
-		"ret", "throw"
+		"ret", "throw", "box", "boxload", "boxstore"
 	};
 
 	std::vector<std::string> var_names;
@@ -36,6 +36,9 @@ void CodeGen::showCode ()
 		{
 		case Run::Cmd::Load:
 		case Run::Cmd::Store:
+		case Run::Cmd::Box:
+		case Run::Cmd::BoxLoad:
+		case Run::Cmd::BoxStore:
 			std::cout << " %" << var_names[cmd.index] << std::endl;
 			break;
 

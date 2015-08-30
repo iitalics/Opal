@@ -4,7 +4,7 @@
 namespace Opal { namespace Run {
 
 static Env::Type* core_unit, *core_int, *core_bool, *core_char,
-                 *core_real, *core_long, *core_string;
+                 *core_real, *core_long, *core_box, *core_string;
 
 void Cell::initTypes ()
 {
@@ -14,6 +14,7 @@ void Cell::initTypes ()
 	core_long = Env::Type::core("long");
 	core_bool = Env::Type::core("bool");
 	core_char = Env::Type::core("char");
+	core_box = Env::Type::core(".box");
 	core_string = Env::Type::core("string");
 }
 
@@ -40,6 +41,12 @@ Cell Cell::String (const std::string& s)
 Cell Cell::Enum (Env::Type* type, size_t nfields, Env::Function* ctor)
 {
 	return Cell::Object(type, new SimpleObject(nfields, ctor));
+}
+Cell Cell::Box (const Cell& val)
+{
+	auto obj = new SimpleObject(1);
+	obj->set(0, val);
+	return Cell::Object(core_box, obj);
 }
 
 
@@ -112,9 +119,13 @@ std::string Cell::str () const
 		else
 			ss << "\"" << ((StringObject*) obj)->string << "\"";
 	}
+	else if (type == core_box)
+	{
+		ss << "<box: " << simple->get(0).str() << ">";
+	}
 	else if (type->isFunction())
 	{
-		ss << "<function> " << simple->ctor->fullname().str() << std::endl;
+		ss << "<function> " << simple->ctor->fullname().str();
 	}
 	else
 	{

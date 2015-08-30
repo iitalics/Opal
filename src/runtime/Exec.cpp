@@ -191,7 +191,8 @@ void Exec::step (Thread& th)
 		"compare", "isenum", "call", "tail",
 		"prelude", "apply", "get", "set",
 		"getg", "setg", "object", "tuple",
-		"func", "ret", "throw"
+		"func", "ret", "throw",
+		"box", "boxload", "boxstore"
 	};
 
 	auto cur = program[pc++];
@@ -234,10 +235,10 @@ void Exec::step (Thread& th)
 		a.release();
 		break;
 	case Cmd::Load:
-		th.push(a = th.get(frame_pos + cur.index));
+		th.push(a = th.get(frame_pos + cur.var));
 		break;
 	case Cmd::Store:
-		th.set(frame_pos + cur.index, a = th.pop());
+		th.set(frame_pos + cur.var, a = th.pop());
 		a.release();
 		break;
 	case Cmd::Dupl:
@@ -325,6 +326,23 @@ void Exec::step (Thread& th)
 		b.release();
 		a = th.make(Env::Type::function(cur.func->args.size()), n, cur.func);
 		th.push(a);
+		a.release();
+		break;
+	case Cmd::Box:
+		a = th.get(frame_pos + cur.var);
+		b = Cell::Box(a);
+		th.set(frame_pos + cur.var, b);
+		b.release();
+		break;
+	case Cmd::BoxLoad:
+		b = th.get(frame_pos + cur.var);
+		a = b.simple->get(0);
+		th.push(a);
+		break;
+	case Cmd::BoxStore:
+		a = th.pop();
+		b = th.get(frame_pos + cur.var);
+		b.simple->set(0, a);
 		a.release();
 		break;
 	case Cmd::Ret:

@@ -42,6 +42,7 @@ struct Cell
 	static Cell Object (Env::Type* type, GC::Object* obj);
 	static Cell Enum (Env::Type* type, size_t nfields,
 		Env::Function* ctor = nullptr);
+	static Cell Box (const Cell& val);
 
 	bool isEnum (Env::Function* ctor) const;
 

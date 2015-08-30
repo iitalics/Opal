@@ -4,9 +4,22 @@ namespace Opal { namespace Code {
 
 using Cmd = Run::Cmd;
 
+static inline int loadCmd (Infer::LocalVar* var)
+{ return var->needsBox() ? Cmd::BoxLoad : Cmd::Load; }
+static inline int storeCmd (Infer::LocalVar* var)
+{ return var->needsBox() ? Cmd::BoxStore : Cmd::Store; }
+
+
 CodeGen::CodeGen (Env::Function* func)
 	: _mod(func->module), _nargs(func->args.size()), _localEnv(func->localEnv)
 {
+	for (size_t i = 0; i < _nargs; i++)
+	{
+		auto arg = _localEnv->defs[i];
+		if (arg->needsBox())
+			add({ Cmd::Box, .var = var(arg) });
+	}
+
 	generate(func->body);
 	add(Cmd::Ret);
 
@@ -49,7 +62,9 @@ Run::Code CodeGen::output ()
 			prgm[i].dest_pc = _labels[_program[i].index];
 	}
 
-	return Run::Code(prgm, _nargs, _localEnv->size() - _nargs);
+	return Run::Code(prgm,
+		_localEnv->refs.size() + _nargs,
+		_localEnv->defs.size() - _nargs);
 }
 bool CodeGen::_noValue (AST::ExpPtr e)
 {
@@ -124,7 +139,7 @@ void CodeGen::_generate (AST::VarExp* e)
 			add({ Cmd::GetGlob, .global = e->global });
 	}
 	else
-		add({ Cmd::Load, .var = var(e->var) });
+		add({ loadCmd(e->var), .var = var(e->var) });
 }
 void CodeGen::_generate (AST::NumberExp* e)
 {
@@ -174,6 +189,9 @@ void CodeGen::_generate (AST::LetExp* e)
 {
 	generate(e->children[0]);
 	add({ Cmd::Store, .var = var(e->var) });
+
+	if (e->var->needsBox())
+		add({ Cmd::Box, .var = var(e->var) });
 }
 void CodeGen::_generate (AST::AssignExp* e)
 {
@@ -203,7 +221,7 @@ void CodeGen::_generate (AST::AssignExp* e)
 			add({ Cmd::SetGlob, .global = varexp->global });
 		}
 		else
-			add({ Cmd::Store, .var = var(varexp->var) });
+			add({ storeCmd(varexp->var), .var = var(varexp->var) });
 	}
 	else
 		add(Cmd::Drop);

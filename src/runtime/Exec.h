@@ -25,6 +25,7 @@ struct Cmd
 		Call, Tail, Prelude, Apply,
 		Get, Set, GetGlob, SetGlob,
 		Object, Tuple, Func, Ret, Throw,
+		Box, BoxLoad, BoxStore,
 
 		CmpLt = 1,
 		CmpGr = 2,
@@ -39,13 +40,13 @@ struct Cmd
 		// operand
 		Int_t int_val; // Int
 		Real_t real_val; // Real
-		Long_t long_val;
-		Char_t char_val;
+		Long_t long_val; // Long
+		Char_t char_val; // Char
 		int cmp_flags; // Compare
 
-		size_t var; // Load, Store
+		size_t var; // Load, Store, Box, BoxLoad, BoxStore
 		size_t dest_pc; // Jump, Else
-		size_t count; // Apply, Object, Tuple
+		size_t count; // Apply, Tuple
 		size_t index; // Get, Set
 
 		std::string* string; // String
