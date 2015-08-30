@@ -119,24 +119,21 @@ void Analysis::_infer (AST::NumberExp* e, TypePtr dest)
 			return;
 		}
 	}
-	else
+	switch (e->kind)
 	{
-		switch (e->kind)
-		{
-		case AST::NumberExp::Int:
-			unify(dest, intType, e->span);
-			break;
+	case AST::NumberExp::Int:
+		unify(dest, intType, e->span);
+		break;
 
-		case AST::NumberExp::Real:
-			unify(dest, realType, e->span);
-			break;
+	case AST::NumberExp::Real:
+		unify(dest, realType, e->span);
+		break;
 
-		case AST::NumberExp::Long:
-			unify(dest, longType, e->span);
-			break;
+	case AST::NumberExp::Long:
+		unify(dest, longType, e->span);
+		break;
 
-		default: break;
-		}
+	default: break;
 	}
 }
 
