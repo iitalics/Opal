@@ -82,8 +82,9 @@ private:
 
 
 
-static std::set<std::string> searchPaths;
-
+// search paths stuff
+extern std::set<std::string> searchPaths;
+void initSearchPaths (const std::string& prgm);
 
 Module* loadModule (const std::string& name);
 Namespace* loadSource (const std::string& path);

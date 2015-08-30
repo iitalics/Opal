@@ -5,8 +5,10 @@
 #include "runtime/Exec.h"
 using namespace Opal;
 
-int main ()
+int main (int argc, char** argv)
 {
+	if (argc < 1) return 2;
+
 	SourceError::color = true;
 
 	Run::Thread thread;
@@ -14,11 +16,12 @@ int main ()
 	{
 		// initialize
 		// TODO: group this
+		Env::initSearchPaths(argv[0]);
 		Infer::Analysis::initTypes();
 		Run::Cell::initTypes();
 
 		// load some code
-		auto nm = Env::loadSource("tests/lambda.opal");
+		auto nm = Env::loadSource("tests/external.opal");
 		Env::finishModuleLoad();
 
 		// find 'main' function
@@ -49,5 +52,6 @@ int main ()
 	catch (SourceError& err)
 	{
 		std::cerr << err.what() << std::endl;
+		return 1;
 	}
 }

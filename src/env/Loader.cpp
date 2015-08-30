@@ -3,10 +3,21 @@
 #include "../syntax/Parse.h"
 #include "../syntax/Desugar.h"
 #include "../code/CodeGen.h"
+#include <cstdlib>
+#include <functional>
+#include <dirent.h>
 namespace Opal { namespace Env {
 ;
 
 #define SILENT_LOADER
+
+#define LIBS_NAME "/opal_libs"
+#define CORE_LIBS "/opal_core"
+
+#define WIN_ETC "APPDATA"
+#define UNIX_ETC "/etc"
+
+static std::vector<std::string> validExts { ".opal" };
 
 
 static SourceError DupError (const std::string& kind,
@@ -20,15 +31,69 @@ static SourceError DupError (const std::string& kind,
 
 
 
-Module* loadModule (const std::string& name)
+std::set<std::string> searchPaths;
+
+void initSearchPaths (const std::string& prgm)
 {
-	auto mod = Module::get(name);
+#ifdef WIN3
+	std::string etc(std::getenv(WIN_ETC))
+#else
+	std::string etc(UNIX_ETC);
+#endif
+
+	searchPaths.insert(etc + CORE_LIBS);
+	searchPaths.insert(".");
+
+	for (int i = prgm.size(); i-- > 0; )
+		if (prgm[i] == '/' || prgm[i] == '\\')
+		{
+			searchPaths.insert(prgm.substr(0, i));
+			break;
+		}
+}
+template <typename T>
+static bool readDirectory (const std::string& path, T callback)
+{
+	// http://stackoverflow.com/questions/612097
+	DIR* dir;
+	struct dirent* ent;
+
+	if ((dir = opendir(path.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+			callback(std::string(ent->d_name));
+		closedir(dir);
+
+		return true;
+	}
+	else
+		return false;
+}
+
+
+
+Module* loadModule (const std::string& moduleName)
+{
+	auto mod = Module::get(moduleName);
 	if (mod->loaded)
 		return mod;
 	mod->loaded = true;
 
-	// search through paths to find sources
-	//  for module
+	for (auto path : searchPaths)
+	{
+		std::ostringstream ss;
+		ss << path << LIBS_NAME << "/" << moduleName << "/";
+		auto prefix = ss.str();
+
+		readDirectory(prefix, [=] (std::string file)
+		{
+			for (auto ext : validExts)
+				if (file.find(ext) != file.size() - ext.size())
+					return;
+
+			loadSource(prefix + file);
+		});
+	}
 
 	return mod;
 }

@@ -16,7 +16,7 @@ static std::string _unname ()
 
 
 Module::Module (const std::string& _name)
-	: name(_name), _next(_all)
+	: name(_name), loaded(false), _next(_all)
 {
 	_all = this;
 }
