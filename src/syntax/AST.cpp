@@ -7,7 +7,12 @@ bool Name::hasModule () const { return !module.empty(); }
 std::string Name::str () const
 {
 	if (hasModule())
-		return module + "::" + name;
+	{
+		auto modName = module;
+		if (module[0] == '.')
+			modName = "(hidden)";
+		return modName + "::" + name;
+	}
 	else
 		return name;
 }

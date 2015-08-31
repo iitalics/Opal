@@ -10,7 +10,7 @@ static std::string _unname ()
 {
 	static int n = 0;
 	std::ostringstream ss;
-	ss << "@mod_" << (n++);
+	ss << ".mod_" << (n++);
 	return ss.str();
 }
 
