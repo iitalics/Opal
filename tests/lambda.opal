@@ -1,33 +1,52 @@
 use Core
 use Lang
 
-fn repeat (n : int, f : fn () -> unit) {
+fn repeat (n : int, f : fn() -> unit) {
    if n > 0 {
       f()
       repeat(n - 1, f)
    }
 }
-
-impl array[int] {
-   fn sum () {
-      let sum = 0
+impl array[#e] {
+   fn each (f : fn(#e) -> unit) {
       let i = 0
-
       repeat(self.len(), fn () {
-         sum = sum + self[i]
+         f(self[i])
          i = i.succ()
       })
-
-      sum
    }
 }
 
+
+type event[#a] {
+   callbacks : array[fn(#a) -> unit]
+}
+impl event[#a] {
+   fn bind (f : fn(#a) -> unit) {
+      self.callbacks.push(f)
+   }
+   fn fire (arg : #a) {
+      self.callbacks.each(fn (cb) {
+         cb(arg)
+      })
+   }
+}
+fn event () { new event[#a] { callbacks = array() } }
+
 fn main () {
-   let a = array()
-   
-   repeat(8, fn () {
-      a.push(9)
+   let ev = event()
+
+   let x = 0
+
+   ev.bind(fn (_) {
+      x = x + 1
+   })
+   ev.bind(fn (k) {
+      x = x + k
    })
 
-   a.sum()
+   ev.fire(3) // x = 0 + 1 + 3 = 4
+   ev.fire(4) // x = 4 + 1 + 4 = 9
+
+   { x }
 }
