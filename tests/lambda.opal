@@ -1,4 +1,5 @@
 use Core
+use Lang
 
 fn repeat (n : int, f : fn () -> unit) {
    if n > 0 {
@@ -7,16 +8,26 @@ fn repeat (n : int, f : fn () -> unit) {
    }
 }
 
-fn main () {
-   let E = 0.0
-   let denom = 1.0
-   let n = 0.0
+impl array[int] {
+   fn sum () {
+      let sum = 0
+      let i = 0
 
-   repeat(1000, fn () {
-      E = E + 1.0 / denom
-      n = n + 1
-      denom = denom * n
+      repeat(self.len(), fn () {
+         sum = sum + self[i]
+         i = i.succ()
+      })
+
+      sum
+   }
+}
+
+fn main () {
+   let a = array()
+   
+   repeat(8, fn () {
+      a.push(9)
    })
 
-   E
+   a.sum()
 }
