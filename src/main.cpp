@@ -49,7 +49,7 @@ int main (int argc, char** argv)
 		// bye
 		// TODO: destroy everything?
 	}
-	catch (SourceError& err)
+	catch (std::exception& err)
 	{
 		std::cerr << err.what() << std::endl;
 		return 1;

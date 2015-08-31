@@ -32,7 +32,9 @@ static void int_div (Run::Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	// if (b.dataInt == 0) throw ...
+	if (b.dataInt == 0)
+		th.die("DivideByZero");
+
 	auto c = Run::Cell::Int(a.dataInt / b.dataInt);
 	th.push(c);
 }
@@ -112,7 +114,8 @@ static void real_div (Run::Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	// if (b.dataReal == 0) throw ...
+	if (b.dataReal == 0.0)
+		th.die("DivideByZero");
 	auto c = Run::Cell::Real(a.dataReal / b.dataReal);
 	th.push(c);
 }
@@ -190,7 +193,8 @@ static void long_div (Run::Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	// if (b.dataLong == 0) throw ...
+	if (b.dataLong == 0)
+		th.die("DivideByZero");
 	auto c = Run::Cell::Long(a.dataLong / b.dataLong);
 	th.push(c);
 }

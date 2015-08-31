@@ -118,7 +118,7 @@ Cell Thread::make (Env::Type* ty, size_t nfields, Env::Function* ctor)
 }
 void Thread::call (const Code& code)
 {
-	_calls.push_back(Exec {});
+	_calls.push_back(Exec());
 	_calls.back().begin(*this, code);
 }
 void Thread::call (Env::Function* func)
@@ -127,6 +127,7 @@ void Thread::call (Env::Function* func)
 	{
 	case Env::Function::CodeFunction:
 		call(func->code);
+		_calls.back().caller = func;
 		break;
 
 	case Env::Function::NativeFunction:
@@ -164,6 +165,10 @@ void Thread::ret ()
 {
 	_calls.pop_back();
 }
+void Thread::die (const std::string& name, const std::vector<Cell>& args)
+{
+	throw Error(name, args, *this);
+}
 bool Thread::step ()
 {
 	if (_calls.empty())
@@ -175,6 +180,8 @@ bool Thread::step ()
 	}
 }
 
+Exec::Exec ()
+	: program(nullptr), caller(nullptr) {}
 void Exec::begin (Thread& th, const Code& code)
 {
 	frame_pos = th.size() - code.nargs;
@@ -350,13 +357,9 @@ void Exec::step (Thread& th)
 		th.ret();
 		break;
 	case Cmd::Throw:
-		{
-			std::ostringstream ss;
-			a = th.pop();
-			ss << "exception thrown: " << a.str();
-			a.release();
-			throw SourceError(ss.str());
-		}
+		th.die("CodeError");
+		break;
+
 	case Cmd::NoOp:
 	default:
 		break;

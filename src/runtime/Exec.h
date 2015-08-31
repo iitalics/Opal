@@ -1,6 +1,7 @@
 #pragma once
 #include "../opal.h"
 #include "Cell.h"
+#include <exception>
 namespace Opal {
 namespace Env {
 class Type;
@@ -70,9 +71,12 @@ struct Code
 // executing frame
 struct Exec
 {
+	Exec ();
+
 	size_t frame_pos;
 	size_t pc;
 	Cmd* program;
+	Env::Function* caller;
 
 	void begin (Thread& th, const Code& code);
 	void step (Thread& th);
@@ -105,14 +109,33 @@ public:
 	void call (const Code& code);
 	void call (Env::Function* func);
 	void ret ();
+	void die (const std::string& errName,
+		const std::vector<Cell>& args = {});
 
 private:
+	friend class Error;
 	std::vector<Exec> _calls;
 	std::vector<Cell> _stack;
 };
 
-
-
 using NativeFn_t = void (*) (Thread&);
+
+class Error : public std::exception
+{
+public:
+	Error (const Error& other);
+	virtual ~Error ();
+	virtual const char* what () const noexcept;
+
+	void operator= (const Error& e) = delete;
+private:
+	friend class Thread;
+	Error (const std::string& name,
+		const std::vector<Cell>& args,
+		Thread& th);
+
+	char* _what;
+};
+
 
 }}
