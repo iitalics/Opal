@@ -29,8 +29,10 @@ Package& Package::byName (const std::string& name, const Span& sp)
 }
 
 
-PackageLoad::PackageLoad (const std::string& name, Handler handler)
-	: prev(nullptr), next(_reqs), _name(name), _handler(handler)
+PackageLoad::PackageLoad (const std::string& name,
+		Handler handler,
+		const std::vector<std::string>& mods)
+	: prev(nullptr), next(_reqs), _name(name), _handler(handler), _mods(mods)
 { _reqs = this; }
 PackageLoad::~PackageLoad ()
 {
@@ -48,6 +50,12 @@ PackageLoad::~PackageLoad ()
 			prev->next = r->next;
 		break;
 	}
+}
+void PackageLoad::moduleLoad ()
+{
+	for (auto r = _reqs; r != nullptr; r = r->next)
+		for (auto& mod : r->_mods)
+			loadModule(mod);
 }
 void PackageLoad::finish ()
 {

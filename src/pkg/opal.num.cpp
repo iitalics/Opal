@@ -310,4 +310,4 @@ static void loadPackage (Env::Package& pkg)
 
 	std::cout << "load package '" << pkg.name() << "' is a success" << std::endl;
 }
-static Env::PackageLoad _1("opal.num", loadPackage);
+static Env::PackageLoad _1("opal.num", loadPackage, { "Core" });

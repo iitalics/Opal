@@ -68,9 +68,11 @@ struct PackageLoad
 {
 	using Handler = void (*) (Package&);
 	PackageLoad (const std::string& name,
-		Handler handler);
+		Handler handler,
+		const std::vector<std::string>& mods = {});
 	~PackageLoad ();
 
+	static void moduleLoad ();
 	static void finish ();
 private:
 	static PackageLoad* _reqs;
@@ -78,6 +80,7 @@ private:
 	PackageLoad* prev, * next;
 	std::string _name;
 	Handler _handler;
+	std::vector<std::string> _mods;
 };
 
 
