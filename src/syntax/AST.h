@@ -273,6 +273,16 @@ public:
 	virtual ~CallExp ();
 	virtual std::string str (int ident) const;
 };
+class TypeHintExp : public Exp
+{
+public:
+	TypePtr type;
+
+	inline TypeHintExp (ExpPtr e, TypePtr _type)
+		: Exp({ e }), type(_type) {}
+	virtual ~TypeHintExp ();
+	virtual std::string str (int indent) const;
+};
 class BlockExp : public Exp
 {
 public:

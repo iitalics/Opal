@@ -108,7 +108,7 @@ assignment:
 
 term:
 	op_unary term
-	prefix_term {term_suffix}
+	prefix_term {term_suffix} [type_hint]
 prefix_term:
 	name
 	INT
@@ -127,6 +127,8 @@ term_suffix:
 	"(" [exp {"," exp}] ")"
 	"[" exp "]"
 	field
+type_hint:
+	":" type
 
 
 bool_exp:

@@ -118,6 +118,7 @@ private:
 	void _infer (AST::NumberExp* e, TypePtr dest);
 	void _infer (AST::FieldExp* e, TypePtr dest);
 	void _infer (AST::CallExp* e, TypePtr dest);
+	void _infer (AST::TypeHintExp* e, TypePtr dest);
 	void _infer (AST::BlockExp* e, TypePtr dest);
 	void _infer (AST::TupleExp* e, TypePtr dest);
 	void _infer (AST::CondExp* e, TypePtr dest);

@@ -42,6 +42,7 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 	else if (auto e2 = dynamic_cast<AST::NumberExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::TypeHintExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::TupleExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::CondExp*>(e.get())) _infer(e2, dest);
@@ -254,6 +255,15 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 		if (global != nullptr && global->isFunc)
 			e->function = global->func;
 	}
+}
+
+void Analysis::_infer (AST::TypeHintExp* e, TypePtr dest)
+{
+	auto type = Type::fromAST(e->type, _ctx);
+
+	// infer using given type instead of 'dest' type
+	infer(e->children[0], type);
+	unify(dest, type, e->span);
 }
 
 void Analysis::_infer (AST::BlockExp* e, TypePtr dest)

@@ -34,7 +34,7 @@ impl event[#a] {
 fn event () { new event[#a] { callbacks = array() } }
 
 fn main () {
-   let ev = event()
+   let ev = event() : event[int]
 
    let x = 0
 

@@ -242,6 +242,11 @@ std::string CallExp::str (int ind) const
 	ss << ")";
 	return ss.str();
 }
+TypeHintExp::~TypeHintExp () {}
+std::string TypeHintExp::str (int ind) const
+{
+	return children[0]->str() + " : " + type->str();
+}
 BlockExp::~BlockExp () {}
 std::string BlockExp::str (int ind) const
 {

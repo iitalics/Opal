@@ -619,7 +619,7 @@ ExpPtr parseExp (Scanner& scan)
 /*
 term:
 	op_unary term
-	prefix_term {term_suffix}
+	prefix_term {term_suffix} [type_hint]
 prefix_term:
 	name
 	INT
@@ -732,6 +732,8 @@ term_suffix:
 	"(" [exp {"," exp}] ")"
 	"[" exp "]"
 	field
+type_hint:
+	":" type
 */
 static ExpPtr parseSuffix (Scanner& scan, ExpPtr e)
 {
@@ -762,6 +764,14 @@ static ExpPtr parseSuffix (Scanner& scan, ExpPtr e)
 			e = ExpPtr(new MemberExp(e, mem));
 			e->span = span;
 			break;
+		}
+	case COLON:
+		{
+			auto span = scan.shift().span;
+			auto type = parseType(scan);
+			e = ExpPtr(new TypeHintExp(e, type));
+			e->span = span;
+			return e; // no more prefixes after this
 		}
 	default:
 		return e;

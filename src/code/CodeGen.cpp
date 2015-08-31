@@ -100,6 +100,8 @@ void CodeGen::generate (AST::ExpPtr e)
 	else if (auto e2 = dynamic_cast<AST::LambdaExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::MethodExp*>(e.get())) _generate(e2);
 
+	else if (auto e2 = dynamic_cast<AST::TypeHintExp*>(e.get()))
+		generate(e2->children[0]);
 	else if (auto e2 = dynamic_cast<AST::StringExp*>(e.get()))
 		add({ Cmd::String, .string = new std::string(e2->value) });
 	else if (auto e2 = dynamic_cast<AST::BoolExp*>(e.get()))
