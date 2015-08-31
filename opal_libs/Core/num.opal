@@ -8,6 +8,7 @@ impl x : int {
    fn mod (y : int)   extern("opal.num") "int.mod" -> int
    fn succ ()         extern("opal.num") "int.succ" -> int
    fn pred ()         extern("opal.num") "int.pred" -> int
+   fn neg ()          extern("opal.num") "int.neg" -> int
    fn cmp (y : int)   extern("opal.num") "int.cmp" -> int
    fn equal (y : int) extern("opal.num") "int.equal" -> bool
 
@@ -24,6 +25,7 @@ impl x : real {
    fn mod (y : real)   extern("opal.num") "real.mod" -> real
    fn succ ()          extern("opal.num") "real.succ" -> real
    fn pred ()          extern("opal.num") "real.pred" -> real
+   fn neg ()           extern("opal.num") "real.neg" -> real
    fn cmp (y : real)   extern("opal.num") "real.cmp" -> int
    fn equal (y : real) extern("opal.num") "real.equal" -> bool
 
@@ -39,6 +41,7 @@ impl x : long {
    fn mod (y : long)   extern("opal.num") "long.mod" -> long
    fn succ ()          extern("opal.num") "long.succ" -> long
    fn pred ()          extern("opal.num") "long.pred" -> long
+   fn neg ()           extern("opal.num") "long.neg" -> long
    fn cmp (y : long)   extern("opal.num") "long.cmp" -> int
    fn equal (y : long) extern("opal.num") "long.equal" -> bool
 

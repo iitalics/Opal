@@ -57,6 +57,12 @@ static void int_pred (Run::Thread& th)
 	auto b = Run::Cell::Int(a.dataInt - 1);
 	th.push(b);
 }
+static void int_neg (Run::Thread& th)
+{
+	auto a = th.pop();
+	auto b = Run::Cell::Int(-(a.dataInt));
+	th.push(b);
+}
 static void int_equal (Run::Thread& th)
 {
 	auto b = th.pop();
@@ -138,6 +144,12 @@ static void real_pred (Run::Thread& th)
 	auto b = Run::Cell::Real(a.dataReal - 1.0);
 	th.push(b);
 }
+static void real_neg (Run::Thread& th)
+{
+	auto a = th.pop();
+	auto b = Run::Cell::Real(-(a.dataReal));
+	th.push(b);
+}
 static void real_cmp (Run::Thread& th)
 {
 	auto b = th.pop();
@@ -217,6 +229,12 @@ static void long_pred (Run::Thread& th)
 	auto b = Run::Cell::Long(a.dataLong - 1.0);
 	th.push(b);
 }
+static void long_neg (Run::Thread& th)
+{
+	auto a = th.pop();
+	auto b = Run::Cell::Long(-(a.dataLong));
+	th.push(b);
+}
 static void long_cmp (Run::Thread& th)
 {
 	auto b = th.pop();
@@ -258,6 +276,7 @@ static void loadPackage (Env::Package& pkg)
 	.put("int.mod",    int_mod)
 	.put("int.succ",   int_succ)
 	.put("int.pred",   int_pred)
+	.put("int.neg",    int_neg)
 	.put("int.cmp",    int_sub) // i'm lazy like that
 	.put("int.equal",  int_equal)
 	.put("int.to_real", int_to_real)
@@ -271,6 +290,7 @@ static void loadPackage (Env::Package& pkg)
 	.put("real.mod",   real_mod)
 	.put("real.succ",  real_succ)
 	.put("real.pred",  real_pred)
+	.put("real.neg",   real_neg)
 	.put("real.cmp",   real_cmp)
 	.put("real.equal", real_equal)
 	.put("real.to_int", real_to_int)
@@ -282,6 +302,7 @@ static void loadPackage (Env::Package& pkg)
 	.put("long.mod",   long_mod)
 	.put("long.succ",  long_succ)
 	.put("long.pred",  long_pred)
+	.put("long.neg",   long_neg)
 	.put("long.cmp",   long_cmp)
 	.put("long.equal", long_equal)
 	.put("long.to_int", long_to_int)
