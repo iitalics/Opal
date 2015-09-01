@@ -177,7 +177,34 @@ static void declareTypes ()
 
 
 
+static void createEnumFunc (AST::EnumFunc& efn, Module* mod,
+	Infer::Type::Ctx& ctx, Infer::TypePtr ret)
+{
+	// create global function object
+	auto fn = new Function(Function::EnumFunction,
+		efn.name,
+		mod,
+		efn.span);
+	auto global = new Global {
+		efn.name,
+		mod,
+		efn.span,
+		.isFunc = true,
+		.func = fn
+	};
+	mod->globals.push_back(global);
 
+	// get arguments
+	for (auto& arg : efn.args)
+	{
+		auto ty = Infer::Type::fromAST(arg, ctx);
+		fn->args.push_back({ "", ty });
+	}
+	fn->ret = ret;
+
+	// runtime info
+	fn->enumType = ret->base;
+}
 static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 {
 	auto type = mod->getType(tydecl->name);
@@ -199,6 +226,8 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 		type->userCreate = false;
 		type->gc_collected = tydecl->gcCollect;
 	}
+	else if (tydecl->isEnum)
+		type->userCreate = false;
 	else
 		type->userCreate = true;
 
@@ -215,6 +244,21 @@ static void createType (Namespace* nm, Module* mod, AST::TypeDecl* tydecl)
 
 		type->data.fields[i] =
 			Infer::Var::fromAST(tydecl->fields[i], ctx);
+	}
+
+	// create enum functions
+	if (tydecl->isEnum)
+	{
+		Infer::TypeList args;
+		for (size_t i = 0; i < type->nparams; i++)
+		{
+			auto p = ctx.params[type->nparams - i - 1];
+			args = Infer::TypeList(p, args);
+		}
+		auto ret = Infer::Type::concrete(type, args);
+
+		for (auto& efn : tydecl->enumfns)
+			createEnumFunc(efn, mod, ctx, ret);
 	}
 #ifndef SILENT_LOADER
 	std::cout << "created type " << type->fullname().str() << std::endl;

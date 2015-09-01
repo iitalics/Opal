@@ -120,6 +120,9 @@ void desugar (AST::DeclPtr& decl)
 	{
 		for (auto& m : tydecl->fields)
 			desugar(m.type);
+		for (auto& efn : tydecl->enumfns)
+			for (auto& ty : efn.args)
+				desugar(ty);
 	}
 	else if (auto constdecl = dynamic_cast<AST::ConstDecl*>(decl.get()))
 	{

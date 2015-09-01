@@ -467,25 +467,41 @@ public:
 	virtual ~ConstDecl ();
 };
 
+struct EnumFunc
+{
+	std::string name;
+	std::vector<TypePtr> args;
+	Span span;
+};
+
 class TypeDecl : public Decl
 {
 public:
 	std::string name;
 	std::vector<std::string> args;
 
+	bool isEnum;
 	bool isExtern;
 	bool gcCollect;
 
 	std::vector<Var> fields;
+	std::vector<EnumFunc> enumfns;
 
 	inline TypeDecl (const std::string& _name,
 			const std::vector<std::string>& _args,
 			const std::vector<Var>& _fields)
-		: name(_name), args(_args), isExtern(false), fields(_fields) {}
+		: name(_name), args(_args), 
+		  isEnum(false), isExtern(false), fields(_fields) {}
 	inline TypeDecl (const std::string& _name,
 			const std::vector<std::string>& _args,
 			bool _gc)
-		: name(_name), args(_args), isExtern(true), gcCollect(_gc) {}
+		: name(_name), args(_args),
+		  isEnum(false), isExtern(true), gcCollect(_gc) {}
+	inline TypeDecl (const std::string& _name,
+			const std::vector<std::string>& _args,
+			const std::vector<EnumFunc>& _enum)
+		: name(_name), args(_args),
+		  isEnum(true), isExtern(false), enumfns(_enum) {}
 	virtual ~TypeDecl ();
 };
 

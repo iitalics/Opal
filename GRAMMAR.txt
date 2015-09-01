@@ -47,6 +47,9 @@ type_body:
 	"{" [var {"," var}] "}"
 	"extern" true
 	"extern" false
+	"=" enum_fn {"or" enum_fn}
+enum_fn:
+	ID "(" [type {"," type}] ")"
 
 
 iface_decl:

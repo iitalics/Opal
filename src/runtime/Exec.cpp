@@ -156,7 +156,14 @@ void Thread::call (Env::Function* func)
 				func->declSpan);
 		}
 	case Env::Function::EnumFunction:
-		throw SourceError("enum call unimplemented", func->declSpan);
+		{
+			// just make an object
+			auto obj = make(func->enumType, func->args.size(), func);
+			push(obj);
+			obj.release();
+		}
+		break;
+
 	default:
 		throw SourceError("call unimplemented", func->declSpan);
 	}

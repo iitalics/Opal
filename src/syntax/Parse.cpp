@@ -217,7 +217,19 @@ type_body:
 	"{" [var {"," var}] "}"
 	"extern" true
 	"extern" false
+	"=" enum_fn {"or" enum_fn}
+enum_fn:
+	ID "(" [type {"," type}] ")"
 */
+static EnumFunc parseEnumFunc (Scanner& scan)
+{
+	auto span = scan.get().span;
+	auto name = scan.eat(ID).string;
+	auto args = commaList(scan, parseType, LPAREN, RPAREN);
+	return EnumFunc {
+		name, args, span
+	};
+}
 static DeclPtr parseTypeDecl (Scanner& scan)
 {
 	TypeDecl* res;
@@ -233,6 +245,21 @@ static DeclPtr parseTypeDecl (Scanner& scan)
 		auto mems = commaList(scan, parseVar, LCURL, RCURL);
 		res = new TypeDecl(name, args, mems);
 	}
+	else if (scan.get() == EQUAL)
+	{
+		// enum type
+		scan.shift();
+
+		std::vector<EnumFunc> funcs;
+		funcs.push_back(parseEnumFunc(scan));
+		while (scan.get() == KW_or)
+		{
+			scan.shift();
+			funcs.push_back(parseEnumFunc(scan));
+		}
+
+		res = new TypeDecl(name, args, funcs);
+	}
 	else if (scan.get() == KW_extern)
 	{
 		// external type
@@ -243,10 +270,9 @@ static DeclPtr parseTypeDecl (Scanner& scan)
 
 		res = new TypeDecl(name, args, gc);
 	}
-	// TODO: enum type
 	else
 	{
-		scan.expect({ LCURL, EQUAL });
+		scan.expect({ LCURL, EQUAL, KW_extern });
 		return nullptr;
 	}
 
