@@ -89,8 +89,7 @@ static Var parseVar (Scanner& scan)
 
 /*
 name:
-	ID "::" ID
-	ID
+	ID ["::" ID]
 */
 static Name parseName (Scanner& scan)
 {
@@ -135,11 +134,10 @@ static void parseModule (Toplevel& top, Scanner& scan)
 }
 
 /*
-fn_decl:
-	"fn" ID "(" [var {"," var}] ")" fn_body
-
-fn_body:
-	block_exp
+funcDecl:
+	"func" ID "(" [var {"," var}] ")" funcBody
+funcBody:
+	blockExp
 	"extern" "(" STRING ")" STRING "->" type
 */
 static FuncDecl* parseFuncBody (Scanner& scan,
@@ -175,6 +173,13 @@ static DeclPtr parseFuncDecl (Scanner& scan, const Var& impl)
 }
 
 
+
+/*
+typeDecl:
+	"type" ID [typeParams] typeBody
+typeParams:
+	"[" [POLYID {"," POLYID}] "]"
+*/
 static std::pair<Span, std::string> parsePOLYID (Scanner& scan)
 {
 	auto span = scan.get().span;
@@ -209,16 +214,8 @@ static std::vector<Span> parseTypeSig (Scanner& scan,
 	else
 		return {};
 }
-
 /*
-type_decl:
-	"type" type type_body
-type_body:
-	"{" [var {"," var}] "}"
-	"extern" true
-	"extern" false
-	"=" enum_fn {"or" enum_fn}
-enum_fn:
+enumFunc:
 	ID "(" [type {"," type}] ")"
 */
 static EnumFunc parseEnumFunc (Scanner& scan)
@@ -230,6 +227,13 @@ static EnumFunc parseEnumFunc (Scanner& scan)
 		name, args, span
 	};
 }
+/*
+typeBody:
+	"{" [var {"," var}] "}"
+	"extern" "true"
+	"extern" "false"
+	"=" enumFunc {"or" enumFunc}
+*/
 static DeclPtr parseTypeDecl (Scanner& scan)
 {
 	TypeDecl* res;
@@ -281,9 +285,11 @@ static DeclPtr parseTypeDecl (Scanner& scan)
 }
 
 /*
-iface_decl:
-	"iface" [POLYID ":"] type "{" {iface_fn} "}"
-iface_fn:
+ifaceDecl:
+	"iface" [POLYID ":"] ID [typeParams] ifaceBody
+ifaceBody:
+	"{" {ifaceFunc} "}""
+ifaceFunc:
 	"fn" ID "(" [type {"," type}] ")" "->" type
 */
 static void parseIFaceFunc (IFaceDecl* iface, Scanner& scan)
@@ -334,8 +340,10 @@ static DeclPtr parseIFaceDecl (Scanner& scan)
 }
 
 /*
-impl:
-	"impl" [ID ":"] type "{" {fn_decl} "}"
+implDecl:
+	"impl" [ID ":"] type implBody
+implBody:
+	"{" {funcDecl} "}"
 */
 static void parseImpl (Toplevel& top, Scanner& scan)
 {
@@ -361,16 +369,13 @@ static void parseImpl (Toplevel& top, Scanner& scan)
 }
 
 /*
-language:
-	{toplevel}
-
 toplevel:
-	module
-	impl
-	["pub"] fn_decl
-	["pub"] type_decl
-	["pub"] let_decl
-	["pub"] iface
+	"module" ID
+	"use" ID
+	["pub"] funcDecl
+	["pub"] typeDecl
+	["pub"] ifaceDecl
+	implDecl
 */
 static bool parseToplevel (Toplevel& top, Scanner& scan)
 {
@@ -644,22 +649,31 @@ ExpPtr parseExp (Scanner& scan)
 
 /*
 term:
-	op_unary term
-	prefix_term {term_suffix} [type_hint]
-prefix_term:
+	opUnary term
+	prefixTerm {suffix} [typeHint]
+
+prefixTerm:
 	name
+	constant
+	tupleExp
+	fieldExp
+	condExp
+	objectExp
+	lambdaExp
+	blockExp
+
+constant:
 	INT
 	REAL
 	LONG
 	STRING
-	bool_exp
-	tuple_exp
-	field
-	lambda_exp
-	object_exp
-	cond_exp
-	block_exp
-field:
+	CHAR
+	"true"
+	"false"
+
+tupleExp:
+	"(" exp {"," exp} ")"
+fieldExp:
 	"." ID
 */
 static ExpPtr parseTerm (Scanner& scan)
@@ -754,11 +768,11 @@ static ExpPtr parseTerm (Scanner& scan)
 }
 
 /*
-term_suffix:
+suffix:
 	"(" [exp {"," exp}] ")"
 	"[" exp "]"
-	field
-type_hint:
+	"." ID
+typeHint:
 	":" type
 */
 static ExpPtr parseSuffix (Scanner& scan, ExpPtr e)
@@ -806,18 +820,17 @@ static ExpPtr parseSuffix (Scanner& scan, ExpPtr e)
 }
 
 /*
-block_exp:
-	"{" {stmt} [final_stmt] "}"
+blockExp:
+	"{" {stmt} [finalStmt] "}"
+
 stmt:
 	";"
-	let_decl
-	cond_if [cond_else]
-	loop
+	condStmt
+	letDecl
 	exp [assignment]
-final_stmt:
-	"return" [exp]
-	"break"
-	"continue"
+
+assignment:
+	"=" exp
 */
 static ExpPtr parseBlockExp (Scanner& scan)
 {
@@ -927,11 +940,17 @@ static bool parseFinalStmt (Scanner& scan, ExpList& exps)
 }
 
 /*
-cond_if:
-	"if" exp block
-cond_else:
-	"else" cond_if
-	"else" block
+condExp:
+	"if" exp blockExp elseExp
+elseExp:
+	"else" condExp
+	"else" blockExp
+
+condStmt:
+	"if" exp blockExp [elseStmt]
+elseStmt:
+	"else" condStmt
+	"else" blockExp
 */
 static ExpPtr parseCond (Scanner& scan, bool req_else)
 {
@@ -966,7 +985,7 @@ static ExpPtr parseCond (Scanner& scan, bool req_else)
 
 
 /*
-let_decl:
+letDecl:
 	"let" ID "=" exp
 */
 static ExpPtr parseLet (Scanner& scan)
@@ -983,10 +1002,12 @@ static ExpPtr parseLet (Scanner& scan)
 
 
 /*
-lambda_exp:
-	"fn" "(" [ID {"," ID}] ")" block_exp
+lambdaExp:
+	"fn" "(" [lamVar {"," lamVar}] ")" blockExp
+lamVar:
+	ID [":" type]
 */
-static Var parseLambdaArg (Scanner& scan)
+static Var parseLambdaVar (Scanner& scan)
 {
 	auto name = scan.eat(ID).string;
 	TypePtr type = nullptr;
@@ -1003,7 +1024,7 @@ static Var parseLambdaArg (Scanner& scan)
 static ExpPtr parseLambda (Scanner& scan)
 {
 	auto span = scan.shift().span;
-	auto args = commaList(scan, parseLambdaArg, LPAREN, RPAREN);
+	auto args = commaList(scan, parseLambdaVar, LPAREN, RPAREN);
 	auto body = parseBlockExp(scan);
 	auto res = ExpPtr(new LambdaExp(args, body));
 	res->span = span;
@@ -1011,8 +1032,10 @@ static ExpPtr parseLambda (Scanner& scan)
 }
 
 /*
-object_exp:
-	"new" type "{" [init {"," init}] "}"
+objectExp:
+	"new" type objectInits
+objectInits:
+	"{" [init {"," init}] "}"
 init:
 	ID "=" exp
 */
