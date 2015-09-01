@@ -16,6 +16,7 @@ static DeclPtr parsePublic (Scanner& scan);
 
 static ExpPtr parseExp (Scanner& scan, int prec);
 static ExpPtr parseTerm (Scanner& scan);
+static ExpPtr parseConstant (Scanner& scan);
 static ExpPtr parseSuffix (Scanner& scan, ExpPtr e);
 static ExpPtr parseBlockExp (Scanner& scan);
 static ExpPtr parseCond (Scanner& scan, bool req_else);
@@ -662,15 +663,6 @@ prefixTerm:
 	lambdaExp
 	blockExp
 
-constant:
-	INT
-	REAL
-	LONG
-	STRING
-	CHAR
-	"true"
-	"false"
-
 tupleExp:
 	"(" exp {"," exp} ")"
 fieldExp:
@@ -684,36 +676,6 @@ static ExpPtr parseTerm (Scanner& scan)
 	{
 	case ID:
 		res = ExpPtr(new VarExp(parseName(scan)));
-		res->span = span;
-		break;
-	case INT:
-		res = ExpPtr(new NumberExp(scan.shift().val_int));
-		res->span = span;
-		break;
-	case REAL:
-		res = ExpPtr(new NumberExp(scan.shift().val_real));
-		res->span = span;
-		break;
-	case LONG:
-		res = ExpPtr(new NumberExp(scan.shift().val_long));
-		res->span = span;
-		break;
-	case STRING:
-		res = ExpPtr(new StringExp(scan.shift().string));
-		res->span = span;
-		break;
-	case KW_true:
-		scan.shift();
-		res = ExpPtr(new BoolExp(true));
-		res->span = span;
-		break;
-	case KW_false:
-		scan.shift();
-		res = ExpPtr(new BoolExp(false));
-		res->span = span;
-		break;
-	case CHAR:
-		res = ExpPtr(new CharExp(scan.shift().val_char));
 		res->span = span;
 		break;
 	case LPAREN:
@@ -761,9 +723,57 @@ static ExpPtr parseTerm (Scanner& scan)
 		return methodCall(span, 
 			parseTerm(scan), "inv", {});
 	default:
-		throw SourceError("invalid expression", span);
+		if ((res = parseConstant(scan)) == nullptr)
+			throw SourceError("invalid expression", span);
+		break;
 	}
 	res = parseSuffix(scan, res);
+	return res;
+}
+
+/*
+constant:
+	INT
+	REAL
+	LONG
+	STRING
+	CHAR
+	"true"
+	"false"
+*/
+static ExpPtr parseConstant (Scanner& scan)
+{
+	ExpPtr res;
+	auto span = scan.get().span;
+	switch (scan.get().kind)
+	{
+	case INT:
+		res = ExpPtr(new NumberExp(scan.shift().val_int));
+		break;
+	case REAL:
+		res = ExpPtr(new NumberExp(scan.shift().val_real));
+		break;
+	case LONG:
+		res = ExpPtr(new NumberExp(scan.shift().val_long));
+		break;
+	case STRING:
+		res = ExpPtr(new StringExp(scan.shift().string));
+		break;
+	case KW_true:
+		scan.shift();
+		res = ExpPtr(new BoolExp(true));
+		break;
+	case KW_false:
+		scan.shift();
+		res = ExpPtr(new BoolExp(false));
+		break;
+	case CHAR:
+		res = ExpPtr(new CharExp(scan.shift().val_char));
+		break;
+	default:
+		return nullptr;
+	}
+	res->span = span;
 	return res;
 }
 
