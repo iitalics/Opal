@@ -58,7 +58,7 @@ void NumberExp::castReal ()
 void NumberExp::castLong ()
 {
 	kind = Long;
-	longValue = Real_t(intValue);
+	longValue = Long_t(intValue);
 }
 void NumberExp::negate ()
 {
