@@ -60,6 +60,16 @@ void NumberExp::castLong ()
 	kind = Long;
 	longValue = Real_t(intValue);
 }
+void NumberExp::negate ()
+{
+	switch (kind)
+	{
+	case Int:  intValue  = -intValue; break;
+	case Real: realValue = -realValue; break;
+	case Long: longValue = -longValue; break;
+	default: break;
+	}
+}
 StringExp::~StringExp () {}
 std::string StringExp::str (int ind) const { return "\"" + value + "\""; }
 BoolExp::~BoolExp () {}

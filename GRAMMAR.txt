@@ -133,13 +133,15 @@ typeHint:
 	":" type
 
 constant:
-	INT
-	REAL
-	LONG
+	["-"] numberConstant
 	STRING
 	CHAR
 	"true"
 	"false"
+numberConstant:
+	INT
+	REAL
+	LONG
 
 tupleExp:
 	"(" exp {"," exp} ")"

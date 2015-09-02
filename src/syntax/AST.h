@@ -88,6 +88,7 @@ public:
 
 	void castReal ();
 	void castLong ();
+	void negate ();
 
 	explicit inline NumberExp (Int_t v)
 		: kind(Int), intValue(v) {}

@@ -672,6 +672,8 @@ static ExpPtr parseTerm (Scanner& scan)
 {
 	ExpPtr res;
 	auto span = scan.get().span;
+
+	if ((res = parseConstant(scan)) == nullptr)
 	switch (scan.get().kind)
 	{
 	case ID:
@@ -723,9 +725,7 @@ static ExpPtr parseTerm (Scanner& scan)
 		return methodCall(span, 
 			parseTerm(scan), "inv", {});
 	default:
-		if ((res = parseConstant(scan)) == nullptr)
-			throw SourceError("invalid expression", span);
-		break;
+		throw SourceError("invalid expression", span);
 	}
 	res = parseSuffix(scan, res);
 	return res;
@@ -733,28 +733,34 @@ static ExpPtr parseTerm (Scanner& scan)
 
 /*
 constant:
-	INT
-	REAL
-	LONG
+	["-"] numberConstant
 	STRING
 	CHAR
 	"true"
 	"false"
+numberConstant:
+	INT
+	REAL
+	LONG
 */
+static ExpPtr parseNumber (Scanner& scan)
+{
+	switch (scan.get().kind)
+	{
+	case INT:  return ExpPtr(new NumberExp(scan.shift().val_int));
+	case REAL: return ExpPtr(new NumberExp(scan.shift().val_real));
+	case LONG: return ExpPtr(new NumberExp(scan.shift().val_long));
+	default:   return nullptr;
+	}
+}
 static ExpPtr parseConstant (Scanner& scan)
 {
 	ExpPtr res;
 	auto span = scan.get().span;
 	switch (scan.get().kind)
 	{
-	case INT:
-		res = ExpPtr(new NumberExp(scan.shift().val_int));
-		break;
-	case REAL:
-		res = ExpPtr(new NumberExp(scan.shift().val_real));
-		break;
-	case LONG:
-		res = ExpPtr(new NumberExp(scan.shift().val_long));
+	case INT: case REAL: case LONG:
+		res = parseNumber(scan);
 		break;
 	case STRING:
 		res = ExpPtr(new StringExp(scan.shift().string));
@@ -770,6 +776,18 @@ static ExpPtr parseConstant (Scanner& scan)
 	case CHAR:
 		res = ExpPtr(new CharExp(scan.shift().val_char));
 		break;
+	case MINUS:
+		{
+			// negative numbers don't require method calls!
+			auto next = scan.get(1).kind;
+			if (next == INT || next == REAL || next == LONG)
+			{
+				scan.shift();
+				res = parseNumber(scan);
+				((NumberExp*) res.get())->negate();
+				break;
+			}
+		}
 	default:
 		return nullptr;
 	}
