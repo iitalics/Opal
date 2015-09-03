@@ -112,15 +112,12 @@ void Analysis::_infer (AST::NumberExp* e, TypePtr dest)
 	case AST::NumberExp::Int:
 		unify(dest, intType, e->span);
 		break;
-
 	case AST::NumberExp::Real:
 		unify(dest, realType, e->span);
 		break;
-
 	case AST::NumberExp::Long:
 		unify(dest, longType, e->span);
 		break;
-
 	default: break;
 	}
 }
@@ -177,24 +174,6 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 	     unify the model and the function type, then infer
 	     each argument against the types in each argument of the
 	     model type.
-		e.g.
-
-		fn repeat (msg : string, n : int) : unit
-		
-		infer({ repeat("hi", 5) }, dest)
-			infer({ repeat }, fnty)
-			fnty := fn(string, int) -> unit
-			fnmodel := fn(_1, _2) -> dest
-
-			unify(fnmodel, fnty)
-			_1 <- string
-			_2 <- int
-			dest <- unit
-
-			infer({ "hi" }, _1 = string) // Ok
-			infer({ 5 }, _2 = int)       // Ok
-
-		{ repeat("hi", 5) } : unit
 	*/
 	auto fnty = Type::poly();
 	infer(e->children[0], fnty);
@@ -337,7 +316,6 @@ void Analysis::_infer (AST::CompareExp* e, TypePtr dest)
 	case AST::CompareExp::NotEq:
 		desired = boolType;
 		break;
-
 	// iface #t : Ord { fn cmp (#t) -> int }
 	default:
 		desired = intType;
@@ -493,7 +471,6 @@ void Analysis::_infer (AST::MethodExp* e, TypePtr dest)
 
 void Analysis::_infer (AST::ReturnExp* e)
 {
-	// infer returned value with expected return value of function
 	infer(e->children[0], ret);
 }
 
