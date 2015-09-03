@@ -14,10 +14,13 @@ namespace AST {
 ;
 
 
-class Exp;
-class Type;
-class Decl;
+class Exp;  // expression
+class Pat;  // pattern
+class Type; // type
+class Decl; // declaration
+// everything is ref counted
 using ExpPtr = std::shared_ptr<Exp>;
+using PatPtr = std::shared_ptr<Pat>;
 using ExpList = std::vector<ExpPtr>;
 using TypePtr = std::shared_ptr<Type>;
 using TypeList = std::vector<TypePtr>;
@@ -335,6 +338,62 @@ ExpPtr methodCall (const Span& span,
 	const ExpList& args);
 ExpPtr methodCall (ExpPtr obj, const std::string& method,
 	const ExpList& args);
+
+
+
+
+
+
+
+class Pat
+{
+public:
+	Span span;
+	virtual ~Pat ();
+};
+class ConstPat : public Pat
+{
+public:
+	ExpPtr exp;
+	Env::Function* equals;
+
+	inline ConstPat (ExpPtr _exp)
+		: exp(_exp) {}
+	virtual ~ConstPat ();
+};
+class BindPat : public Pat
+{
+public:
+	std::string name;
+	Infer::LocalVar* var;
+
+	inline BindPat (const std::string& _name)
+		: name(_name), var(nullptr) {}
+	virtual ~BindPat ();
+};
+class EnumPat : public Pat
+{
+public:
+	Name name;
+	std::vector<PatPtr> args;
+	Env::Function* ctor;
+
+	inline EnumPat (const Name& _name,
+			const std::vector<PatPtr>& _args)
+		: name(_name), args(_args), ctor(nullptr) {}
+	virtual ~EnumPat ();
+};
+class TuplePat : public Pat
+{
+public:
+	std::vector<PatPtr> args;
+
+	inline TuplePat (const std::vector<PatPtr>& _args)
+		: args(_args) {}
+	virtual ~TuplePat ();
+};
+
+
 
 
 

@@ -52,7 +52,7 @@ enumFunc:
 ifaceDecl:
 	"iface" [POLYID ":"] ID [typeParams] ifaceBody
 ifaceBody:
-	"{" {ifaceFunc} "}""
+	"{" {ifaceFunc} "}"
 ifaceFunc:
 	"fn" ID "(" [type {"," type}] ")" "->" type
 
@@ -124,6 +124,7 @@ prefixTerm:
 	objectExp
 	lambdaExp
 	blockExp
+	matchExp
 
 suffix:
 	"(" [exp {"," exp}] ")"
@@ -172,20 +173,39 @@ blockExp:
 stmt:
 	";"
 	condStmt
-	letDecl
 	exp [assignment]
+	letDecl
 
 condStmt:
 	"if" exp blockExp [elseStmt]
 elseStmt:
 	"else" condStmt
 	"else" blockExp
-letDecl:
-	"let" ID "=" exp
 assignment:
 	"=" exp
+letDecl:
+	"let" pat "=" exp
 
 finalStmt:
 	"return" [exp]
 	"break"
 	"continue"
+
+// SYNTAX: patterns
+matchExp:
+	"match" exp matchBody
+matchBody:
+	"{" {matchCase} "}"
+matchCase:
+	pat "->" exp
+	pat blockExp
+
+pat:
+	constant
+	ID
+	enumPat
+	tuplePat
+enumPat:
+	name "(" [pat {"," pat}] ")"
+tuplPat:
+	"(" [pat {"," pat}] ")"

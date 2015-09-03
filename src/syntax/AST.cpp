@@ -316,6 +316,15 @@ ExpPtr methodCall (ExpPtr obj, const std::string& method,
 
 
 
+Pat::~Pat () {}
+ConstPat::~ConstPat () {}
+BindPat::~BindPat () {}
+EnumPat::~EnumPat () {}
+TuplePat::~TuplePat () {}
+
+
+
+
 Type::Type () {}
 Type::~Type () {}
 std::string Type::str () const { return "<type>"; }

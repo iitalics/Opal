@@ -1085,4 +1085,62 @@ static ExpPtr parseObject (Scanner& scan)
 }
 
 
+
+
+
+
+/*
+pat:
+	constant
+	ID
+	enumPat
+	tuplePat
+enumPat:
+	name "(" [pat {"," pat}] ")"
+tuplPat:
+	"(" [pat {"," pat}] ")"
+*/
+PatPtr parsePat (Scanner& scan)
+{
+	auto span = scan.get().span;
+
+	switch (scan.get().kind)
+	{
+	case MINUS: case INT: case REAL: case LONG:
+	case CHAR: case STRING:
+		if (auto e = parseConstant(scan))
+		{
+			auto cpat = new ConstPat(e);
+			cpat->span = span;
+			return PatPtr(cpat);
+		}
+		else
+			break;
+
+	case LPAREN:
+		{
+			auto args = commaList(scan, parsePat, LPAREN, RPAREN);
+			auto tpat = new TuplePat(args);
+			tpat->span = span;
+			return PatPtr(tpat);
+		}
+
+	case ID:
+		if (scan.get(1).kind == DOUBLECOLON ||
+				scan.get(1).kind == LPAREN)
+		{
+			auto name = parseName(scan);
+			auto args = commaList(scan, parsePat, LPAREN, RPAREN);
+			auto epat = new EnumPat(name, args);
+			epat->span = span;
+			return PatPtr(epat);
+		}
+
+	default: break;
+	}
+
+	throw SourceError("invalid pattern", span);
+}
+
+
 }}
