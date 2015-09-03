@@ -128,8 +128,6 @@ void CodeGen::_generate (AST::BlockExp* e)
 }
 void CodeGen::_generate (AST::VarExp* e)
 {
-	// TODO: boxing and unboxing
-
 	if (e->global != nullptr)
 	{
 		if (e->global->isFunc)
