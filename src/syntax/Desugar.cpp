@@ -34,6 +34,8 @@ void desugar (AST::TypePtr& ty)
 }
 void desugar (AST::ExpPtr& e)
 {
+	auto span = e->span;
+
 	if (auto var = dynamic_cast<AST::VarExp*>(e.get()))
 	{
 		desugarName(var->name);
@@ -59,7 +61,6 @@ void desugar (AST::ExpPtr& e)
 	{
 		auto obj = mem->children[0];
 		auto what = mem->children[1];
-		auto span = mem->span;
 
 		// a[b]   ->   a.get(b)
 		e = AST::methodCall(span, obj, SUG_MEMBER_GET, { what });
@@ -69,7 +70,6 @@ void desugar (AST::ExpPtr& e)
 		AST::ExpPtr res;
 		auto a = cmp->children[0];
 		auto b = cmp->children[1];
-		auto span = cmp->span;
 
 		// a == b   ->   a.equal(b) == true
 		// a != b   ->   a.equal(b) == false
@@ -94,6 +94,34 @@ void desugar (AST::ExpPtr& e)
 		for (auto arg : lam->args)
 			if (arg.type != nullptr)
 				desugar(arg.type);
+	}
+	else if (dynamic_cast<AST::ConsExp*>(e.get()))
+	{
+		auto Cons = AST::ExpPtr(new AST::VarExp(AST::Name("Cons", "Core")));
+		e = AST::ExpPtr(new AST::CallExp(Cons, e->children));
+		e->span = Cons->span = span;
+	}
+	else if (dynamic_cast<AST::NilExp*>(e.get()))
+	{
+		auto Nil = AST::ExpPtr(new AST::VarExp(AST::Name("Nil", "Core")));
+		e = AST::ExpPtr(new AST::CallExp(Nil, {}));
+		e->span = Nil->span = span;
+	}
+	else if (dynamic_cast<AST::ListExp*>(e.get()))
+	{
+		auto elems = e->children;
+
+		auto res = AST::ExpPtr(new AST::NilExp());
+		res->span = span;
+		for (size_t i = 0, len = elems.size(); i < len; i++)
+		{
+			auto elem = elems[len - i - 1];
+			res = AST::ExpPtr(new AST::ConsExp(elem, res));
+			res->span = elem->span;
+		}
+
+		e = res;
+		desugar(e); // again!
 	}
 
 	for (auto& c : e->children)

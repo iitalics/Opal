@@ -18,7 +18,7 @@ int main (int argc, char** argv)
 		Env::initSearchPaths(argv[0]);
 
 		// load some code
-		auto nm = Env::loadSource("tests/lambda.opal");
+		auto nm = Env::loadSource("tests/patterns.opal");
 		Env::finishModuleLoad();
 
 		// find 'main' function
