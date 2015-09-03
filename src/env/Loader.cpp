@@ -497,6 +497,7 @@ static void codeGenAll ()
 
 void finishModuleLoad ()
 {
+	Module::getCore();
 	PackageLoad::moduleLoad();
 	// declare Types from TypeDecls and IFaceDecls
 	//   (check for duplicates)
