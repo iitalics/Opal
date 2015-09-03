@@ -269,7 +269,7 @@ void Analysis::_infer (AST::TypeHintExp* e, TypePtr dest)
 void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 {
 	bool returnUnit = e->unitResult || e->children.empty();
-	size_t nstack = stack.size();
+	size_t old = stackSave();
 
 	// # of expressions to ignore
 	size_t ignored = e->children.size();
@@ -286,8 +286,7 @@ void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 	else
 		infer(e->children.back(), dest);
 
-	// revert stack to original size
-	stack.resize(nstack);
+	stackRestore(old);
 }
 
 void Analysis::_infer (AST::TupleExp* e, TypePtr dest)

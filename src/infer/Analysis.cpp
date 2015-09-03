@@ -118,6 +118,14 @@ LocalVar* Analysis::let (const std::string& name, TypePtr type)
 	return var;
 }
 
+size_t Analysis::stackSave ()
+{
+	return stack.size();
+}
+void Analysis::stackRestore (size_t n)
+{
+	stack.resize(n);
+}
 
 
 

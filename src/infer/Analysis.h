@@ -53,6 +53,9 @@ public:
 	// local variable lookup
 	LocalVar* get (const std::string& name) const;
 	LocalVar* let (const std::string& name, TypePtr type);
+	// stack manip
+	size_t stackSave ();
+	void stackRestore (size_t n);
 
 	// poly <-> param  type conversion utilities
 	TypePtr replaceParams (TypePtr ty, std::vector<TypePtr>& with);
@@ -60,6 +63,7 @@ public:
 
 	// type inference here
 	void infer (AST::ExpPtr e, TypePtr dest);
+	void infer (AST::PatPtr e, TypePtr dest);
 	void unify (TypePtr dest, TypePtr src, const Span& span);
 
 	// make this function depend on another one finishing
