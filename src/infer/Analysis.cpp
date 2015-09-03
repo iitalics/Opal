@@ -263,19 +263,12 @@ TypePtr Analysis::_findMethod (TypePtr obj, const std::string& name, Env::Functi
 		if (obj->base->isIFace)
 			return _findIFaceFunc(obj, obj, name, out);
 
-		for (auto fn : obj->base->methods)
-			if (fn->name == name)
+		if (auto fn = obj->base->getMethod(name))
+			if (auto res = _instMethod(obj, fn))
 			{
-				auto res = _instMethod(obj, fn);
-				if (res)
-				{
-					out = fn;
-					return res;
-				}
-				else // failed!
-					return nullptr;
+				out = fn;
+				return res;
 			}
-
 		return nullptr;
 	}
 

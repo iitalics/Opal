@@ -36,6 +36,8 @@ public:
 
 	Type* getType (const std::string& name) const;
 	Global* getGlobal (const std::string& name) const;
+	Function* getFunction (const std::string& name) const;
+	Function* getFunction (const std::string& type, const std::string& method) const;
 
 	Function* makeLambda (const Span& span = Span());
 
@@ -99,6 +101,8 @@ public:
 	inline bool isTuple () const {
 		return _tuple;
 	}
+
+	Function* getMethod (const std::string& name) const;
 
 	// type data
 	size_t nparams;

@@ -54,6 +54,23 @@ Global* Module::getGlobal (const std::string& name) const
 
 	return nullptr;
 }
+Function* Module::getFunction (const std::string& name) const
+{
+	if (auto g = getGlobal(name))
+	{
+		if (g->isFunc)
+			return g->func;
+	}
+	return nullptr;
+}
+Function* Module::getFunction (const std::string& type, const std::string& method) const
+{
+	if (auto ty = getType(type))
+	{
+		return ty->getMethod(method);
+	}
+	return nullptr;
+}
 Function* Module::makeLambda (const Span& span)
 {
 	std::ostringstream ss;
@@ -87,7 +104,13 @@ Type::Type (const std::string& _name,
 		data.nfields = 0;
 	}
 }
-
+Function* Type::getMethod (const std::string& name) const
+{
+	for (auto fn : methods)
+		if (fn->name == name)
+			return fn;
+	return nullptr;
+}
 
 
 Infer::TypePtr Global::getType ()
