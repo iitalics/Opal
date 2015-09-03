@@ -14,11 +14,8 @@ int main (int argc, char** argv)
 	Run::Thread thread;
 	try
 	{
-		// initialize
-		// TODO: group this
+		// look for modules in the current directory
 		Env::initSearchPaths(argv[0]);
-		Infer::Analysis::initTypes();
-		Run::Cell::initTypes();
 
 		// load some code
 		auto nm = Env::loadSource("tests/lambda.opal");
@@ -26,7 +23,7 @@ int main (int argc, char** argv)
 
 		// find 'main' function
 		auto global_main = nm->getGlobal(AST::Name("main"));
-		if (global_main == nullptr)
+		if (global_main == nullptr || !global_main->isFunc)
 			throw SourceError("no main function defined");
 
 		// execute it in a new thread

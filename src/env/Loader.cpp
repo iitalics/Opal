@@ -495,8 +495,6 @@ static void codeGenAll ()
 }
 
 
-
-
 void finishModuleLoad ()
 {
 	PackageLoad::moduleLoad();
@@ -510,8 +508,10 @@ void finishModuleLoad ()
 	//   (check that referenced types exist and are used properly)
 	createAll();
 	// infer functions
+	Infer::Analysis::initTypes();
 	inferAll();
 	// generate code
+	Run::Cell::initTypes();
 	codeGenAll();
 	// find entry point and execute
 }
