@@ -364,8 +364,13 @@ void Exec::step (Thread& th)
 		th.ret();
 		break;
 	case Cmd::Throw:
-		th.die("CodeError");
-		break;
+		{
+			a = th.pop();
+			auto err = std::string(((Run::StringObject*) a.obj)->string);
+			a.release();
+			th.die(err);
+			break;
+		}
 
 	case Cmd::NoOp:
 	default:
