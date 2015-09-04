@@ -28,6 +28,7 @@ public:
 	size_t var (Infer::LocalVar* var);
 	Run::Code output ();
 	void generate (AST::ExpPtr e);
+	void generate (AST::PatPtr p, size_t _else);
 
 	void showCode ();
 private:
@@ -36,6 +37,9 @@ private:
 	std::vector<size_t> _labels;
 	size_t _nargs;
 	Infer::LocalEnv* _localEnv;
+
+	int _patFail;
+	Label _getPatFail ();
 
 	static bool _noValue (AST::ExpPtr e);
 	void _generate (AST::BlockExp* e);
@@ -53,10 +57,16 @@ private:
 	void _generate (AST::ObjectExp* e);
 	void _generate (AST::LambdaExp* e);
 	void _generate (AST::MethodExp* e);
-//	void _generate (AST::ConsExp* e);
-//	void _generate (AST::NilExp* e);
 //	void _generate (AST::WhileExp* e);
 //	void _generate (AST::GotoExp* e);
+
+	void _generate (AST::ConstPat* p, size_t _else);
+	void _generate (AST::BindPat* p, size_t _else);
+	void _generate (AST::EnumPat* p, size_t _else);
+	void _generate (AST::TuplePat* p, size_t _else);
+	void _patternChildren (
+		const std::vector<AST::PatPtr>& pats,
+		size_t _else);
 };
 
 }}

@@ -20,8 +20,17 @@ CodeGen::CodeGen (Env::Function* func)
 			add({ Cmd::Box, .var = var(arg) });
 	}
 
+	_patFail = -1;
+
 	generate(func->body);
 	add(Cmd::Ret);
+
+	if (_patFail != -1)
+	{
+		place(Label(_patFail));
+		add({ Cmd::String, .string = new std::string("MatchFail") });
+		add(Cmd::Throw);
+	}
 
 	std::cout << "generated code: " << func->fullname().str() << std::endl;
 	showCode();
@@ -43,6 +52,13 @@ void CodeGen::place (Label label)
 {
 	if (label < _labels.size())
 		_labels[label] = _program.size();
+}
+CodeGen::Label CodeGen::_getPatFail ()
+{
+	if (_patFail == -1)
+		_patFail = label();
+
+	return Label(_patFail);
 }
 size_t CodeGen::var (Infer::LocalVar* var)
 {
@@ -112,6 +128,16 @@ void CodeGen::generate (AST::ExpPtr e)
 	else
 		throw unimplement(e->span);
 }
+void CodeGen::generate (AST::PatPtr p, size_t _else)
+{
+	if (auto p2 = dynamic_cast<AST::ConstPat*>(p.get())) _generate(p2, _else);
+	else if (auto p2 = dynamic_cast<AST::BindPat*>(p.get())) _generate(p2, _else);
+	else if (auto p2 = dynamic_cast<AST::EnumPat*>(p.get())) _generate(p2, _else);
+	else if (auto p2 = dynamic_cast<AST::TuplePat*>(p.get())) _generate(p2, _else);
+	else
+		throw unimplement(p->span);
+}
+
 void CodeGen::_generate (AST::BlockExp* e)
 {
 	bool drop = false;
@@ -187,11 +213,11 @@ void CodeGen::_generate (AST::CallExp* e)
 }
 void CodeGen::_generate (AST::LetExp* e)
 {
+	// generate initialization
 	generate(e->children[0]);
-	add({ Cmd::Store, .var = var(e->var) });
 
-	if (e->var->needsBox())
-		add({ Cmd::Box, .var = var(e->var) });
+	// match against pattern
+	generate(e->pattern, _getPatFail());
 }
 void CodeGen::_generate (AST::AssignExp* e)
 {
@@ -361,6 +387,46 @@ void CodeGen::_generate (AST::MethodExp* e)
 {
 	add({ Cmd::Int, .int_val = 0 });
 	add({ Cmd::Func, .func = e->method });
+}
+
+
+void CodeGen::_generate (AST::ConstPat* p, size_t _else)
+{
+	if (p->equals == nullptr)
+		throw SourceError("cannot compare to this constant", p->span);
+
+	generate(p->exp);
+	add({ Cmd::Call, .func = p->equals });
+	add({ Cmd::Else, .index = _else });
+}
+void CodeGen::_generate (AST::BindPat* p, size_t _else)
+{
+	add({ Cmd::Store, .var = var(p->var) });
+	if (p->var->needsBox())
+		add({ Cmd::Box, .var = var(p->var) });
+}
+void CodeGen::_generate (AST::EnumPat* p, size_t _else)
+{
+	add(Cmd::Dupl);
+	add({ Cmd::IsEnum, .func = p->ctor });
+	add({ Cmd::Else, .index = _else });
+	_patternChildren(p->args, _else);
+}
+void CodeGen::_generate (AST::TuplePat* p, size_t _else)
+{
+	_patternChildren(p->args, _else);
+}
+void CodeGen::_patternChildren (const std::vector<AST::PatPtr>& pats,
+		size_t _else)
+{
+	for (size_t i = 0, len = pats.size(); i < len; i++)
+	{
+		if (i < (len - 1))
+			add(Cmd::Dupl);
+
+		add({ Cmd::Get, .index = i });
+		generate(pats[i], _else);
+	}
 }
 
 
