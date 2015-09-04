@@ -1014,16 +1014,15 @@ static ExpPtr parseCond (Scanner& scan, bool req_else)
 
 /*
 letDecl:
-	"let" ID "=" exp
+	"let" pat "=" exp
 */
 static ExpPtr parseLet (Scanner& scan)
 {
 	auto span = scan.shift().span;
-	// TODO (much later): pattern destructuring
-	auto name = scan.eat(ID).string;
+	auto pat = parsePat(scan);
 	scan.eat(EQUAL);
 	auto init = parseExp(scan);
-	auto res = ExpPtr(new LetExp(name, init));
+	auto res = ExpPtr(new LetExp(pat, init));
 	res->span = span;
 	return res;
 }
@@ -1134,6 +1133,12 @@ PatPtr parsePat (Scanner& scan)
 			auto epat = new EnumPat(name, args);
 			epat->span = span;
 			return PatPtr(epat);
+		}
+		else
+		{
+			auto bpat = new BindPat(scan.shift().string);
+			bpat->span = span;
+			return PatPtr(bpat);
 		}
 
 	default: break;

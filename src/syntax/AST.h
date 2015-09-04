@@ -53,8 +53,6 @@ public:
 	explicit inline Exp (const ExpList& _children = {})
 		: children(_children) {}
 	virtual ~Exp () = 0;
-	virtual std::string str (int ident) const;
-	inline std::string str () const { return str(0); }
 
 	template <typename T>
 	inline bool is () const {
@@ -75,7 +73,6 @@ public:
 	explicit inline VarExp (const Name& _name)
 		: name(_name), var(nullptr), global(nullptr) {}
 	virtual ~VarExp ();
-	virtual std::string str (int ident) const;
 };
 class NumberExp : public Exp
 {
@@ -100,7 +97,6 @@ public:
 	explicit inline NumberExp (Long_t v)
 		: kind(Long), longValue(v) {}
 	virtual ~NumberExp ();
-	virtual std::string str (int ident) const;
 };
 class StringExp : public Exp
 {
@@ -108,7 +104,6 @@ public:
 	std::string value;
 	explicit inline StringExp (const std::string& _value) : value(_value) {}
 	virtual ~StringExp ();
-	virtual std::string str (int ident) const;
 };
 class BoolExp : public Exp
 {
@@ -116,7 +111,6 @@ public:
 	bool value;
 	explicit inline BoolExp (bool _value) : value(_value) {}
 	virtual ~BoolExp ();
-	virtual std::string str (int ident) const;
 };
 class CharExp : public Exp
 {
@@ -125,21 +119,18 @@ public:
 	explicit inline CharExp (Char_t _value)
 		: value(_value) {}
 	virtual ~CharExp ();
-	virtual std::string str (int indent) const;
 };
 class TupleExp : public Exp
 {
 public:
 	explicit inline TupleExp (const ExpList& ch) : Exp(ch) {}
 	virtual ~TupleExp ();
-	virtual std::string str (int ident) const;
 };
 class ListExp : public Exp
 {
 public:
 	explicit inline ListExp (const ExpList& ch) : Exp(ch) {}
 	virtual ~ListExp ();
-	virtual std::string str (int ident) const;
 };
 class LambdaExp : public Exp
 {
@@ -154,7 +145,6 @@ public:
 		  args(_args),
 		  env(nullptr) {}
 	virtual ~LambdaExp ();
-	virtual std::string str (int ident) const;
 };
 class ObjectExp : public Exp
 {
@@ -171,7 +161,6 @@ public:
 		TypePtr _objType,
 		const std::vector<Init>& _inits);
 	virtual ~ObjectExp ();
-	virtual std::string str (int ident) const;
 };
 class CondExp : public Exp
 {
@@ -181,18 +170,15 @@ public:
 	inline CondExp (ExpPtr _cond, ExpPtr _then)
 		: Exp({ _cond, _then }) {}
 	virtual ~CondExp ();
-	virtual std::string str (int ident) const;
 };
 class LetExp : public Exp
 {
 public:
-	std::string name;
-	Infer::LocalVar* var;
+	PatPtr pattern;
 
-	inline LetExp (const std::string& _name, ExpPtr _init)
-		: Exp({ _init }), name(_name), var(nullptr) {}
+	inline LetExp (PatPtr _pat, ExpPtr _init)
+		: Exp({ _init }), pattern(_pat) {}
 	virtual ~LetExp ();
-	virtual std::string str (int ident) const;
 };
 class LazyOpExp : public Exp
 {
@@ -203,7 +189,6 @@ public:
 	inline LazyOpExp (ExpPtr _a, Kind _kind, ExpPtr _b)
 		: Exp({ _a, _b }), kind(_kind) {}
 	virtual ~LazyOpExp ();
-	virtual std::string str (int ident) const;
 };
 class CompareExp : public Exp
 {
@@ -216,7 +201,6 @@ public:
 	inline CompareExp (ExpPtr _a, Kind _kind)
 		: Exp({ _a }), kind(_kind) {}
 	virtual ~CompareExp ();
-	virtual std::string str (int ident) const;
 };
 class ConsExp : public Exp
 {
@@ -224,13 +208,11 @@ public:
 	inline ConsExp (ExpPtr _hd, ExpPtr _tl)
 		: Exp({ _hd, _tl }) {}
 	virtual ~ConsExp ();
-	virtual std::string str (int ident) const;
 };
 class NilExp : public Exp
 {
 public:
 	virtual ~NilExp ();
-	virtual std::string str (int ident) const;
 };
 class FieldExp : public Exp
 {
@@ -242,7 +224,6 @@ public:
 	inline FieldExp (ExpPtr _a, const std::string& _name)
 		: Exp({ _a }), name(_name), index(-1), method(nullptr) {}
 	virtual ~FieldExp ();
-	virtual std::string str (int ident) const;
 };
 class MethodExp : public Exp
 {
@@ -253,7 +234,6 @@ public:
 	inline MethodExp (const std::string& _name)
 		: name(_name), method(nullptr) {}
 	virtual ~MethodExp ();
-	virtual std::string str (int ident) const;
 };
 class MemberExp : public Exp
 {
@@ -261,7 +241,6 @@ public:
 	inline MemberExp (ExpPtr _a, ExpPtr _mem)
 		: Exp({ _a, _mem }) {}
 	virtual ~MemberExp ();
-	virtual std::string str (int ident) const;
 };
 class CallExp : public Exp
 {
@@ -275,7 +254,6 @@ public:
 			_args.begin(), _args.end());
 	}
 	virtual ~CallExp ();
-	virtual std::string str (int ident) const;
 };
 class TypeHintExp : public Exp
 {
@@ -285,7 +263,6 @@ public:
 	inline TypeHintExp (ExpPtr e, TypePtr _type)
 		: Exp({ e }), type(_type) {}
 	virtual ~TypeHintExp ();
-	virtual std::string str (int indent) const;
 };
 class BlockExp : public Exp
 {
@@ -294,7 +271,6 @@ public:
 	inline BlockExp (const ExpList& stmts, bool _unitResult)
 		: Exp(stmts), unitResult(_unitResult) {}
 	virtual ~BlockExp ();
-	virtual std::string str (int ident) const;
 };
 class WhileExp : public Exp
 {
@@ -309,7 +285,6 @@ public:
 	inline AssignExp (ExpPtr _lh, ExpPtr _rh)
 		: Exp({ _lh, _rh }) {}
 	virtual ~AssignExp ();
-	virtual std::string str (int ident) const;
 };
 class ReturnExp : public Exp
 {
@@ -318,7 +293,6 @@ public:
 		: Exp({ _what }) {}
 	inline ReturnExp () {}
 	virtual ~ReturnExp ();
-	virtual std::string str (int ident) const;
 };
 class GotoExp : public Exp
 {
@@ -328,7 +302,6 @@ public:
 	explicit inline GotoExp (Kind _kind)
 		: kind(_kind) {}
 	virtual ~GotoExp ();
-	virtual std::string str (int ident) const;
 };
 
 // utility to easily create
