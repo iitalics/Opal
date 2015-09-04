@@ -1,9 +1,11 @@
 use Core
 
-fn main () {
-	let x = [1, 2, 3, 4, 5]
-	let y = [1, 2, 3.5] : list[real]
-	let z = []
+type foo = Foo(int, int, int) or Bar(bool)
 
-	{ (x, y, z) }
+fn foo () { Foo(5, 12, 13) }
+
+fn main () {
+	let Foo(x, y, z) = foo()
+
+	x + y + z
 }
