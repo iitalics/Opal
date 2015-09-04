@@ -135,6 +135,11 @@ private:
 	void _infer (AST::LetExp* e);
 	void _infer (AST::AssignExp* e);
 	// void _infer (AST::WhileExp* e);
+
+	void _infer (AST::ConstPat* p, TypePtr dest);
+	void _infer (AST::BindPat* p, TypePtr dest);
+	void _infer (AST::EnumPat* p, TypePtr dest);
+	void _infer (AST::TuplePat* p, TypePtr dest);
 };
 
 

@@ -56,16 +56,23 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get())) _infer(e2);
 }
 
+void Analysis::infer (AST::PatPtr p, TypePtr dest)
+{
+	if (auto p2 = dynamic_cast<AST::ConstPat*>(p.get())) _infer(p2, dest);
+	else if (auto p2 = dynamic_cast<AST::BindPat*>(p.get())) _infer(p2, dest);
+	else if (auto p2 = dynamic_cast<AST::EnumPat*>(p.get())) _infer(p2, dest);
+	else if (auto p2 = dynamic_cast<AST::TuplePat*>(p.get())) _infer(p2, dest);
+}
+
 void Analysis::_infer (AST::VarExp* e, TypePtr dest)
 {
-	Env::Global* global;
 	LocalVar* var;
 	TypePtr type;
 
 	auto name = e->name;
 	if (name.hasModule() || (var = get(name.name)) == nullptr)
 	{
-		global = nm->getGlobal(name); // get global from namespace
+		auto global = nm->getGlobal(name); // get global from namespace
 
 		if (global == nullptr)
 		{
@@ -277,17 +284,17 @@ void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
 	}
 
 	// similar to the algorithm for AST::CallExp
-	std::vector<TypePtr> args;
-	size_t nvals = e->children.size();
-	args.reserve(nvals);
-	for (auto e2 : e->children)
-		args.push_back(Type::poly());
+	TypeList args;
+	size_t nargs = e->children.size();
 
-	auto model = Type::concrete(Env::Type::tuple(nvals), TypeList(args));
+	for (size_t i = 0; i < nargs; i++)
+		args = TypeList(Type::poly(), args);
+
+	auto model = Type::concrete(Env::Type::tuple(nargs), args);
 	unify(dest, model, e->span);
 
-	for (size_t i = 0; i < nvals; i++)
-		infer(e->children[i], args[i]);
+	for (size_t i = 0; i < nargs; ++args, i++)
+		infer(e->children[i], args.head());
 }
 
 void Analysis::_infer (AST::CondExp* e, TypePtr dest)
@@ -476,12 +483,12 @@ void Analysis::_infer (AST::ReturnExp* e)
 
 void Analysis::_infer (AST::LetExp* e)
 {
-	// determine type
+	// determine type using init + pattern matching
 	TypePtr type = Type::poly();
 	infer(e->children[0], type);
 
-	// create variable
-	e->var = let(e->name, type);
+	// this also creates necessary variables
+	infer(e->pattern, type);
 }
 
 void Analysis::_infer (AST::AssignExp* e)
@@ -501,6 +508,85 @@ void Analysis::_infer (AST::AssignExp* e)
 			var->didMut = true;
 	}
 }
+
+
+
+void Analysis::_infer (AST::ConstPat* p, TypePtr dest)
+{
+	infer(p->exp, dest);
+
+	if (dest->kind == Type::Concrete)
+	{
+		auto base = dest->base;
+		p->equals = base->getMethod("equal");
+	}
+}
+void Analysis::_infer (AST::BindPat* p, TypePtr dest)
+{
+	// just create a binding
+	p->var = let(p->name, dest);
+}
+void Analysis::_infer (AST::EnumPat* p, TypePtr dest)
+{
+	// ensure it's actually a constructor
+	auto glob = nm->getGlobal(p->name);
+	if (glob == nullptr || !glob->isFunc ||
+			glob->func->kind != Env::Function::EnumFunction)
+	{
+		std::ostringstream ss;
+		ss << "invalid enum constructor '" << p->name.str() << "'";
+		throw SourceError(ss.str(), p->span);
+	}
+
+	// ensure correctness
+	auto ctor = glob->func;
+	if (ctor->args.size() != p->args.size())
+	{
+		std::ostringstream ss1, ss2;
+		ss1 << "expected: " << ctor->args.size();
+		ss2 << "found: " << p->args.size();
+
+		throw SourceError("invalid number of arguments to constructor",
+			{ ss1.str(), ss2.str() }, p->span);
+	}
+	p->ctor = ctor;
+
+	// get original enum type
+	std::vector<TypePtr> with;
+	auto ret = replaceParams(ctor->ret, with);
+	unify(dest, ret, p->span);
+
+	// infer arguments
+	for (size_t i = 0, len = p->args.size(); i < len; i++)
+	{
+		auto argty = replaceParams(ctor->args[i].type, with);
+		infer(p->args[i], argty);
+	}
+
+}
+void Analysis::_infer (AST::TuplePat* p, TypePtr dest)
+{
+	// extremely similar to infering AST::TupleExp
+	TypeList args;
+	size_t nargs = p->args.size();
+
+	if (nargs == 0)
+	{
+		unify(dest, unitType, p->span);
+		return;
+	}
+
+	for (size_t i = 0; i < nargs; i++)
+		args = TypeList(Type::poly(), args);
+
+	auto model = Type::concrete(Env::Type::tuple(nargs), args);
+	unify(dest, model, p->span);
+
+	for (size_t i = 0; i < nargs; ++args, i++)
+		infer(p->args[i], args.head());
+}
+
+
 
 
 }}
