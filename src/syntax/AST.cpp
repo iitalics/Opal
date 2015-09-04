@@ -72,6 +72,18 @@ MemberExp::~MemberExp () {}
 CallExp::~CallExp () {}
 TypeHintExp::~TypeHintExp () {}
 BlockExp::~BlockExp () {}
+MatchExp::MatchExp (ExpPtr cond, const std::vector<Case>& cases)
+	: Exp({ cond })
+{
+	children.reserve(cases.size() + 1);
+	patterns.reserve(cases.size());
+	for (auto pair : cases)
+	{
+		patterns.push_back(pair.first);
+		children.push_back(pair.second);
+	}
+}
+MatchExp::~MatchExp () {}
 WhileExp::~WhileExp () {}
 AssignExp::~AssignExp () {}
 ReturnExp::~ReturnExp () {}

@@ -272,6 +272,15 @@ public:
 		: Exp(stmts), unitResult(_unitResult) {}
 	virtual ~BlockExp ();
 };
+class MatchExp : public Exp
+{
+public:
+	using Case = std::pair<PatPtr, ExpPtr>;
+
+	std::vector<PatPtr> patterns;
+	MatchExp (ExpPtr cond, const std::vector<Case>& cases);
+	virtual ~MatchExp ();
+};
 class WhileExp : public Exp
 {
 public:
@@ -311,6 +320,7 @@ ExpPtr methodCall (const Span& span,
 	const ExpList& args);
 ExpPtr methodCall (ExpPtr obj, const std::string& method,
 	const ExpList& args);
+
 
 
 

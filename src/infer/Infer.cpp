@@ -51,6 +51,7 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::LambdaExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::MethodExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::MatchExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get())) _infer(e2);
 	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get())) _infer(e2);
 	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get())) _infer(e2);
@@ -476,6 +477,22 @@ void Analysis::_infer (AST::MethodExp* e, TypePtr dest)
 	e->method = fn;
 }
 
+void Analysis::_infer (AST::MatchExp* e, TypePtr dest)
+{
+	auto condtype = Type::poly();
+	infer(e->children[0], condtype);
+
+	auto old = stackSave();
+
+	for (size_t i = 1, len = e->children.size(); i < len; i++)
+	{
+		infer(e->patterns[i - 1], condtype);
+		infer(e->children[i], dest);
+
+		stackRestore(old);
+	}
+}
+
 void Analysis::_infer (AST::ReturnExp* e)
 {
 	infer(e->children[0], ret);
@@ -508,6 +525,9 @@ void Analysis::_infer (AST::AssignExp* e)
 			var->didMut = true;
 	}
 }
+
+
+
 
 
 

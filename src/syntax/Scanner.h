@@ -36,12 +36,13 @@ enum
 	KW_extern,
 	KW_false,
 	KW_fn,
-	KW_for,
+	KW_for, // unused!
 	KW_if,
 	KW_iface,
 	KW_impl,
-	KW_in,
+	KW_in, // unusued!
 	KW_let,
+	KW_match,
 	KW_module,
 	KW_new,
 	KW_not,

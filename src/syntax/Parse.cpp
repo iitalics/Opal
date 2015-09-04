@@ -26,6 +26,7 @@ static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit);
 static bool parseFinalStmt (Scanner& scan, ExpList& exps);
 static ExpPtr parseAssign (Scanner& scan, bool& unit);
 static ExpPtr parseLet (Scanner& scan);
+static ExpPtr parseMatch (Scanner& scan);
 
 
 
@@ -713,6 +714,9 @@ static ExpPtr parseTerm (Scanner& scan)
 	case KW_if:
 		res = parseCond(scan, true);
 		break;
+	case KW_match:
+		res = parseMatch(scan);
+		break;
 	case LCURL:
 		res = parseBlockExp(scan);
 		break;
@@ -1079,6 +1083,56 @@ static ExpPtr parseObject (Scanner& scan)
 	auto type = parseType(scan);
 	auto inits = commaList(scan, parseInit, LCURL, RCURL);
 	auto res = ExpPtr(new ObjectExp(type, inits));
+	res->span = span;
+	return res;
+}
+
+
+
+
+
+
+/*
+matchExp:
+	"match" exp matchBody
+matchBody:
+	"{" {matchCase} "}"
+matchCase:
+	pat "->" exp
+	pat blockExp
+*/
+static MatchExp::Case parseMatchCase (Scanner& scan)
+{
+	auto pat = parsePat(scan);
+	ExpPtr res;
+
+	scan.expect({ ARROW, LCURL });
+	if (scan.get() == ARROW)
+	{
+		scan.shift();
+		res = parseExp(scan);
+	}
+	else
+		res = parseBlockExp(scan);
+
+	return MatchExp::Case(pat, res);
+}
+static ExpPtr parseMatch (Scanner& scan)
+{
+	auto span = scan.shift().span;
+	auto cond = parseExp(scan);
+	std::vector<MatchExp::Case> cases;
+
+	scan.eat(LCURL);
+
+	do
+	{
+		cases.push_back(parseMatchCase(scan));
+	} while (scan.get() != RCURL);
+
+	scan.shift();
+
+	auto res = ExpPtr(new MatchExp(cond, cases));
 	res->span = span;
 	return res;
 }

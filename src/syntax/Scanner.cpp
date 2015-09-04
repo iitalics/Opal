@@ -75,6 +75,7 @@ static std::vector<Seq> keywords {
 	Seq("impl",     KW_impl),
 	Seq("in",       KW_in),
 	Seq("let",      KW_let),
+	Seq("match",    KW_match),
 	Seq("module",   KW_module),
 	Seq("new",      KW_new),
 	Seq("not",      KW_not),
