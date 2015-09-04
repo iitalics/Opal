@@ -40,6 +40,10 @@ void desugar (AST::ExpPtr& e)
 	{
 		desugarName(var->name);
 	}
+	else if (auto let = dynamic_cast<AST::LetExp*>(e.get()))
+	{
+		desugar(let->pattern);
+	}
 	else if (auto assign = dynamic_cast<AST::AssignExp*>(e.get()))
 	{
 		auto lh = assign->children[0];
@@ -127,7 +131,20 @@ void desugar (AST::ExpPtr& e)
 	for (auto& c : e->children)
 		desugar(c);
 }
-
+void desugar (AST::PatPtr& p)
+{
+	if (auto tpat = dynamic_cast<AST::TuplePat*>(p.get()))
+	{
+		for (auto& p2 : tpat->args)
+			desugar(p2);
+	}
+	else if (auto epat = dynamic_cast<AST::EnumPat*>(p.get()))
+	{
+		desugarName(epat->name);
+		for (auto& p2 : epat->args)
+			desugar(p2);
+	}
+}
 
 
 void desugar (AST::DeclPtr& decl)
