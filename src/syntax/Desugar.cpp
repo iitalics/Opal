@@ -133,12 +133,7 @@ void desugar (AST::ExpPtr& e)
 }
 void desugar (AST::PatPtr& p)
 {
-	if (auto tpat = dynamic_cast<AST::TuplePat*>(p.get()))
-	{
-		for (auto& p2 : tpat->args)
-			desugar(p2);
-	}
-	else if (auto epat = dynamic_cast<AST::EnumPat*>(p.get()))
+	if (auto epat = dynamic_cast<AST::EnumPat*>(p.get()))
 	{
 		desugarName(epat->name);
 		for (auto& p2 : epat->args)
