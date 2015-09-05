@@ -63,7 +63,6 @@ private:
 	void _generate (AST::ConstPat* p, size_t _else);
 	void _generate (AST::BindPat* p, size_t _else);
 	void _generate (AST::EnumPat* p, size_t _else);
-	void _generate (AST::TuplePat* p, size_t _else);
 	void _patternChildren (
 		const std::vector<AST::PatPtr>& pats,
 		size_t _else);

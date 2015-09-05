@@ -140,7 +140,7 @@ private:
 	void _infer (AST::ConstPat* p, TypePtr dest);
 	void _infer (AST::BindPat* p, TypePtr dest);
 	void _infer (AST::EnumPat* p, TypePtr dest);
-	void _infer (AST::TuplePat* p, TypePtr dest);
+	void _inferTuplePat (AST::EnumPat* p, TypePtr dest);
 };
 
 

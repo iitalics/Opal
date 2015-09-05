@@ -361,21 +361,17 @@ public:
 	std::vector<PatPtr> args;
 	Env::Function* ctor;
 
+	inline bool isTuple () const {
+		return name.name.empty();
+	}
+
 	inline EnumPat (const Name& _name,
 			const std::vector<PatPtr>& _args)
 		: name(_name), args(_args), ctor(nullptr) {}
+	inline EnumPat (const std::vector<PatPtr>& _args)
+		: name(""), args(_args) {}
 	virtual ~EnumPat ();
 };
-class TuplePat : public Pat
-{
-public:
-	std::vector<PatPtr> args;
-
-	inline TuplePat (const std::vector<PatPtr>& _args)
-		: args(_args) {}
-	virtual ~TuplePat ();
-};
-
 
 
 

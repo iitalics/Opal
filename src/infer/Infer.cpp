@@ -62,7 +62,6 @@ void Analysis::infer (AST::PatPtr p, TypePtr dest)
 	if (auto p2 = dynamic_cast<AST::ConstPat*>(p.get())) _infer(p2, dest);
 	else if (auto p2 = dynamic_cast<AST::BindPat*>(p.get())) _infer(p2, dest);
 	else if (auto p2 = dynamic_cast<AST::EnumPat*>(p.get())) _infer(p2, dest);
-	else if (auto p2 = dynamic_cast<AST::TuplePat*>(p.get())) _infer(p2, dest);
 }
 
 void Analysis::_infer (AST::VarExp* e, TypePtr dest)
@@ -543,11 +542,17 @@ void Analysis::_infer (AST::ConstPat* p, TypePtr dest)
 }
 void Analysis::_infer (AST::BindPat* p, TypePtr dest)
 {
-	// just create a binding
+	// just create a variable
 	p->var = let(p->name, dest);
 }
 void Analysis::_infer (AST::EnumPat* p, TypePtr dest)
 {
+	if (p->isTuple())
+	{
+		_inferTuplePat(p, dest);
+		return;
+	}
+
 	// ensure it's actually a constructor
 	auto glob = nm->getGlobal(p->name);
 	if (glob == nullptr || !glob->isFunc ||
@@ -582,11 +587,10 @@ void Analysis::_infer (AST::EnumPat* p, TypePtr dest)
 		auto argty = replaceParams(ctor->args[i].type, with);
 		infer(p->args[i], argty);
 	}
-
 }
-void Analysis::_infer (AST::TuplePat* p, TypePtr dest)
+void Analysis::_inferTuplePat (AST::EnumPat* p, TypePtr dest)
 {
-	// extremely similar to infering AST::TupleExp
+	// extremely similar to infer(AST::TupleExp*, ...)
 	TypeList args;
 	size_t nargs = p->args.size();
 

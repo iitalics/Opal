@@ -1173,7 +1173,7 @@ PatPtr parsePat (Scanner& scan)
 	case LPAREN:
 		{
 			auto args = commaList(scan, parsePat, LPAREN, RPAREN);
-			auto tpat = new TuplePat(args);
+			auto tpat = new EnumPat(args);
 			tpat->span = span;
 			return PatPtr(tpat);
 		}

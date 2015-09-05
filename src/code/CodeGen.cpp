@@ -133,7 +133,6 @@ void CodeGen::generate (AST::PatPtr p, size_t _else)
 	if (auto p2 = dynamic_cast<AST::ConstPat*>(p.get())) _generate(p2, _else);
 	else if (auto p2 = dynamic_cast<AST::BindPat*>(p.get())) _generate(p2, _else);
 	else if (auto p2 = dynamic_cast<AST::EnumPat*>(p.get())) _generate(p2, _else);
-	else if (auto p2 = dynamic_cast<AST::TuplePat*>(p.get())) _generate(p2, _else);
 	else
 		throw unimplement(p->span);
 }
@@ -390,6 +389,7 @@ void CodeGen::_generate (AST::MethodExp* e)
 }
 
 
+// TODO: redo these a lot
 void CodeGen::_generate (AST::ConstPat* p, size_t _else)
 {
 	if (p->equals == nullptr)
@@ -407,13 +407,12 @@ void CodeGen::_generate (AST::BindPat* p, size_t _else)
 }
 void CodeGen::_generate (AST::EnumPat* p, size_t _else)
 {
-	add(Cmd::Dupl);
-	add({ Cmd::IsEnum, .func = p->ctor });
-	add({ Cmd::Else, .index = _else });
-	_patternChildren(p->args, _else);
-}
-void CodeGen::_generate (AST::TuplePat* p, size_t _else)
-{
+	if (!p->isTuple())
+	{
+		add(Cmd::Dupl);
+		add({ Cmd::IsEnum, .func = p->ctor });
+		add({ Cmd::Else, .index = _else });
+	}
 	_patternChildren(p->args, _else);
 }
 void CodeGen::_patternChildren (const std::vector<AST::PatPtr>& pats,
