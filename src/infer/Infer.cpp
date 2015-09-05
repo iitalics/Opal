@@ -547,6 +547,11 @@ void Analysis::_infer (AST::BindPat* p, TypePtr dest)
 }
 void Analysis::_infer (AST::EnumPat* p, TypePtr dest)
 {
+	// create temporary if needed
+	if (!(p->args.empty() || p->rootPosition))
+		p->var = temp();
+
+	// do tuple things
 	if (p->isTuple())
 	{
 		_inferTuplePat(p, dest);

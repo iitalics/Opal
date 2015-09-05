@@ -111,7 +111,6 @@ Pat::~Pat () {}
 ConstPat::~ConstPat () {}
 BindPat::~BindPat () {}
 EnumPat::~EnumPat () {}
-TuplePat::~TuplePat () {}
 
 
 

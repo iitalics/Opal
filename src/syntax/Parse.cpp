@@ -1024,6 +1024,7 @@ static ExpPtr parseLet (Scanner& scan)
 {
 	auto span = scan.shift().span;
 	auto pat = parsePat(scan);
+	pat->rootPosition = true;
 	scan.eat(EQUAL);
 	auto init = parseExp(scan);
 	auto res = ExpPtr(new LetExp(pat, init));
@@ -1087,11 +1088,6 @@ static ExpPtr parseObject (Scanner& scan)
 	return res;
 }
 
-
-
-
-
-
 /*
 matchExp:
 	"match" exp matchBody
@@ -1104,6 +1100,7 @@ matchCase:
 static MatchExp::Case parseMatchCase (Scanner& scan)
 {
 	auto pat = parsePat(scan);
+	pat->rootPosition = true;
 	ExpPtr res;
 
 	scan.expect({ ARROW, LCURL });
@@ -1160,7 +1157,7 @@ PatPtr parsePat (Scanner& scan)
 	switch (scan.get().kind)
 	{
 	case MINUS: case INT: case REAL: case LONG:
-	case CHAR: case STRING:
+	case CHAR: case STRING: case KW_true: case KW_false:
 		if (auto e = parseConstant(scan))
 		{
 			auto cpat = new ConstPat(e);

@@ -1,10 +1,13 @@
+module AST
 use Core
 
-type foo = Foo(int, int, int) or Bar(bool)
+type exp =
+	Add(exp, exp) or
+	Num(real)
+
 
 fn main () {
-	match Foo(5, 12, 13) {
-		Foo(x, y, z) -> x + y + z
-		Bar(c) -> 0
-	}
+	let Add(Num(x), Num(y)) = Add(Num(4), Num(5))
+
+	x + y
 }

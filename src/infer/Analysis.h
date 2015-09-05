@@ -50,9 +50,10 @@ public:
 	Depends* depends;
 	Env::Function* parent;
 
-	// local variable lookup
+	// local variables
 	LocalVar* get (const std::string& name) const;
 	LocalVar* let (const std::string& name, TypePtr type);
+	LocalVar* temp (TypePtr type = nullptr);
 	// stack manip
 	size_t stackSave ();
 	void stackRestore (size_t n);
@@ -86,6 +87,7 @@ private:
 	Type::Ctx _ctx;
 	Analysis* _calledBy;
 	bool _finished;
+	size_t _temps;
 
 	// failure information from _unify() and friends
 	TypePtr _failType, _failIFace, _failIFace2;

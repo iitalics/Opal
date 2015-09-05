@@ -395,9 +395,16 @@ void CodeGen::_generate (AST::ConstPat* p, size_t _else)
 	if (p->equals == nullptr)
 		throw SourceError("cannot compare to this constant", p->span);
 
+
+	if (p->rootPosition)
+		add(Cmd::Dupl);
 	generate(p->exp);
+
 	add({ Cmd::Call, .func = p->equals });
 	add({ Cmd::Else, .index = _else });
+
+	if (p->rootPosition)
+		add(Cmd::Drop);
 }
 void CodeGen::_generate (AST::BindPat* p, size_t _else)
 {
@@ -407,26 +414,41 @@ void CodeGen::_generate (AST::BindPat* p, size_t _else)
 }
 void CodeGen::_generate (AST::EnumPat* p, size_t _else)
 {
-	if (!p->isTuple())
+	if (p->var != nullptr)
+		add({ Cmd::Store, .var = var(p->var) });
+
+	if (p->ctor != nullptr)
 	{
-		add(Cmd::Dupl);
+		if (p->var != nullptr)
+			add({ Cmd::Load, .var = var(p->var) });
+		else if (p->rootPosition)
+			add(Cmd::Dupl);
+		
 		add({ Cmd::IsEnum, .func = p->ctor });
 		add({ Cmd::Else, .index = _else });
 	}
-	_patternChildren(p->args, _else);
-}
-void CodeGen::_patternChildren (const std::vector<AST::PatPtr>& pats,
-		size_t _else)
-{
-	for (size_t i = 0, len = pats.size(); i < len; i++)
+
+	for (size_t i = 0, len = p->args.size(); i < len; i++)
 	{
-		if (i < (len - 1))
+		if (p->var != nullptr)
+			add({ Cmd::Load, .var = var(p->var) });
+		else if (p->rootPosition)
 			add(Cmd::Dupl);
 
 		add({ Cmd::Get, .index = i });
-		generate(pats[i], _else);
+		generate(p->args[i], _else);
 	}
+
+	if (p->rootPosition)
+		add(Cmd::Drop);
 }
+
+
+/*
+
+
+
+*/
 
 
 

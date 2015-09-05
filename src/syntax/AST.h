@@ -332,6 +332,9 @@ class Pat
 {
 public:
 	Span span;
+	bool rootPosition;
+	inline Pat ()
+		: rootPosition(false) {}
 	virtual ~Pat ();
 };
 class ConstPat : public Pat
@@ -359,7 +362,9 @@ class EnumPat : public Pat
 public:
 	Name name;
 	std::vector<PatPtr> args;
+
 	Env::Function* ctor;
+	Infer::LocalVar* var;
 
 	inline bool isTuple () const {
 		return name.name.empty();
@@ -367,9 +372,9 @@ public:
 
 	inline EnumPat (const Name& _name,
 			const std::vector<PatPtr>& _args)
-		: name(_name), args(_args), ctor(nullptr) {}
+		: name(_name), args(_args), ctor(nullptr), var(nullptr) {}
 	inline EnumPat (const std::vector<PatPtr>& _args)
-		: name(""), args(_args) {}
+		: name(""), args(_args), ctor(nullptr), var(nullptr) {}
 	virtual ~EnumPat ();
 };
 

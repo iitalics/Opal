@@ -5,7 +5,8 @@ namespace Opal { namespace Infer {
 
 
 Analysis::Analysis (Env::Function* fn, Analysis* _call)
-	: parent(fn), nm(fn->nm), _ctx(nm), _calledBy(_call), _finished(false)
+	: parent(fn), nm(fn->nm), _ctx(nm)
+	, _calledBy(_call), _finished(false), _temps(0)
 {
 	ret = parent->ret = Type::poly();
 	env = parent->localEnv = new LocalEnv();
@@ -116,6 +117,12 @@ LocalVar* Analysis::let (const std::string& name, TypePtr type)
 	auto var = env->define(name, type);
 	stack.push_back(var);
 	return var;
+}
+LocalVar* Analysis::temp (TypePtr type)
+{
+	std::ostringstream ss;
+	ss << "~" << (_temps++);
+	return let(ss.str(), type);
 }
 
 size_t Analysis::stackSave ()
