@@ -53,7 +53,7 @@ void CodeGen::place (Label label)
 	if (label < _labels.size())
 		_labels[label] = _program.size();
 }
-CodeGen::Label CodeGen::_getPatFail ()
+CodeGen::Label CodeGen::patFail ()
 {
 	if (_patFail == -1)
 		_patFail = label();
@@ -115,6 +115,7 @@ void CodeGen::generate (AST::ExpPtr e)
 	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::LambdaExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::MethodExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::MatchExp*>(e.get())) _generate(e2);
 
 	else if (auto e2 = dynamic_cast<AST::TypeHintExp*>(e.get()))
 		generate(e2->children[0]);
@@ -216,7 +217,7 @@ void CodeGen::_generate (AST::LetExp* e)
 	generate(e->children[0]);
 
 	// match against pattern
-	generate(e->pattern, _getPatFail());
+	generate(e->pattern, patFail());
 }
 void CodeGen::_generate (AST::AssignExp* e)
 {
@@ -387,9 +388,36 @@ void CodeGen::_generate (AST::MethodExp* e)
 	add({ Cmd::Int, .int_val = 0 });
 	add({ Cmd::Func, .func = e->method });
 }
+void CodeGen::_generate (AST::MatchExp* e)
+{
+	size_t ncases = e->patterns.size();
+
+	generate(e->children[0]);
+	Label next, end;
+
+	end = label();
+
+	for (size_t i = 0; i < ncases; i++)
+	{
+		if (i > 0)
+			place(next);
+
+		if (i < (ncases - 1))
+			next = label();
+		else
+			next = patFail();
+
+		generate(e->patterns[i], next);
+		generate(e->children[i + 1]);
+		if (i < (ncases - 1))
+			add({ Cmd::Jump, .index = end });
+	}
+	place(end);
+}
 
 
-// TODO: redo these a lot
+
+
 void CodeGen::_generate (AST::ConstPat* p, size_t _else)
 {
 	if (p->equals == nullptr)
@@ -442,13 +470,6 @@ void CodeGen::_generate (AST::EnumPat* p, size_t _else)
 	if (p->rootPosition)
 		add(Cmd::Drop);
 }
-
-
-/*
-
-
-
-*/
 
 
 

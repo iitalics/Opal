@@ -2,12 +2,26 @@ module AST
 use Core
 
 type exp =
-	Add(exp, exp) or
-	Num(real)
+   Add(exp, exp) or
+   Mul(exp, exp) or
+   Num(real)
 
+
+impl exp {
+   fn eval () {
+      match self {
+         Num(v) -> v
+         Add(e1, e2) -> e1.eval() + e2.eval()
+         Mul(e1, e2) -> e1.eval() * e2.eval()
+      }
+   }
+}
 
 fn main () {
-	let Add(Num(x), Num(y)) = Add(Num(4), Num(5))
+   let exp = 
+      Mul(Num(.5),
+          Add(Num(4),
+              Num(3)))
 
-	x + y
+   exp.eval()
 }

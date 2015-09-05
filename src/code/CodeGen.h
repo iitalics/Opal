@@ -24,6 +24,7 @@ public:
 		_program.push_back(cmd);
 	}
 	Label label ();
+	Label patFail ();
 	void place (Label label);
 	size_t var (Infer::LocalVar* var);
 	Run::Code output ();
@@ -39,7 +40,6 @@ private:
 	Infer::LocalEnv* _localEnv;
 
 	int _patFail;
-	Label _getPatFail ();
 
 	static bool _noValue (AST::ExpPtr e);
 	void _generate (AST::BlockExp* e);
@@ -57,6 +57,7 @@ private:
 	void _generate (AST::ObjectExp* e);
 	void _generate (AST::LambdaExp* e);
 	void _generate (AST::MethodExp* e);
+	void _generate (AST::MatchExp* e);
 //	void _generate (AST::WhileExp* e);
 //	void _generate (AST::GotoExp* e);
 
