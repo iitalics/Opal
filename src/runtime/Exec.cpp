@@ -281,7 +281,7 @@ void Exec::step (Thread& th)
 		break;
 	case Cmd::IsEnum:
 		a = th.pop();
-		th.push(b = Cell::Bool(a.isEnum(cur.func)));
+		th.push(b = Cell::Bool(a.ctor == cur.func));
 		a.release();
 		break;
 	case Cmd::Call: // easy pz
@@ -294,8 +294,9 @@ void Exec::step (Thread& th)
 		break;
 	case Cmd::Prelude:
 		a = th.pop();
-		for (auto ch : a.simple->children)
-			th.push(ch);
+		if (a.obj)
+			for (auto ch : a.simple->children)
+				th.push(ch);
 		th.push(a);
 		a.release();
 		break;
@@ -305,7 +306,7 @@ void Exec::step (Thread& th)
 			size_t idx = th.size() - 1 - argc;
 			a = th.get(idx).retain();
 			th.remove(idx, idx + 1);
-			th.call(a.simple->ctor);
+			th.call(a.ctor);
 			a.release();
 			break;
 		}

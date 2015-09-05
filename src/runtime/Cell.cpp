@@ -31,8 +31,8 @@ Cell Cell::Bool (bool b)
 { return Cell { core_bool, .dataBool = b }; }
 Cell Cell::Char (Char_t c)
 { return Cell { core_char, .dataChar = c }; }
-Cell Cell::Object (Env::Type* type, GC::Object* obj)
-{ return Cell { type, .obj = obj }; }
+Cell Cell::Object (Env::Type* type, GC::Object* obj, Env::Function* ctor)
+{ return Cell { type, .obj = obj, .ctor = ctor }; }
 Cell Cell::String (const std::string& s)
 {
 	return Cell::Object(core_string,
@@ -40,7 +40,12 @@ Cell Cell::String (const std::string& s)
 }
 Cell Cell::Enum (Env::Type* type, size_t nfields, Env::Function* ctor)
 {
-	return Cell::Object(type, new SimpleObject(nfields, ctor));
+	SimpleObject* obj;
+	if (nfields > 0)
+		obj = new SimpleObject(nfields);
+	else
+		obj = nullptr; // don't allocate if no fields
+	return Cell::Object(type, obj, ctor);
 }
 Cell Cell::Box (const Cell& val)
 {
@@ -49,16 +54,6 @@ Cell Cell::Box (const Cell& val)
 	return Cell::Object(core_box, obj);
 }
 
-
-bool Cell::isEnum (Env::Function* ctor) const
-{
-	if (dataInt & 1)
-		return (dataInt & ~1) == Int_t(ctor);
-	else if (simple)
-		return simple->ctor == ctor;
-	else
-		return false;
-}
 
 void Cell::mark ()
 {
@@ -125,7 +120,7 @@ std::string Cell::str () const
 	}
 	else if (type->isFunction())
 	{
-		ss << "<function> " << simple->ctor->fullname().str();
+		ss << "<function> " << ctor->fullname().str();
 	}
 	else
 	{
@@ -147,8 +142,7 @@ std::string Cell::str () const
 }
 
 
-SimpleObject::SimpleObject (size_t nchilds, Env::Function* _ctor)
-	: ctor(_ctor)
+SimpleObject::SimpleObject (size_t nchilds)
 {
 	children.reserve(nchilds);
 	for (size_t i = 0; i < nchilds; i++)
