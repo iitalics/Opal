@@ -211,7 +211,6 @@ bool Analysis::_mergePoly (TypePtr a, TypePtr b)
 			return false;
 
 	auto res = Type::poly(args);
-	std::cout << "merge " << a->str() << " + " << b->str() << " = " << res->str() << std::endl;
 	a->set(res);
 	b->set(res);
 	return true;
