@@ -1,14 +1,8 @@
 #include "Desugar.h"
 #include "../env/Loader.h"
+#include "../Names.h"
 namespace Opal { namespace Desugar {
 ;
-
-
-#define SUG_MEMBER_SET       "set"
-#define SUG_MEMBER_GET       "get"
-#define SUG_COMPARE          "cmp"
-#define SUG_EQUAL            "equal"
-
 
 
 static void desugarName (const AST::Name& name)
@@ -56,7 +50,7 @@ void desugar (AST::ExpPtr& e)
 			auto span = assign->span;
 
 			// a[b] = c   ->   a.set(b, c)
-			e = AST::methodCall(span, obj, SUG_MEMBER_SET, { what, rh });
+			e = AST::methodCall(span, obj, Names::Set, { what, rh });
 		}
 		else if (!(lh->is<AST::VarExp>() || lh->is<AST::FieldExp>()))
 			throw SourceError("invalid left-hand of assignment", lh->span);
@@ -67,7 +61,7 @@ void desugar (AST::ExpPtr& e)
 		auto what = mem->children[1];
 
 		// a[b]   ->   a.get(b)
-		e = AST::methodCall(span, obj, SUG_MEMBER_GET, { what });
+		e = AST::methodCall(span, obj, Names::Get, { what });
 	}
 	else if (auto cmp = dynamic_cast<AST::CompareExp*>(e.get()))
 	{
@@ -82,9 +76,9 @@ void desugar (AST::ExpPtr& e)
 		// etc.
 		if (cmp->kind == AST::CompareExp::Eq ||
 				cmp->kind == AST::CompareExp::NotEq)
-			res = AST::methodCall(span, a, SUG_EQUAL, { b });
+			res = AST::methodCall(span, a, Names::Equal, { b });
 		else
-			res = AST::methodCall(span, a, SUG_COMPARE, { b });
+			res = AST::methodCall(span, a, Names::Compare, { b });
 
 		e = AST::ExpPtr(new AST::CompareExp(res, cmp->kind));
 		e->span = span;
@@ -101,13 +95,13 @@ void desugar (AST::ExpPtr& e)
 	}
 	else if (dynamic_cast<AST::ConsExp*>(e.get()))
 	{
-		auto Cons = AST::ExpPtr(new AST::VarExp(AST::Name("Cons", "Core")));
+		auto Cons = AST::ExpPtr(new AST::VarExp(AST::Name(Names::Cons, "Core")));
 		e = AST::ExpPtr(new AST::CallExp(Cons, e->children));
 		e->span = Cons->span = span;
 	}
 	else if (dynamic_cast<AST::NilExp*>(e.get()))
 	{
-		auto Nil = AST::ExpPtr(new AST::VarExp(AST::Name("Nil", "Core")));
+		auto Nil = AST::ExpPtr(new AST::VarExp(AST::Name(Names::Nil, "Core")));
 		e = AST::ExpPtr(new AST::CallExp(Nil, {}));
 		e->span = Nil->span = span;
 	}

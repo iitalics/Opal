@@ -1,5 +1,6 @@
 #include "Analysis.h"
 #include "../env/Namespace.h"
+#include "../Names.h"
 namespace Opal { namespace Infer {
 ;
 
@@ -537,7 +538,7 @@ void Analysis::_infer (AST::ConstPat* p, TypePtr dest)
 	if (dest->kind == Type::Concrete)
 	{
 		auto base = dest->base;
-		p->equals = base->getMethod("equal");
+		p->equals = base->getMethod(Names::Equal);
 	}
 }
 void Analysis::_infer (AST::BindPat* p, TypePtr dest)

@@ -1,4 +1,5 @@
 #include "Parse.h"
+#include "../Names.h"
 namespace Opal { namespace Parse {
 ;
 
@@ -350,7 +351,7 @@ implBody:
 static void parseImpl (Toplevel& top, Scanner& scan)
 {
 	scan.shift();
-	Var impl { "self", nullptr };
+	Var impl { Names::Self, nullptr };
 
 	if (scan.get(1) == COLON)
 	{
@@ -543,25 +544,25 @@ enum {
 
 	Compare = 0, Cons, Lazy, Standard
 };
-static std::vector<Op> operators {
-	{ KW_and,  0, Left, Lazy },
-	{ KW_or,   0, Left, Lazy },
-	{ LT,      1, Left, Compare },
-	{ LE,      1, Left, Compare },
-	{ EQ,      1, Left, Compare },
-	{ NE,      1, Left, Compare },
-	{ GE,      1, Left, Compare },
-	{ GR,      1, Left, Compare },
-	{ CONS,    2, Right, Cons },
-	{ PLUS,    3, Left, Standard, "add" },
-	{ MINUS,   3, Left, Standard, "sub" },
-	{ TIMES,   4, Left, Standard, "mul" },
-	{ DIVIDE,  4, Left, Standard, "div" },
-	{ MODULO,  4, Left, Standard, "mod" },
-};
-
 static Op getOp (int k)
 {
+	static std::vector<Op> operators {
+		{ KW_and,  0, Left, Lazy },
+		{ KW_or,   0, Left, Lazy },
+		{ LT,      1, Left, Compare },
+		{ LE,      1, Left, Compare },
+		{ EQ,      1, Left, Compare },
+		{ NE,      1, Left, Compare },
+		{ GE,      1, Left, Compare },
+		{ GR,      1, Left, Compare },
+		{ CONS,    2, Right, Cons },
+		{ PLUS,    3, Left, Standard, Names::OperAdd },
+		{ MINUS,   3, Left, Standard, Names::OperSub },
+		{ TIMES,   4, Left, Standard, Names::OperMul },
+		{ DIVIDE,  4, Left, Standard, Names::OperDiv },
+		{ MODULO,  4, Left, Standard, Names::OperMod },
+	};
+
 	for (auto& op : operators)
 		if (op.token == k)
 			return op;
@@ -723,11 +724,11 @@ static ExpPtr parseTerm (Scanner& scan)
 	case MINUS:
 		scan.shift();
 		return methodCall(span, 
-			parseTerm(scan), "neg", {});
+			parseTerm(scan), Names::Negate, {});
 	case KW_not:
 		scan.shift();
 		return methodCall(span, 
-			parseTerm(scan), "inv", {});
+			parseTerm(scan), Names::Not, {});
 	default:
 		throw SourceError("invalid expression", span);
 	}
