@@ -41,7 +41,7 @@ private:
 
 	int _patFail;
 
-	static bool _noValue (AST::ExpPtr e);
+	static bool _anyOutput (AST::ExpPtr e);
 	void _generate (AST::BlockExp* e);
 	void _generate (AST::VarExp* e);
 	void _generate (AST::NumberExp* e);

@@ -82,15 +82,15 @@ Run::Code CodeGen::output ()
 		_localEnv->refs.size() + _nargs,
 		_localEnv->defs.size() - _nargs);
 }
-bool CodeGen::_noValue (AST::ExpPtr e)
+bool CodeGen::_anyOutput (AST::ExpPtr e)
 {
 	if (e->is<AST::LetExp>() ||
 			e->is<AST::AssignExp>() ||
 			e->is<AST::WhileExp>())
-		return true;
+		return false;
 	if (e->is<AST::CondExp>() && e->children.size() < 3)
-		return true;
-	return false;
+		return false;
+	return true;
 }
 
 static inline SourceError unimplement (const Span& span)
@@ -140,16 +140,19 @@ void CodeGen::generate (AST::PatPtr p, size_t _else)
 
 void CodeGen::_generate (AST::BlockExp* e)
 {
-	bool drop = false;
+	bool unit = true;
 
 	for (auto e2 : e->children)
 	{
-		if (drop)
-			add(Cmd::Drop);
 		generate(e2);
-		drop = !_noValue(e2);
+
+		if (e2 == e->last)
+			unit = false;
+		else if (_anyOutput(e2))
+			add(Cmd::Drop);
 	}
-	if (e->unitResult)
+
+	if (unit)
 		add(Cmd::Unit);
 }
 void CodeGen::_generate (AST::VarExp* e)

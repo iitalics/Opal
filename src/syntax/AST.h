@@ -268,8 +268,9 @@ class BlockExp : public Exp
 {
 public:
 	bool unitResult;
-	inline BlockExp (const ExpList& stmts, bool _unitResult)
-		: Exp(stmts), unitResult(_unitResult) {}
+	ExpPtr last;
+	inline BlockExp (const ExpList& stmts, bool _unit)
+		: Exp(stmts), last(_unit ? nullptr : stmts.back()) {}
 	virtual ~BlockExp ();
 };
 class MatchExp : public Exp

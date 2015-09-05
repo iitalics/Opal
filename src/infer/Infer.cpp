@@ -255,25 +255,24 @@ void Analysis::_infer (AST::TypeHintExp* e, TypePtr dest)
 
 void Analysis::_infer (AST::BlockExp* e, TypePtr dest)
 {
-	bool returnUnit = e->unitResult || e->children.empty();
 	size_t old = stackSave();
 
-	// # of expressions to ignore
-	size_t ignored = e->children.size();
-	if (!returnUnit)
-		ignored--;
+	// return 'unit' instead of one of the sub-exps?
+	bool unit = true;
 
-	// infer stuff but ignore the result
-	for (size_t i = 0; i < ignored; i++)
-		infer(e->children[i], Type::poly());
-
-	// either return unit or return the last expression
-	if (returnUnit)
-		unify(dest, unitType, e->span);
-	else
-		infer(e->children.back(), dest);
+	for (auto e2 : e->children)
+		if (e2 == e->last)
+		{
+			infer(e2, dest);
+			unit = false;
+		}
+		else
+			infer(e2, Type::poly());
 
 	stackRestore(old);
+
+	if (unit)
+		unify(dest, unitType, e->span);
 }
 
 void Analysis::_infer (AST::TupleExp* e, TypePtr dest)
