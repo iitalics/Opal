@@ -337,6 +337,7 @@ public:
 	inline Pat ()
 		: rootPosition(false) {}
 	virtual ~Pat ();
+	virtual bool canFail () const;
 };
 class ConstPat : public Pat
 {
@@ -347,6 +348,7 @@ public:
 	inline ConstPat (ExpPtr _exp)
 		: exp(_exp) {}
 	virtual ~ConstPat ();
+	virtual bool canFail () const;
 };
 class BindPat : public Pat
 {
@@ -357,6 +359,7 @@ public:
 	inline BindPat (const std::string& _name)
 		: name(_name), var(nullptr) {}
 	virtual ~BindPat ();
+	virtual bool canFail () const;
 };
 class EnumPat : public Pat
 {
@@ -377,6 +380,7 @@ public:
 	inline EnumPat (const std::vector<PatPtr>& _args)
 		: name(""), args(_args), ctor(nullptr), var(nullptr) {}
 	virtual ~EnumPat ();
+	virtual bool canFail () const;
 };
 
 

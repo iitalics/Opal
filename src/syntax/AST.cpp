@@ -108,9 +108,22 @@ ExpPtr methodCall (ExpPtr obj, const std::string& method,
 
 
 Pat::~Pat () {}
+bool Pat::canFail () const { return true; }
 ConstPat::~ConstPat () {}
+bool ConstPat::canFail () const { return true; }
 BindPat::~BindPat () {}
+bool BindPat::canFail () const { return false; }
 EnumPat::~EnumPat () {}
+bool EnumPat::canFail () const
+{
+	if (!isTuple())
+		return true;
+
+	for (auto arg : args)
+		if (arg->canFail())
+			return true;
+	return false;
+}
 
 
 

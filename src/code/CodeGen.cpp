@@ -220,7 +220,8 @@ void CodeGen::_generate (AST::LetExp* e)
 	generate(e->children[0]);
 
 	// match against pattern
-	generate(e->pattern, patFail());
+	generate(e->pattern,
+		e->pattern->canFail() ? patFail() : 0);
 }
 void CodeGen::_generate (AST::AssignExp* e)
 {
@@ -407,8 +408,10 @@ void CodeGen::_generate (AST::MatchExp* e)
 
 		if (i < (ncases - 1))
 			next = label();
-		else
+		else if (e->patterns[i]->canFail())
 			next = patFail();
+		else
+			next = 0;
 
 		generate(e->patterns[i], next);
 		generate(e->children[i + 1]);
