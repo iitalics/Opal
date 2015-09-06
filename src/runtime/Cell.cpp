@@ -70,8 +70,7 @@ void Cell::release ()
 {
 	if (type->gc_collected && obj)
 	{
-		obj->release();
-		if (obj->gc_count == 0)
+		if (obj->release())
 		{
 			delete obj;
 			obj = nullptr;

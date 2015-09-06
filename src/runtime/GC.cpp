@@ -4,9 +4,12 @@
 namespace Opal { namespace GC {
 ;
 
+
+
+
 Object::Object ()
 	: gc_count(1), gc_marked(false)
-{ }
+{}
 Object::~Object () {}
 void Object::markChildren () {}
 
@@ -19,7 +22,7 @@ void Object::mark ()
 	}
 }
 void Object::retain () { gc_count++; }
-void Object::release () { gc_count--; }
+bool Object::release () { return 0 == --gc_count; }
 
 
 }}
