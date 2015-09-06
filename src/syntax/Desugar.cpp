@@ -95,12 +95,14 @@ void desugar (AST::ExpPtr& e)
 	}
 	else if (dynamic_cast<AST::ConsExp*>(e.get()))
 	{
+		// turn into a function call
 		auto Cons = AST::ExpPtr(new AST::VarExp(AST::Name(Names::Cons, "Core")));
 		e = AST::ExpPtr(new AST::CallExp(Cons, e->children));
 		e->span = Cons->span = span;
 	}
 	else if (dynamic_cast<AST::NilExp*>(e.get()))
 	{
+		// turn into a function call
 		auto Nil = AST::ExpPtr(new AST::VarExp(AST::Name(Names::Nil, "Core")));
 		e = AST::ExpPtr(new AST::CallExp(Nil, {}));
 		e->span = Nil->span = span;
@@ -109,6 +111,7 @@ void desugar (AST::ExpPtr& e)
 	{
 		auto elems = e->children;
 
+		// build linked list right to left
 		auto res = AST::ExpPtr(new AST::NilExp());
 		res->span = span;
 		for (size_t i = 0, len = elems.size(); i < len; i++)
@@ -120,6 +123,7 @@ void desugar (AST::ExpPtr& e)
 
 		e = res;
 		desugar(e); // again!
+		return;
 	}
 
 	for (auto& c : e->children)
