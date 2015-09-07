@@ -112,11 +112,10 @@ bool Pat::canFail () const { return true; }
 ConstPat::~ConstPat () {}
 bool ConstPat::canFail () const { return true; }
 BindPat::~BindPat () {}
-bool BindPat::canFail () const { return false; }
 EnumPat::~EnumPat () {}
 bool EnumPat::canFail () const
 {
-	if (!isTuple())
+	if (kind != Tuple)
 		return true;
 
 	for (auto arg : args)

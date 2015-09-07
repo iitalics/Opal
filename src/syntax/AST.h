@@ -359,26 +359,25 @@ public:
 	inline BindPat (const std::string& _name)
 		: name(_name), var(nullptr) {}
 	virtual ~BindPat ();
-	virtual bool canFail () const;
 };
 class EnumPat : public Pat
 {
 public:
-	Name name;
+	enum Kind {
+		Enum, List, Tuple
+	};
+	Kind kind;
 	std::vector<PatPtr> args;
+	Name name;
 
 	Env::Function* ctor;
 	Infer::LocalVar* var;
 
-	inline bool isTuple () const {
-		return name.name.empty();
-	}
-
 	inline EnumPat (const Name& _name,
 			const std::vector<PatPtr>& _args)
-		: name(_name), args(_args), ctor(nullptr), var(nullptr) {}
-	inline EnumPat (const std::vector<PatPtr>& _args)
-		: name(""), args(_args), ctor(nullptr), var(nullptr) {}
+		: kind(Enum), args(_args), name(_name), ctor(nullptr), var(nullptr) {}
+	inline EnumPat (Kind _kind, const std::vector<PatPtr>& _args)
+		: kind(_kind), args(_args), name(""), ctor(nullptr), var(nullptr) {}
 	virtual ~EnumPat ();
 	virtual bool canFail () const;
 };

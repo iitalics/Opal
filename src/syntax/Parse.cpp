@@ -1168,15 +1168,16 @@ PatPtr parsePat (Scanner& scan)
 		else
 			break;
 
-	case LPAREN:
+	case LPAREN: // ( args... )
 		{
 			auto args = commaList(scan, parsePat, LPAREN, RPAREN);
-			auto tpat = new EnumPat(args);
+			auto tpat = new EnumPat(EnumPat::Tuple, args);
 			tpat->span = span;
 			return PatPtr(tpat);
 		}
 
 	case ID:
+		// Mod::Ctor ( args... )
 		if (scan.get(1).kind == DOUBLECOLON ||
 				scan.get(1).kind == LPAREN)
 		{
@@ -1186,7 +1187,7 @@ PatPtr parsePat (Scanner& scan)
 			epat->span = span;
 			return PatPtr(epat);
 		}
-		else
+		else // Var
 		{
 			auto bpat = new BindPat(scan.shift().string);
 			bpat->span = span;

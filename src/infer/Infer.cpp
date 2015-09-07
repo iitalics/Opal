@@ -552,7 +552,7 @@ void Analysis::_infer (AST::EnumPat* p, TypePtr dest)
 		p->var = temp();
 
 	// do tuple things
-	if (p->isTuple())
+	if (p->kind == AST::EnumPat::Tuple)
 	{
 		_inferTuplePat(p, dest);
 		return;
