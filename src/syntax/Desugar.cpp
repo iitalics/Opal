@@ -110,6 +110,20 @@ void desugar (AST::ExpPtr& e)
 		desugar(e); // again!
 		return;
 	}
+	else if (auto block = dynamic_cast<AST::BlockExp*>(e.get()))
+	{
+		for (auto& c : e->children)
+		{
+			if (c == block->last)
+			{
+				desugar(block->last);
+				c = block->last;
+			}
+			else
+				desugar(c);
+		}
+		return;
+	}
 
 	for (auto& c : e->children)
 		desugar(c);
