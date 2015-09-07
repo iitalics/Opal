@@ -1159,6 +1159,7 @@ listPat:
 PatPtr parsePat (Scanner& scan)
 {
 	auto span = scan.get().span;
+	PatPtr res;
 
 	switch (scan.get().kind)
 	{
@@ -1166,19 +1167,17 @@ PatPtr parsePat (Scanner& scan)
 	case CHAR: case STRING: case KW_true: case KW_false:
 		if (auto e = parseConstant(scan))
 		{
-			auto cpat = new ConstPat(e);
-			cpat->span = span;
-			return PatPtr(cpat);
+			res = PatPtr(new ConstPat(e));
+			break;
 		}
 		else
-			break;
+			goto fail;
 
 	case LPAREN: // ( args... )
 		{
 			auto args = commaList(scan, parsePat, LPAREN, RPAREN);
-			auto tpat = new EnumPat(EnumPat::Tuple, args);
-			tpat->span = span;
-			return PatPtr(tpat);
+			res = PatPtr(new EnumPat(EnumPat::Tuple, args));
+			break;
 		}
 
 	case ID:
@@ -1188,20 +1187,26 @@ PatPtr parsePat (Scanner& scan)
 		{
 			auto name = parseName(scan);
 			auto args = commaList(scan, parsePat, LPAREN, RPAREN);
-			auto epat = new EnumPat(name, args);
-			epat->span = span;
-			return PatPtr(epat);
+			res = PatPtr(new EnumPat(name, args));
 		}
 		else // Var
-		{
-			auto bpat = new BindPat(scan.shift().string);
-			bpat->span = span;
-			return PatPtr(bpat);
-		}
+			res = PatPtr(new BindPat(scan.shift().string));
+		break;
 
-	default: break;
+	default:
+		goto fail;
 	}
+	res->span = span;
 
+	if (scan.get() == CONS)
+	{
+		auto consSpan = scan.shift().span;
+		auto tail = parsePat(scan);
+		return Pat::cons(consSpan, res, tail);
+	}
+	else
+		return res;
+fail:
 	throw SourceError("invalid pattern", span);
 }
 
