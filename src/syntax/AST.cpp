@@ -1,5 +1,6 @@
 #include "AST.h"
 #include "../infer/Analysis.h"
+#include "../Names.h"
 namespace Opal { namespace AST {
 ;
 
@@ -64,8 +65,6 @@ CondExp::~CondExp () {}
 LetExp::~LetExp () {}
 LazyOpExp::~LazyOpExp () {}
 CompareExp::~CompareExp () {}
-ConsExp::~ConsExp () {}
-NilExp::~NilExp () {}
 FieldExp::~FieldExp () {}
 MethodExp::~MethodExp () {}
 MemberExp::~MemberExp () {}
@@ -105,6 +104,21 @@ ExpPtr methodCall (ExpPtr obj, const std::string& method,
 	return methodCall(obj->span, obj, method, args);
 }
 
+ExpPtr Exp::cons (Span sp, ExpPtr hd, ExpPtr tl)
+{
+	ExpPtr var(new VarExp(Name(Names::Cons, "Core")));
+	ExpPtr res(new CallExp(var, { hd, tl }));
+	var->span = res->span = sp;
+	return res;
+}
+ExpPtr Exp::nil (Span sp)
+{
+	ExpPtr var(new VarExp(Name(Names::Nil, "Core")));
+	ExpPtr res(new CallExp(var, { }));
+	var->span = res->span = sp;
+	return res;
+}
+
 
 
 Pat::~Pat () {}
@@ -124,6 +138,18 @@ bool EnumPat::canFail () const
 	return false;
 }
 
+PatPtr Pat::cons (Span sp, PatPtr hd, PatPtr tl)
+{
+	PatPtr res(new EnumPat(Name(Names::Cons, "Core"), { hd, tl }));
+	res->span = sp;
+	return res;
+}
+PatPtr Pat::nil (Span sp)
+{
+	PatPtr res(new EnumPat(Name(Names::Nil, "Core"), {}));
+	res->span = sp;
+	return res;
+}
 
 
 

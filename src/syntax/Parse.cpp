@@ -602,7 +602,7 @@ static ExpPtr combine (ExpPtr lh, ExpPtr rh, const Op& op, const Span& span)
 		res = ExpPtr(new CompareExp(lh, compareOp(op.token), rh));
 		break;
 	case Cons:
-		res = ExpPtr(new ConsExp(lh, rh));
+		res = Exp::cons(span, lh, rh);
 		break;
 	case Standard:
 		res = methodCall(span, lh, op.str, { rh });
@@ -1142,14 +1142,19 @@ static ExpPtr parseMatch (Scanner& scan)
 
 /*
 pat:
+	prefixPat ["$" pat]
+prefixPat:
 	constant
 	ID
 	enumPat
 	tuplePat
+	listPat
 enumPat:
 	name "(" [pat {"," pat}] ")"
 tuplPat:
 	"(" [pat {"," pat}] ")"
+listPat:
+	"[" [pat {"," pat}] "]"
 */
 PatPtr parsePat (Scanner& scan)
 {

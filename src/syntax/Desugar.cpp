@@ -93,32 +93,17 @@ void desugar (AST::ExpPtr& e)
 			if (arg.type != nullptr)
 				desugar(arg.type);
 	}
-	else if (dynamic_cast<AST::ConsExp*>(e.get()))
-	{
-		// turn into a function call
-		auto Cons = AST::ExpPtr(new AST::VarExp(AST::Name(Names::Cons, "Core")));
-		e = AST::ExpPtr(new AST::CallExp(Cons, e->children));
-		e->span = Cons->span = span;
-	}
-	else if (dynamic_cast<AST::NilExp*>(e.get()))
-	{
-		// turn into a function call
-		auto Nil = AST::ExpPtr(new AST::VarExp(AST::Name(Names::Nil, "Core")));
-		e = AST::ExpPtr(new AST::CallExp(Nil, {}));
-		e->span = Nil->span = span;
-	}
 	else if (dynamic_cast<AST::ListExp*>(e.get()))
 	{
 		auto elems = e->children;
 
 		// build linked list right to left
-		auto res = AST::ExpPtr(new AST::NilExp());
-		res->span = span;
+		auto res = AST::Exp::nil(span);
+
 		for (size_t i = 0, len = elems.size(); i < len; i++)
 		{
 			auto elem = elems[len - i - 1];
-			res = AST::ExpPtr(new AST::ConsExp(elem, res));
-			res->span = elem->span;
+			res = AST::Exp::cons(elem->span, elem, res);
 		}
 
 		e = res;

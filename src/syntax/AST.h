@@ -61,6 +61,9 @@ public:
 
 	ExpList children;
 	Span span;
+
+	static ExpPtr cons (Span sp, ExpPtr hd, ExpPtr tl);
+	static ExpPtr nil (Span sp);
 };
 
 class VarExp : public Exp
@@ -202,18 +205,6 @@ public:
 		: Exp({ _a }), kind(_kind) {}
 	virtual ~CompareExp ();
 };
-class ConsExp : public Exp
-{
-public:
-	inline ConsExp (ExpPtr _hd, ExpPtr _tl)
-		: Exp({ _hd, _tl }) {}
-	virtual ~ConsExp ();
-};
-class NilExp : public Exp
-{
-public:
-	virtual ~NilExp ();
-};
 class FieldExp : public Exp
 {
 public:
@@ -338,6 +329,9 @@ public:
 		: rootPosition(false) {}
 	virtual ~Pat ();
 	virtual bool canFail () const;
+
+	static PatPtr cons (Span sp, PatPtr hd, PatPtr tl);
+	static PatPtr nil (Span sp);
 };
 class ConstPat : public Pat
 {
