@@ -1180,6 +1180,13 @@ PatPtr parsePat (Scanner& scan)
 			break;
 		}
 
+	case LBRACK:
+		{
+			auto args = commaList(scan, parsePat, LBRACK, RBRACK);
+			res = PatPtr(new EnumPat(EnumPat::List, args));
+			break;
+		}
+
 	case ID:
 		// Mod::Ctor ( args... )
 		if (scan.get(1).kind == DOUBLECOLON ||

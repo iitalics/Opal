@@ -124,6 +124,11 @@ void desugar (AST::ExpPtr& e)
 		}
 		return;
 	}
+	else if (auto match = dynamic_cast<AST::MatchExp*>(e.get()))
+	{
+		for (auto& pat : match->patterns)
+			desugar(pat);
+	}
 
 	for (auto& c : e->children)
 		desugar(c);
@@ -132,9 +137,26 @@ void desugar (AST::PatPtr& p)
 {
 	if (auto epat = dynamic_cast<AST::EnumPat*>(p.get()))
 	{
-		desugarName(epat->name);
+		if (epat->kind == AST::EnumPat::Enum)
+			desugarName(epat->name);
+
 		for (auto& p2 : epat->args)
 			desugar(p2);
+
+		// build linked list right to left
+		if (epat->kind == AST::EnumPat::List)
+		{
+			auto res = AST::Pat::nil(epat->span);
+
+			for (size_t i = 0, len = epat->args.size(); i < len; i++)
+			{
+				auto elem = epat->args[len - i - 1];
+				res = AST::Pat::cons(elem->span, elem, res);
+			}
+			res->rootPosition = epat->rootPosition;
+
+			p = res;
+		}
 	}
 }
 
