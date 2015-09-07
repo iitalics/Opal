@@ -16,29 +16,29 @@ pub iface ToB { fn to_B () -> B }
 // impl (named or automatic self-variable)
 impl B { fn to_B () { self } }
 impl a : A {
-   fn to_A () { a }
-   fn to_B () { new B { z? = x < y } }
+	fn to_A () { a }
+	fn to_B () { new B { z? = x < y } }
 }
 impl C { fn to_B () { self.my_b } }
 
 // specialized impl
 impl foo[#t(ToB)] {
-   fn to_B () { self.x.to_B() }
+	fn to_B () { self.x.to_B() }
 }
 impl foo[A] {
-   fn to_A () { self.x }
-   fn thing (a : A) {
-      B()
-   }
+	fn to_A () { self.x }
+	fn thing (a : A) {
+		B()
+	}
 }
 
 // globals
 fn A () { new A { x = 0, y = 0 } }
 fn B () { new B { z? = false } }
 fn C (x : #t(ToB)) {
-   new C {
-      my_b = x.to_B()
-   }
+	new C {
+		my_b = x.to_B()
+	}
 }
 
 // special types: tuple / function
