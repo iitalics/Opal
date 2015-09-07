@@ -1,27 +1,27 @@
 module AST
 use Core
 
-type exp =
-	Add(exp, exp) or
-	Mul(exp, exp) or
-	Num(real)
-
-
-impl exp {
-	fn eval () {
+impl list[#e] {
+	fn len () {
 		match self {
-			Num(v) -> v
-			Add(e1, e2) -> e1.eval() + e2.eval()
-			Mul(e1, e2) -> e1.eval() * e2.eval()
+			[] -> 0
+			_ $ xs -> 1 + xs.len()
+		}
+	}
+
+	fn foldl (z : #e', f : fn(#e', #e) -> #e') {
+		match self {
+			[] -> z
+			x $ xs -> xs.foldl(f(z, x), f)
 		}
 	}
 }
 
-fn main () {
-	let exp = 
-		Mul(Num(.5),
-			 Add(Num(4),
-				  Num(3)))
 
-	exp.eval()
+fn main () {
+	let numbers = [1, 2, 3, 4]
+	let sum = numbers.foldl(0, .add)
+	let prod = numbers.foldl(1, .mul)
+
+	sum + prod
 }
