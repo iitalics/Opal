@@ -201,11 +201,16 @@ matchCase:
 	pat blockExp
 
 pat:
+	prefixPat ["$" pat]
+prefixPat:
 	constant
 	ID
 	enumPat
 	tuplePat
+	listPat
 enumPat:
 	name "(" [pat {"," pat}] ")"
 tuplPat:
 	"(" [pat {"," pat}] ")"
+listPat:
+	"[" [pat {"," pat}] "]"
