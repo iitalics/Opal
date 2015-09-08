@@ -98,7 +98,6 @@ public:
 	Cell pop ();
 	Cell peek () const;
 	void drop ();
-	void drop (size_t n);
 	void push (Cell cell);
 	void units (size_t n);
 	void remove (size_t start, size_t end);

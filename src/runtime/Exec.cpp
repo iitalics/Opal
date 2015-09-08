@@ -16,7 +16,8 @@ void Code::destroy ()
 Thread::Thread () {}
 Thread::~Thread ()
 {
-	drop(_stack.size());
+	while (_stack.size() > 0)
+		drop();
 }
 
 
@@ -73,17 +74,6 @@ void Thread::units (size_t n)
 	_stack.reserve(_stack.size() + n);
 	for (size_t i = 0; i < n; i++)
 		_stack.push_back(Cell::Unit());
-}
-void Thread::drop (size_t n)
-{
-	if (n > _stack.size())
-		n = _stack.size();
-
-	for (size_t i = 0; i < n; i++)
-	{
-		_stack.back().release();
-		_stack.pop_back();
-	}
 }
 void Thread::remove (size_t st, size_t end)
 {
