@@ -348,6 +348,12 @@ void CodeGen::_generate (AST::ReturnExp* e)
 }
 void CodeGen::_generate (AST::TupleExp* e)
 {
+	if (e->children.empty())
+	{
+		add(Cmd::Unit);
+		return;
+	}
+
 	for (auto& e2 : e->children)
 		generate(e2);
 	add({ Cmd::Tuple, .count = e->children.size() });
