@@ -11,7 +11,6 @@ int main (int argc, char** argv)
 
 	SourceError::color = true;
 
-	Run::Thread thread;
 	try
 	{
 		// look for modules in the current directory
@@ -27,16 +26,19 @@ int main (int argc, char** argv)
 			throw SourceError("no main function defined");
 
 		// execute it in a new thread
+		auto thread = Run::Thread::start();
+		thread->call(global_main->func);
 		std::cout << "executing main" << std::endl;
+
+		// run threads until completion
 		size_t count = 0;
-		thread.call(global_main->func);
-		while (thread.step()) count++;
+		while (Run::Thread::stepAny()) count++;
 
 		// log output
 		std::cout << "total commands: " << count << std::endl;
-		if (thread.size() > 0)
+		if (thread->size() > 0)
 		{
-			auto res = thread.pop();
+			auto res = thread->pop();
 			std::cout << "result: " << res.str() << std::endl;
 			res.release();
 		}

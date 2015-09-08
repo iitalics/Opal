@@ -13,7 +13,38 @@ void Code::destroy ()
 }
 
 
-Thread::Thread () {}
+
+std::vector<ThreadPtr> Thread::_threads;
+
+ThreadPtr Thread::start ()
+{
+	ThreadPtr thread(new Thread());
+	_threads.push_back(thread);
+	return thread;
+}
+void Thread::stop (ThreadPtr thread)
+{
+	thread->_stopped = true;
+}
+const std::vector<ThreadPtr>& Thread::threads ()
+{
+	return _threads;
+}
+bool Thread::stepAny ()
+{
+	if (_threads.empty())
+		return false;
+	else
+	{
+		if (!_threads.back()->step())
+			_threads.pop_back();
+
+		return true;
+	}
+}
+
+Thread::Thread ()
+	: _stopped(false) {}
 Thread::~Thread ()
 {
 	while (_stack.size() > 0)
@@ -44,7 +75,6 @@ Cell Thread::pop ()
 	{
 		auto cell = _stack.back();
 		_stack.pop_back();
-//		std::cout << "{thread} popped: " << cell.str() << std::endl;
 		return cell;
 	}
 	else
@@ -160,7 +190,7 @@ void Thread::die (const std::string& name, const std::vector<Cell>& args)
 }
 bool Thread::step ()
 {
-	if (_calls.empty())
+	if (_stopped || _calls.empty())
 		return false;
 	else
 	{

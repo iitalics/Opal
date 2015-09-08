@@ -11,6 +11,7 @@ class Global;
 namespace Run {
 
 class Thread;
+using ThreadPtr = std::shared_ptr<Thread>;
 
 // a single instruction
 struct Cmd
@@ -86,7 +87,11 @@ struct Exec
 class Thread
 {
 public:
-	Thread ();
+	static ThreadPtr start ();
+	static void stop (ThreadPtr th);
+	static const std::vector<ThreadPtr>& threads ();
+	static bool stepAny ();
+
 	~Thread ();
 
 	bool step (); // returns false if nothing to do
@@ -112,9 +117,13 @@ public:
 		const std::vector<Cell>& args = {});
 
 private:
+	static std::vector<ThreadPtr> _threads;
+	Thread ();
+
 	friend class Error;
 	std::vector<Exec> _calls;
 	std::vector<Cell> _stack;
+	bool _stopped;
 };
 
 using NativeFn_t = void (*) (Thread&);
