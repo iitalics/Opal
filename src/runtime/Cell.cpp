@@ -111,7 +111,7 @@ std::string Cell::str () const
 		if (obj == nullptr)
 			ss << "\"\"";
 		else
-			ss << "\"" << ((StringObject*) obj)->string << "\"";
+			ss << "\"" << stringObj->string << "\"";
 	}
 	else if (type == core_box)
 	{
