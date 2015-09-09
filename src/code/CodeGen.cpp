@@ -130,7 +130,7 @@ void CodeGen::generate (AST::ExpPtr e)
 	else
 		throw unimplement(e->span);
 }
-void CodeGen::generate (AST::PatPtr p, size_t _else)
+void CodeGen::generate (AST::PatPtr p, Label _else)
 {
 	if (auto p2 = dynamic_cast<AST::ConstPat*>(p.get())) _generate(p2, _else);
 	else if (auto p2 = dynamic_cast<AST::BindPat*>(p.get())) _generate(p2, _else);
@@ -445,7 +445,7 @@ void CodeGen::_generate (AST::WhileExp* e)
 
 
 
-void CodeGen::_generate (AST::ConstPat* p, size_t _else)
+void CodeGen::_generate (AST::ConstPat* p, Label _else)
 {
 	if (p->equals == nullptr)
 		throw SourceError("cannot compare to this constant", p->span);
@@ -461,13 +461,13 @@ void CodeGen::_generate (AST::ConstPat* p, size_t _else)
 	if (p->rootPosition)
 		add(Cmd::Drop);
 }
-void CodeGen::_generate (AST::BindPat* p, size_t _else)
+void CodeGen::_generate (AST::BindPat* p, Label _else)
 {
 	add({ Cmd::Store, .var = var(p->var) });
 	if (p->var->needsBox())
 		add({ Cmd::Box, .var = var(p->var) });
 }
-void CodeGen::_generate (AST::EnumPat* p, size_t _else)
+void CodeGen::_generate (AST::EnumPat* p, Label _else)
 {
 	if (p->var != nullptr)
 		add({ Cmd::Store, .var = var(p->var) });

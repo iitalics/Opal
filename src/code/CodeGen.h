@@ -29,7 +29,7 @@ public:
 	size_t var (Infer::LocalVar* var);
 	Run::Code output ();
 	void generate (AST::ExpPtr e);
-	void generate (AST::PatPtr p, size_t _else);
+	void generate (AST::PatPtr p, Label _else);
 
 	void showCode ();
 private:
@@ -61,9 +61,9 @@ private:
 	void _generate (AST::WhileExp* e);
 //	void _generate (AST::GotoExp* e);
 
-	void _generate (AST::ConstPat* p, size_t _else);
-	void _generate (AST::BindPat* p, size_t _else);
-	void _generate (AST::EnumPat* p, size_t _else);
+	void _generate (AST::ConstPat* p, Label _else);
+	void _generate (AST::BindPat* p, Label _else);
+	void _generate (AST::EnumPat* p, Label _else);
 };
 
 }}
