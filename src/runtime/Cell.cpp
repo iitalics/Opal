@@ -162,6 +162,10 @@ void SimpleObject::set (size_t i, Cell val)
 	children[i].release();
 	children[i] = val.retain();
 }
+void SimpleObject::markChildren ()
+{
+	for (auto cell : children) cell.mark();
+}
 
 StringObject::StringObject (const std::string& _string)
 	: string(_string) {}

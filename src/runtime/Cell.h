@@ -63,6 +63,7 @@ struct SimpleObject : public GC::Object
 {
 	explicit SimpleObject (size_t nchilds);
 	virtual ~SimpleObject ();
+	virtual void markChildren ();
 
 	std::vector<Cell> children;
 
