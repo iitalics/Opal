@@ -116,6 +116,7 @@ void CodeGen::generate (AST::ExpPtr e)
 	else if (auto e2 = dynamic_cast<AST::LambdaExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::MethodExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::MatchExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::WhileExp*>(e.get())) _generate(e2);
 
 	else if (auto e2 = dynamic_cast<AST::TypeHintExp*>(e.get()))
 		generate(e2->children[0]);
@@ -424,6 +425,20 @@ void CodeGen::_generate (AST::MatchExp* e)
 		if (i < (ncases - 1))
 			add({ Cmd::Jump, .index = end });
 	}
+	place(end);
+}
+void CodeGen::_generate (AST::WhileExp* e)
+{
+	auto cond = label();
+	auto end = label();
+
+	place(cond);
+	generate(e->children[0]);
+	add({ Cmd::Else, .index = end });
+
+	generate(e->children[1]);
+	add(Cmd::Drop);
+	add({ Cmd::Jump, .index = cond });
 	place(end);
 }
 

@@ -273,13 +273,6 @@ public:
 	MatchExp (ExpPtr cond, const std::vector<Case>& cases);
 	virtual ~MatchExp ();
 };
-class WhileExp : public Exp
-{
-public:
-	inline WhileExp (ExpPtr _cond, ExpPtr _body)
-		: Exp({ _cond, _body }) {}
-	virtual ~WhileExp ();
-};
 class AssignExp : public Exp
 {
 public:
@@ -303,6 +296,21 @@ public:
 	explicit inline GotoExp (Kind _kind)
 		: kind(_kind) {}
 	virtual ~GotoExp ();
+};
+class WhileExp : public Exp
+{
+public:
+	inline WhileExp (ExpPtr _cond, ExpPtr _body)
+		: Exp({ _cond, _body }) {}
+	virtual ~WhileExp ();
+};
+class ForExp : public Exp
+{
+public:
+	PatPtr pattern;
+	inline ForExp (PatPtr _pat, ExpPtr _iter, ExpPtr _body)
+		: Exp({ _iter, _body }), pattern(_pat) {}
+	virtual ~ForExp ();
 };
 
 // utility to easily create
@@ -342,7 +350,6 @@ public:
 	inline ConstPat (ExpPtr _exp)
 		: exp(_exp) {}
 	virtual ~ConstPat ();
-	virtual bool canFail () const;
 };
 class BindPat : public Pat
 {
@@ -353,6 +360,7 @@ public:
 	inline BindPat (const std::string& _name)
 		: name(_name), var(nullptr) {}
 	virtual ~BindPat ();
+	virtual bool canFail () const;
 };
 class EnumPat : public Pat
 {

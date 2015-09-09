@@ -58,7 +58,7 @@ private:
 	void _generate (AST::LambdaExp* e);
 	void _generate (AST::MethodExp* e);
 	void _generate (AST::MatchExp* e);
-//	void _generate (AST::WhileExp* e);
+	void _generate (AST::WhileExp* e);
 //	void _generate (AST::GotoExp* e);
 
 	void _generate (AST::ConstPat* p, size_t _else);

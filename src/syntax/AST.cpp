@@ -83,9 +83,10 @@ MatchExp::MatchExp (ExpPtr cond, const std::vector<Case>& cases)
 	}
 }
 MatchExp::~MatchExp () {}
-WhileExp::~WhileExp () {}
 AssignExp::~AssignExp () {}
 ReturnExp::~ReturnExp () {}
+WhileExp::~WhileExp () {}
+ForExp::~ForExp () {}
 GotoExp::~GotoExp () {}
 
 ExpPtr methodCall (const Span& span,
@@ -124,8 +125,8 @@ ExpPtr Exp::nil (Span sp)
 Pat::~Pat () {}
 bool Pat::canFail () const { return true; }
 ConstPat::~ConstPat () {}
-bool ConstPat::canFail () const { return true; }
 BindPat::~BindPat () {}
+bool BindPat::canFail () const { return false; }
 EnumPat::~EnumPat () {}
 bool EnumPat::canFail () const
 {

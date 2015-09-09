@@ -56,6 +56,7 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get())) _infer(e2);
 	else if (auto e2 = dynamic_cast<AST::LetExp*>(e.get())) _infer(e2);
 	else if (auto e2 = dynamic_cast<AST::AssignExp*>(e.get())) _infer(e2);
+	else if (auto e2 = dynamic_cast<AST::WhileExp*>(e.get())) _infer(e2);
 }
 
 void Analysis::infer (AST::PatPtr p, TypePtr dest)
@@ -523,6 +524,12 @@ void Analysis::_infer (AST::AssignExp* e)
 		if (auto var = lhvar->var)
 			var->didMut = true;
 	}
+}
+
+void Analysis::_infer (AST::WhileExp* e)
+{
+	infer(e->children[0], boolType);
+	infer(e->children[1], Type::poly());
 }
 
 

@@ -137,7 +137,7 @@ private:
 	void _infer (AST::ReturnExp* e);
 	void _infer (AST::LetExp* e);
 	void _infer (AST::AssignExp* e);
-	// void _infer (AST::WhileExp* e);
+	void _infer (AST::WhileExp* e);
 
 	void _infer (AST::ConstPat* p, TypePtr dest);
 	void _infer (AST::BindPat* p, TypePtr dest);

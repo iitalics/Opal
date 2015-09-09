@@ -25,6 +25,7 @@ static ExpPtr parseLambda (Scanner& scan);
 static ExpPtr parseObject (Scanner& scan);
 static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit);
 static bool parseFinalStmt (Scanner& scan, ExpList& exps);
+static ExpPtr parseWhileLoop (Scanner& scan);
 static ExpPtr parseAssign (Scanner& scan, bool& unit);
 static ExpPtr parseLet (Scanner& scan);
 static ExpPtr parseMatch (Scanner& scan);
@@ -859,11 +860,10 @@ blockExp:
 stmt:
 	";"
 	condStmt
+	whileLoop
+	forLoop
 	letDecl
 	exp [assignment]
-
-assignment:
-	"=" exp
 */
 static ExpPtr parseBlockExp (Scanner& scan)
 {
@@ -906,6 +906,10 @@ static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit)
 			exps.push_back(cond);
 			break;
 		}
+	case KW_while:
+		unit = true;
+		exps.push_back(parseWhileLoop(scan));
+		break;
 	case KW_let:
 		unit = true;
 		exps.push_back(parseLet(scan));
@@ -916,6 +920,41 @@ static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit)
 	}
 	return true;
 }
+
+/*
+letDecl:
+	"let" pat "=" exp
+*/
+static ExpPtr parseLet (Scanner& scan)
+{
+	auto span = scan.shift().span;
+	auto pat = parsePat(scan);
+	pat->rootPosition = true;
+	scan.eat(EQUAL);
+	auto init = parseExp(scan);
+	auto res = ExpPtr(new LetExp(pat, init));
+	res->span = span;
+	return res;
+}
+
+/*
+whileLoop:
+	"while" exp blockExp
+*/
+static ExpPtr parseWhileLoop (Scanner& scan)
+{
+	auto span = scan.shift().span;
+	auto cond = parseExp(scan);
+	auto body = parseBlockExp(scan);
+	auto res = ExpPtr(new WhileExp(cond, body));
+	res->span = span;
+	return res;
+}
+
+/*
+assignment:
+	"=" exp
+*/
 static ExpPtr parseAssign (Scanner& scan, bool& unit)
 {
 	auto lh = parseExp(scan);
@@ -934,6 +973,13 @@ static ExpPtr parseAssign (Scanner& scan, bool& unit)
 		return lh;
 	}
 }
+
+/*
+finalStmt:
+	"return" [exp]
+	"break"
+	"continue"
+*/
 static bool parseFinalStmt (Scanner& scan, ExpList& exps)
 {
 	ExpPtr res;
@@ -1012,23 +1058,6 @@ static ExpPtr parseCond (Scanner& scan, bool req_else)
 	else
 		res = ExpPtr(new CondExp(cond, if_body));
 
-	res->span = span;
-	return res;
-}
-
-
-/*
-letDecl:
-	"let" pat "=" exp
-*/
-static ExpPtr parseLet (Scanner& scan)
-{
-	auto span = scan.shift().span;
-	auto pat = parsePat(scan);
-	pat->rootPosition = true;
-	scan.eat(EQUAL);
-	auto init = parseExp(scan);
-	auto res = ExpPtr(new LetExp(pat, init));
 	res->span = span;
 	return res;
 }
