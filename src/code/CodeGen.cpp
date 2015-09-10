@@ -226,6 +226,9 @@ void CodeGen::_generate (AST::LetExp* e)
 }
 void CodeGen::_generate (AST::AssignExp* e)
 {
+	// TODO: put the 'throw's in the desugarer
+	//  codegen should NEVER produce errors for
+	//   fully implemented features.
 	auto lh = e->children[0];
 
 	if (auto field = dynamic_cast<AST::FieldExp*>(lh.get()))
