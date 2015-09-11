@@ -86,8 +86,6 @@ MatchExp::~MatchExp () {}
 AssignExp::~AssignExp () {}
 ReturnExp::~ReturnExp () {}
 WhileExp::~WhileExp () {}
-ForExp::~ForExp () {}
-GotoExp::~GotoExp () {}
 
 ExpPtr methodCall (const Span& span,
 		ExpPtr obj, const std::string& method,

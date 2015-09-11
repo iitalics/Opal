@@ -194,8 +194,6 @@ letDecl:
 
 finalStmt:
 	"return" [exp]
-	"break"
-	"continue"
 
 // SYNTAX: patterns
 matchExp:

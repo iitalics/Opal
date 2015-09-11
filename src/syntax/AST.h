@@ -288,29 +288,12 @@ public:
 	inline ReturnExp () {}
 	virtual ~ReturnExp ();
 };
-class GotoExp : public Exp
-{
-public:
-	enum Kind { Break, Continue };
-	Kind kind;
-	explicit inline GotoExp (Kind _kind)
-		: kind(_kind) {}
-	virtual ~GotoExp ();
-};
 class WhileExp : public Exp
 {
 public:
 	inline WhileExp (ExpPtr _cond, ExpPtr _body)
 		: Exp({ _cond, _body }) {}
 	virtual ~WhileExp ();
-};
-class ForExp : public Exp
-{
-public:
-	PatPtr pattern;
-	inline ForExp (PatPtr _pat, ExpPtr _iter, ExpPtr _body)
-		: Exp({ _iter, _body }), pattern(_pat) {}
-	virtual ~ForExp ();
 };
 
 // utility to easily create

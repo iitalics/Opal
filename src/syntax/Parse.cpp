@@ -977,8 +977,6 @@ static ExpPtr parseAssign (Scanner& scan, bool& unit)
 /*
 finalStmt:
 	"return" [exp]
-	"break"
-	"continue"
 */
 static bool parseFinalStmt (Scanner& scan, ExpList& exps)
 {
@@ -1002,14 +1000,6 @@ static bool parseFinalStmt (Scanner& scan, ExpList& exps)
 			break;
 		}
 
-	case KW_break:
-		scan.shift();
-		res = ExpPtr(new GotoExp(GotoExp::Break));
-		break;
-	case KW_continue:
-		scan.shift();
-		res = ExpPtr(new GotoExp(GotoExp::Continue));
-		break;
 	default:
 		return false;
 	}

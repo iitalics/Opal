@@ -37,8 +37,6 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 		unify(dest, boolType, e->span);
 	else if (dynamic_cast<AST::CharExp*>(e.get()))
 		unify(dest, charType, e->span);
-	else if (dynamic_cast<AST::GotoExp*>(e.get()))
-		; // assume this theoretically returns the right thing always
 	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::NumberExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get())) _infer(e2, dest);
