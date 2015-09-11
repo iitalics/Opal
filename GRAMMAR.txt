@@ -77,6 +77,13 @@ tupleType:
 	"(" type {"," type} ")"
 
 // SYNTAX: expressions
+opControl:
+	"|>"
+	">|"
+	"|<"
+	"<|"
+	">>"
+	"<<"
 opLazy:
 	"and"
 	"or"
@@ -96,11 +103,15 @@ opMul:
 	"*"
 	"/"
 	"%"
+opPow:
+	"^"
 opUnary:
 	"-"
 	"not"
 
 exp:
+	expLazy {opControl expLazy}
+expLazy:
 	expCmp {opLazy expCmp}
 expCmp:
 	expCons {opCmp expCons}
@@ -109,7 +120,9 @@ expCons:
 expAdd:
 	expMul {opAdd expMul}
 expMul:
-	term {opMul term}
+	expPow {opMul term}
+expPow:
+	term [opPow expPow]
 
 term:
 	opUnary term

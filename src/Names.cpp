@@ -11,12 +11,22 @@ std::string
 	OperMul = "mul",
 	OperDiv = "div",
 	OperMod = "mod",
+	OperExp = "exp",
+
+	OperRBind = "rbind",
+	OperLBind = "lbind",
+	OperRBlock = "rblock",
+	OperLBlock = "lblock",
+	OperRShift = "rshift",
+	OperLShift = "lshift",
+
 	Compare = "cmp",
 	Equal = "equal",
 	Get = "get",
 	Set = "set",
 	Cons = "Cons",
 	Nil = "Nil";
+
 
 
 }}

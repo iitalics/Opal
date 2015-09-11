@@ -11,13 +11,20 @@ extern std::string
 	// KEY      // VALUE
 	Self,       // "self"
 
-	Negate,     // "neg"
-	Not,        // "not"
-	OperAdd,    // "add"
-	OperSub,    // "sub"
-	OperMul,    // "mul"
-	OperDiv,    // "div"
-	OperMod,    // "mod"
+	Negate,     // "neg" (-)
+	Not,        // "not" (not)
+	OperAdd,    // "add" (+)
+	OperSub,    // "sub" (-)
+	OperMul,    // "mul" (*)
+	OperDiv,    // "div" (/)
+	OperMod,    // "mod" (%)
+	OperExp,    // "exp" (^)
+	OperRBind,  // "rbind"  (|>)
+	OperLBind,  // "lbind"  (<|)
+	OperRBlock, // "rblock" (>|)
+	OperLBlock, // "lblock" (|<)
+	OperRShift, // "rshift" (>>)
+	OperLShift, // "lshift" (<<)
 
 	Compare,    // "cmp"
 	Equal,      // "equal"

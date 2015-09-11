@@ -541,27 +541,35 @@ struct Op
 };
 enum {
 	Left = 0, Right,
-	MaxPrec = 5,
+	MaxPrec = 7,
 
 	Compare = 0, Cons, Lazy, Standard
 };
+
 static Op getOp (int k)
 {
 	static std::vector<Op> operators {
-		{ KW_and,  0, Left, Lazy },
-		{ KW_or,   0, Left, Lazy },
-		{ LT,      1, Left, Compare },
-		{ LE,      1, Left, Compare },
-		{ EQ,      1, Left, Compare },
-		{ NE,      1, Left, Compare },
-		{ GE,      1, Left, Compare },
-		{ GR,      1, Left, Compare },
-		{ CONS,    2, Right, Cons },
-		{ PLUS,    3, Left, Standard, Names::OperAdd },
-		{ MINUS,   3, Left, Standard, Names::OperSub },
-		{ TIMES,   4, Left, Standard, Names::OperMul },
-		{ DIVIDE,  4, Left, Standard, Names::OperDiv },
-		{ MODULO,  4, Left, Standard, Names::OperMod },
+		{ LBIND,   0, Left, Standard, Names::OperLBind },
+		{ RBIND,   0, Left, Standard, Names::OperRBind },
+		{ LBLOCK,  0, Left, Standard, Names::OperLBlock },
+		{ RBLOCK,  0, Left, Standard, Names::OperRBlock },
+		{ LSHIFT,  0, Left, Standard, Names::OperLShift },
+		{ RSHIFT,  0, Left, Standard, Names::OperRShift },
+		{ KW_and,  1, Left, Lazy },
+		{ KW_or,   1, Left, Lazy },
+		{ LT,      2, Left, Compare },
+		{ LE,      2, Left, Compare },
+		{ EQ,      2, Left, Compare },
+		{ NE,      2, Left, Compare },
+		{ GE,      2, Left, Compare },
+		{ GR,      2, Left, Compare },
+		{ CONS,    3, Right, Cons },
+		{ PLUS,    4, Left, Standard, Names::OperAdd },
+		{ MINUS,   4, Left, Standard, Names::OperSub },
+		{ TIMES,   5, Left, Standard, Names::OperMul },
+		{ DIVIDE,  5, Left, Standard, Names::OperDiv },
+		{ MODULO,  5, Left, Standard, Names::OperMod },
+		{ EXP,     6, Right, Standard, Names::OperExp },
 	};
 
 	for (auto& op : operators)

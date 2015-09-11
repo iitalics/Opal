@@ -28,7 +28,8 @@ static bool is_ident (char c) {
 		   (c >= 'A' && c <= 'Z') ||
 		   (c >= '0' && c <= '9') ||
 		   c == '_' || c == '?' ||
-		   c == '@' || c == '\'';
+		   c == '@' || c == '\'' ||
+		   c == '!';
 }
 
 
@@ -52,7 +53,15 @@ static std::vector<Seq> seqs {
 	Seq("*",  TIMES),
 	Seq("/",  DIVIDE),
 	Seq("%",  MODULO),
+	Seq("^",  EXP),
 	Seq("$",  CONS),
+	Seq("|>", RBIND),
+	Seq(">|", RBLOCK),
+	Seq("<|", LBIND),
+	Seq("|<", LBLOCK),
+	Seq(">>", RSHIFT),
+	Seq("<<", LSHIFT),
+	Seq("<-", ASSIGN),
 	Seq("<=", LE),
 	Seq("<",  LT),
 	Seq(">=", GE),

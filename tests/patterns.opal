@@ -1,27 +1,37 @@
-module AST
 use Core
+module Monad
 
-impl list[#e] {
-	fn len () {
-		match self {
-			[] -> 0
-			_ $ xs -> 1 + xs.len()
-		}
-	}
+impl f : fn(#a) -> #b {
+	fn rbind (x : #a) { f(x) }
 
-	fn foldl (z : #e', f : fn(#e', #e) -> #e') {
-		match self {
-			[] -> z
-			x $ xs -> xs.foldl(f(z, x), f)
-		}
+	fn exp (g : fn(#a') -> #a) {
+		fn (x) { f(g(x)) }
 	}
 }
 
 
-fn main () {
-	let numbers = [1, 2, 3, 4]
-	let sum = numbers.foldl(0, .add)
-	let prod = numbers.foldl(1, .mul)
+pub type opt[#a] = Some(#a) or None()
+impl opt[#a] {
+	fn rshift (f : fn(#a) -> opt[#b]) {
+		match self {
+			Some(x) -> f(x)
+			None() -> None()
+		}
+	}
+	fn rblock (f : fn() -> #a) {
+		match self {
+			Some(x) -> x
+			None() -> f()
+		}
+	}
+}
 
-	sum + prod
+fn lazy (x : #a) { fn () { x } }
+
+
+fn main () {
+	match Some(4) >> (Some ^ .succ) {
+		Some(x) -> x
+		None() -> 0
+	}
 }
