@@ -32,17 +32,13 @@ enum
 	RSHIFT, LSHIFT, ASSIGN,
 	LT, LE, EQ, NE, GE, GR,
 	KW_and,
-	KW_break,
-	KW_continue,
 	KW_else,
 	KW_extern,
 	KW_false,
 	KW_fn,
-	KW_for, // unused!
 	KW_if,
 	KW_iface,
 	KW_impl,
-	KW_in, // unusued!
 	KW_let,
 	KW_match,
 	KW_module,

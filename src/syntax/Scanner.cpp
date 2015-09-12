@@ -72,17 +72,13 @@ static std::vector<Seq> seqs {
 };
 static std::vector<Seq> keywords {
 	Seq("and",      KW_and),
-	Seq("break",    KW_break),
-	Seq("continue", KW_continue),
 	Seq("else",     KW_else),
 	Seq("extern",   KW_extern),
 	Seq("false",    KW_false),
 	Seq("fn",       KW_fn),
-	Seq("for",      KW_for),
 	Seq("if",       KW_if),
 	Seq("iface",    KW_iface),
 	Seq("impl",     KW_impl),
-	Seq("in",       KW_in),
 	Seq("let",      KW_let),
 	Seq("match",    KW_match),
 	Seq("module",   KW_module),
