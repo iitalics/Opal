@@ -32,8 +32,7 @@ CodeGen::CodeGen (Env::Function* func)
 		add(Cmd::Throw);
 	}
 
-	std::cout << "generated code: " << func->fullname().str() << std::endl;
-	showCode();
+//	showCode();
 }
 CodeGen::~CodeGen () {}
 

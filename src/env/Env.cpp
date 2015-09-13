@@ -159,8 +159,6 @@ void Function::endInfer ()
 {
 	ret = analysis->polyToParam(ret);
 
-	std::cout << fullname().str() << " -> " << ret->str() << std::endl;
-
 	delete analysis;
 	analysis = nullptr;
 }
