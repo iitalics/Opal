@@ -12,7 +12,7 @@ extern std::string
 	Self,       // "self"
 
 	Negate,     // "neg" (-)
-	Not,        // "not" (not)
+	Not,        // "inv" (not)
 	OperAdd,    // "add" (+)
 	OperSub,    // "sub" (-)
 	OperMul,    // "mul" (*)

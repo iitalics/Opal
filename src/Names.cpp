@@ -5,7 +5,7 @@ namespace Opal { namespace Names {
 std::string
 	Self = "self",
 	Negate = "neg",
-	Not = "not",
+	Not = "inv",
 	OperAdd = "add",
 	OperSub = "sub",
 	OperMul = "mul",
