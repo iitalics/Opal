@@ -208,8 +208,6 @@ static void loadPackage (Env::Package& pkg)
 	.put("array.insert", array_insert)
 	.put("array.remove", array_remove)
 	.put("array", array_ctor);
-
-	std::cout << "load package '" << pkg.name() << "' is a success" << std::endl;
 }
 
 static Env::PackageLoad _1("opal.list", loadPackage, { "Lang" });

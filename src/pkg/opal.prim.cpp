@@ -307,7 +307,5 @@ static void loadPackage (Env::Package& pkg)
 	.put("long.equal", long_equal)
 	.put("long.to_int", long_to_int)
 	.put("long.to_real", long_to_real);
-
-	std::cout << "load package '" << pkg.name() << "' is a success" << std::endl;
 }
-static Env::PackageLoad _1("opal.num", loadPackage, { "Core" });
+static Env::PackageLoad _1("opal.prim", loadPackage, { "Core" });
