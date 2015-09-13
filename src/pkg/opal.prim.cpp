@@ -264,6 +264,26 @@ static void long_to_real (Run::Thread& th)
 	auto b = Run::Cell::Real(Real_t(a.dataLong));
 	th.push(b);
 }
+static void bool_inv (Run::Thread& th)
+{
+	auto a = th.pop();
+	auto b = Run::Cell::Bool(!a.dataBool);
+	th.push(b);
+}
+static void bool_equal (Run::Thread& th)
+{
+	auto b = th.pop();
+	auto a = th.pop();
+	auto c = Run::Cell::Bool(a.dataBool == b.dataBool);
+	th.push(c);
+}
+static void bool_xor (Run::Thread& th)
+{
+	auto b = th.pop();
+	auto a = th.pop();
+	auto c = Run::Cell::Bool(a.dataBool != b.dataBool);
+	th.push(c);
+}
 
 
 static void loadPackage (Env::Package& pkg)
@@ -306,6 +326,9 @@ static void loadPackage (Env::Package& pkg)
 	.put("long.cmp",   long_cmp)
 	.put("long.equal", long_equal)
 	.put("long.to_int", long_to_int)
-	.put("long.to_real", long_to_real);
+	.put("long.to_real", long_to_real)
+	.put("bool.inv",   bool_inv)
+	.put("bool.equal", bool_equal)
+	.put("bool.xor",   bool_xor);
 }
 static Env::PackageLoad _1("opal.prim", loadPackage, { "Core" });
