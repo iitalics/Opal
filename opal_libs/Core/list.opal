@@ -78,4 +78,10 @@ impl list[#e] {
 				else { false }
 		}
 	}
+	fn add (other : list[#e]) {
+		match self {
+			[] -> other
+			x $ xs -> x $ (xs + other)
+		}
+	}
 }

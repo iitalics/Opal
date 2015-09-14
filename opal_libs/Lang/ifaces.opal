@@ -17,6 +17,10 @@ pub iface #t : Num {
 	fn sub (#t) -> #t
 	fn mul (#t) -> #t
 	fn div (#t) -> #t
+	fn neg () -> #t
+}
+pub iface #t : Inv {
+	fn inv () -> #t
 }
 pub iface #t : Step {
 	fn succ () -> #t
@@ -27,4 +31,7 @@ pub iface Each[#e] {
 }
 pub iface #t : Copy {
 	fn copy () -> #t
+}
+pub iface #t : Add {
+	fn add (#t) -> #t
 }
