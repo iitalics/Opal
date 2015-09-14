@@ -1,37 +1,37 @@
 use Core
+use Lang
 module Monad
 
-impl f : fn(#a) -> #b {
-	fn rbind (x : #a) { f(x) }
+fn less? (a : #a(Ord), b : #a) { a < b }
 
-	fn exp (g : fn(#a') -> #a) {
-		fn (x) { f(g(x)) }
+impl list[#a] {
+	fn part (f : fn(#a) -> bool) {
+		let xs = []
+		let ys = []
+		self.each <| fn (x) {
+			if f(x) {
+				xs = x $ xs
+			} else {
+				ys = x $ ys
+			}
+		}
+		; (xs, ys)
 	}
 }
-
-
-pub type opt[#a] = Some(#a) or None()
-impl opt[#a] {
-	fn rshift (f : fn(#a) -> opt[#b]) {
+impl list[#a(Ord)] {
+	fn sort () {
 		match self {
-			Some(x) -> f(x)
-			None() -> None()
-		}
-	}
-	fn rblock (f : fn() -> #a) {
-		match self {
-			Some(x) -> x
-			None() -> f()
+			[] -> self
+			x $ [] -> self
+			p $ xs {
+				let (left, right) = xs.part(less? |> p)
+
+				left.sort() + [p] + right.sort()
+			}
 		}
 	}
 }
-
-fn lazy (x : #a) { fn () { x } }
-
 
 fn main () {
-	match Some(4) >> (Some ^ .succ) {
-		Some(x) -> x
-		None() -> 0
-	}
+	[5, 1, 3, 8, 5, 6].sort()
 }
