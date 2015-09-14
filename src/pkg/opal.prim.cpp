@@ -3,285 +3,286 @@
 #include "../runtime/Exec.h"
 #include <cmath>
 using namespace Opal;
+using namespace Opal::Run;
 
 /*  Purely boring stuff  */
 ///////////////////////////
 
-static void int_add (Run::Thread& th)
+static void int_add (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Int(a.dataInt + b.dataInt);
+	auto c = Cell::Int(a.dataInt + b.dataInt);
 	th.push(c);
 }
-static void int_sub (Run::Thread& th)
+static void int_sub (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Int(a.dataInt - b.dataInt);
+	auto c = Cell::Int(a.dataInt - b.dataInt);
 	th.push(c);
 }
-static void int_mul (Run::Thread& th)
+static void int_mul (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Int(a.dataInt * b.dataInt);
+	auto c = Cell::Int(a.dataInt * b.dataInt);
 	th.push(c);
 }
-static void int_div (Run::Thread& th)
+static void int_div (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
 	if (b.dataInt == 0)
 		th.die("DivideByZero");
 
-	auto c = Run::Cell::Int(a.dataInt / b.dataInt);
+	auto c = Cell::Int(a.dataInt / b.dataInt);
 	th.push(c);
 }
-static void int_mod (Run::Thread& th)
+static void int_mod (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Int(a.dataInt % b.dataInt);
+	auto c = Cell::Int(a.dataInt % b.dataInt);
 	th.push(c);
 }
-static void int_succ (Run::Thread& th)
+static void int_succ (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Int(a.dataInt + 1);
+	auto b = Cell::Int(a.dataInt + 1);
 	th.push(b);
 }
-static void int_pred (Run::Thread& th)
+static void int_pred (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Int(a.dataInt - 1);
+	auto b = Cell::Int(a.dataInt - 1);
 	th.push(b);
 }
-static void int_neg (Run::Thread& th)
+static void int_neg (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Int(-(a.dataInt));
+	auto b = Cell::Int(-(a.dataInt));
 	th.push(b);
 }
-static void int_equal (Run::Thread& th)
+static void int_equal (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Bool(a.dataInt == b.dataInt);
+	auto c = Cell::Bool(a.dataInt == b.dataInt);
 	th.push(c);
 }
-static void int_to_real (Run::Thread& th)
+static void int_to_real (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Real(Real_t(a.dataInt));
+	auto b = Cell::Real(Real_t(a.dataInt));
 	th.push(b);
 }
-static void int_to_long (Run::Thread& th)
+static void int_to_long (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Long(Long_t(a.dataInt));
+	auto b = Cell::Long(Long_t(a.dataInt));
 	th.push(b);
 }
-static void int_to_char (Run::Thread& th)
+static void int_to_char (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Char(Char_t(a.dataInt));
+	auto b = Cell::Char(Char_t(a.dataInt));
 	th.push(b);
 }
-static void char_to_int (Run::Thread& th)
+static void char_to_int (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Int(Int_t(a.dataChar));
+	auto b = Cell::Int(Int_t(a.dataChar));
 	th.push(b);
 }
 
-static void real_add (Run::Thread& th)
+static void real_add (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Real(a.dataReal + b.dataReal);
+	auto c = Cell::Real(a.dataReal + b.dataReal);
 	th.push(c);
 }
-static void real_sub (Run::Thread& th)
+static void real_sub (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Real(a.dataReal - b.dataReal);
+	auto c = Cell::Real(a.dataReal - b.dataReal);
 	th.push(c);
 }
-static void real_mul (Run::Thread& th)
+static void real_mul (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Real(a.dataReal * b.dataReal);
+	auto c = Cell::Real(a.dataReal * b.dataReal);
 	th.push(c);
 }
-static void real_div (Run::Thread& th)
+static void real_div (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
 	if (b.dataReal == 0.0)
 		th.die("DivideByZero");
-	auto c = Run::Cell::Real(a.dataReal / b.dataReal);
+	auto c = Cell::Real(a.dataReal / b.dataReal);
 	th.push(c);
 }
-static void real_mod (Run::Thread& th)
+static void real_mod (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Real(std::fmod(a.dataReal, b.dataReal));
+	auto c = Cell::Real(std::fmod(a.dataReal, b.dataReal));
 	th.push(c);
 }
-static void real_succ (Run::Thread& th)
+static void real_succ (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Real(a.dataReal + 1.0);
+	auto b = Cell::Real(a.dataReal + 1.0);
 	th.push(b);
 }
-static void real_pred (Run::Thread& th)
+static void real_pred (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Real(a.dataReal - 1.0);
+	auto b = Cell::Real(a.dataReal - 1.0);
 	th.push(b);
 }
-static void real_neg (Run::Thread& th)
+static void real_neg (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Real(-(a.dataReal));
+	auto b = Cell::Real(-(a.dataReal));
 	th.push(b);
 }
-static void real_cmp (Run::Thread& th)
+static void real_cmp (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
 	auto diff = a.dataReal - b.dataReal;
-	auto c = Run::Cell::Int(
+	auto c = Cell::Int(
 		diff > 0 ? 1 :
 		diff < 0 ? -1 : 0);
 	th.push(c);
 }
-static void real_equal (Run::Thread& th)
+static void real_equal (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Bool(a.dataReal == b.dataReal);
+	auto c = Cell::Bool(a.dataReal == b.dataReal);
 	th.push(c);
 }
-static void real_to_int (Run::Thread& th)
+static void real_to_int (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Int(Int_t(a.dataReal));
+	auto b = Cell::Int(Int_t(a.dataReal));
 	th.push(b);
 }
-static void real_to_long (Run::Thread& th)
+static void real_to_long (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Long(Long_t(a.dataReal));
+	auto b = Cell::Long(Long_t(a.dataReal));
 	th.push(b);
 }
 
-static void long_add (Run::Thread& th)
+static void long_add (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Long(a.dataLong + b.dataLong);
+	auto c = Cell::Long(a.dataLong + b.dataLong);
 	th.push(c);
 }
-static void long_sub (Run::Thread& th)
+static void long_sub (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Long(a.dataLong - b.dataLong);
+	auto c = Cell::Long(a.dataLong - b.dataLong);
 	th.push(c);
 }
-static void long_mul (Run::Thread& th)
+static void long_mul (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Long(a.dataLong * b.dataLong);
+	auto c = Cell::Long(a.dataLong * b.dataLong);
 	th.push(c);
 }
-static void long_div (Run::Thread& th)
+static void long_div (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
 	if (b.dataLong == 0)
 		th.die("DivideByZero");
-	auto c = Run::Cell::Long(a.dataLong / b.dataLong);
+	auto c = Cell::Long(a.dataLong / b.dataLong);
 	th.push(c);
 }
-static void long_mod (Run::Thread& th)
+static void long_mod (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Long(a.dataLong %b.dataLong);
+	auto c = Cell::Long(a.dataLong %b.dataLong);
 	th.push(c);
 }
-static void long_succ (Run::Thread& th)
+static void long_succ (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Long(a.dataLong + 1.0);
+	auto b = Cell::Long(a.dataLong + 1.0);
 	th.push(b);
 }
-static void long_pred (Run::Thread& th)
+static void long_pred (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Long(a.dataLong - 1.0);
+	auto b = Cell::Long(a.dataLong - 1.0);
 	th.push(b);
 }
-static void long_neg (Run::Thread& th)
+static void long_neg (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Long(-(a.dataLong));
+	auto b = Cell::Long(-(a.dataLong));
 	th.push(b);
 }
-static void long_cmp (Run::Thread& th)
+static void long_cmp (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
 	auto diff = a.dataLong - b.dataLong;
-	auto c = Run::Cell::Int(
+	auto c = Cell::Int(
 		diff > 0 ? 1 :
 		diff < 0 ? -1 : 0);
 	th.push(c);
 }
-static void long_equal (Run::Thread& th)
+static void long_equal (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Bool(a.dataLong == b.dataLong);
+	auto c = Cell::Bool(a.dataLong == b.dataLong);
 	th.push(c);
 }
-static void long_to_int (Run::Thread& th)
+static void long_to_int (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Int(Int_t(a.dataLong));
+	auto b = Cell::Int(Int_t(a.dataLong));
 	th.push(b);
 }
-static void long_to_real (Run::Thread& th)
+static void long_to_real (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Real(Real_t(a.dataLong));
+	auto b = Cell::Real(Real_t(a.dataLong));
 	th.push(b);
 }
-static void bool_inv (Run::Thread& th)
+static void bool_inv (Thread& th)
 {
 	auto a = th.pop();
-	auto b = Run::Cell::Bool(!a.dataBool);
+	auto b = Cell::Bool(!a.dataBool);
 	th.push(b);
 }
-static void bool_equal (Run::Thread& th)
+static void bool_equal (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Bool(a.dataBool == b.dataBool);
+	auto c = Cell::Bool(a.dataBool == b.dataBool);
 	th.push(c);
 }
-static void bool_xor (Run::Thread& th)
+static void bool_xor (Thread& th)
 {
 	auto b = th.pop();
 	auto a = th.pop();
-	auto c = Run::Cell::Bool(a.dataBool != b.dataBool);
+	auto c = Cell::Bool(a.dataBool != b.dataBool);
 	th.push(c);
 }
 

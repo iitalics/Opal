@@ -3,7 +3,8 @@
 #include "../runtime/Exec.h"
 
 namespace OpalListPkg {
-; using namespace Opal;
+using namespace Opal;
+using namespace Opal::Run;
 
 
 struct Array : public GC::Object
@@ -11,7 +12,7 @@ struct Array : public GC::Object
 	static Env::Type* type;
 
 	Int_t len, cap;
-	Run::Cell* buffer;
+	Cell* buffer;
 
 	enum {
 		InitialCap = 4
@@ -42,7 +43,7 @@ struct Array : public GC::Object
 
 		if (new_cap == cap) return;
 
-		auto new_buf = new Run::Cell[new_cap];
+		auto new_buf = new Cell[new_cap];
 
 		if (buffer)
 		{
@@ -53,7 +54,7 @@ struct Array : public GC::Object
 		buffer = new_buf;
 		cap = new_cap;
 	}
-	void set (Int_t idx, Run::Cell val)
+	void set (Int_t idx, Cell val)
 	{
 		if (idx == len)
 			resize(++len);
@@ -62,11 +63,11 @@ struct Array : public GC::Object
 
 		buffer[idx] = val.retain();
 	}
-	Run::Cell get (Int_t idx)
+	Cell get (Int_t idx)
 	{
 		return buffer[idx];
 	}
-	void insert (Int_t idx, Run::Cell val)
+	void insert (Int_t idx, Cell val)
 	{
 		// len = 4
 		// insert(0, v)
@@ -107,26 +108,26 @@ impl array[#e] {
 	fn insert (i : int, t : #e) -> unit
 }
 */
-void array_ctor (Run::Thread& th)
+void array_ctor (Thread& th)
 {
 	auto obj = new Array();
-	th.push(Run::Cell::Object(Array::type, obj));
+	th.push(Cell::Object(Array::type, obj));
 }
-void array_len (Run::Thread& th)
+void array_len (Thread& th)
 {
 	auto self = th.pop();
 	auto obj = (Array*) (self.obj);
-	th.push(Run::Cell::Int(obj->len));
+	th.push(Cell::Int(obj->len));
 	self.release();
 }
-void array_cap (Run::Thread& th)
+void array_cap (Thread& th)
 {
 	auto self = th.pop();
 	auto obj = (Array*) (self.obj);
-	th.push(Run::Cell::Int(obj->cap));
+	th.push(Cell::Int(obj->cap));
 	self.release();
 }
-void array_cap_set (Run::Thread& th)
+void array_cap_set (Thread& th)
 {
 	auto a = th.pop();
 	auto new_cap = a.dataInt;
@@ -134,11 +135,11 @@ void array_cap_set (Run::Thread& th)
 	auto obj = (Array*) (self.obj);
 	if (new_cap >= 0)
 		obj->resize(new_cap);
-	th.push(Run::Cell::Unit());
+	th.push(Cell::Unit());
 	self.release();
 	a.release();
 }
-void array_get (Run::Thread& th)
+void array_get (Thread& th)
 {
 	auto a = th.pop();
 	auto idx = a.dataInt;
@@ -150,7 +151,7 @@ void array_get (Run::Thread& th)
 	self.release();
 	a.release();
 }
-void array_set (Run::Thread& th)
+void array_set (Thread& th)
 {
 	auto val = th.pop();
 	auto a = th.pop();
@@ -160,12 +161,12 @@ void array_set (Run::Thread& th)
 	if (idx < 0 || idx >= obj->len + 1)
 		th.die("OutOfRange");
 	obj->set(idx, val);
-	th.push(Run::Cell::Unit());
+	th.push(Cell::Unit());
 	self.release();
 	a.release();
 	val.release();
 }
-void array_insert (Run::Thread& th)
+void array_insert (Thread& th)
 {
 	auto val = th.pop();
 	auto a = th.pop();
@@ -175,12 +176,12 @@ void array_insert (Run::Thread& th)
 	if (idx < 0 || idx >= obj->len + 1)
 		th.die("OutOfRange");
 	obj->insert(idx, val);
-	th.push(Run::Cell::Unit());
+	th.push(Cell::Unit());
 	self.release();
 	a.release();
 	val.release();
 }
-void array_remove (Run::Thread& th)
+void array_remove (Thread& th)
 {
 	auto a = th.pop();
 	auto idx = a.dataInt;
@@ -188,7 +189,7 @@ void array_remove (Run::Thread& th)
 	auto obj = (Array*) (self.obj);
 	if (idx >= 0 && idx < obj->len)
 		obj->remove(idx);
-	th.push(Run::Cell::Unit());
+	th.push(Cell::Unit());
 	self.release();
 	a.release();
 }
