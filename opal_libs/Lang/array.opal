@@ -19,6 +19,7 @@ impl array[#e] {
 	fn pop () {
 		self.remove(self.len().pred())
 	}
+	fn empty? () { self.len() == 0 }
 
 	fn foldl (z : #e', f : fn(#e', #e) -> #e') {
 		let i = 0
@@ -62,6 +63,18 @@ impl array[#e] {
 			self.push(x)
 			n = n.pred()
 		}
+	}
+	fn from (a : int, b : int) {
+		let res = array()
+		if a < b {
+			res.cap_set(b - a)
+			let i = a
+			while i < b {
+				res.push(self[i])
+				i = i.succ()
+			}
+		}
+		; res
 	}
 
 	fn to_list () {

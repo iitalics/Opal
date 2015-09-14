@@ -18,6 +18,13 @@ impl list[#e] {
 			xs.get(i.pred())
 		}
 	}
+	fn nil? () {
+		match self {
+			[] -> true
+			_ -> false
+		}
+	}
+	fn empty? () { self.nil?() }
 
 	// folding
 	fn foldr (z : #e', f : fn(#e, #e') -> #e') {
