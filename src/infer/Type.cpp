@@ -4,8 +4,6 @@
 namespace Opal { namespace Infer {
 ;
 
-static int _id;
-
 TypePtr Type::concrete (Env::Type* base, const TypeList& args)
 {
 	auto ty = std::make_shared<Type>(Concrete);
@@ -25,11 +23,8 @@ TypePtr Type::param (int id, const std::string& name,
 TypePtr Type::poly (const TypeList& ifaces)
 {
 	auto ty = std::make_shared<Type>(Poly);
-	std::ostringstream ss;
-	ss << ++_id;
 	ty->links = new TypeWeakList { ty.get() };
 	ty->args = ifaces;
-	ty->paramName = ss.str();
 	return ty;
 }
 
@@ -172,7 +167,7 @@ std::string Type::str() const
 		if (kind == Param)
 			return paramTypeStr(this, "#" + paramName);
 		else
-			return paramTypeStr(this, "_" + paramName);
+			return paramTypeStr(this, "_");
 	}
 }
 
