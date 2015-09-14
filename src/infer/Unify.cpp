@@ -44,6 +44,19 @@ static Span ifaceFuncSpan (TypePtr iface, const std::string& name)
 
 void Analysis::unify (TypePtr dest, TypePtr src, const Span& span)
 {
+	if (dest->kind == Type::Concrete && dest->base->isIFace)
+	{
+		// when you use an iface type as a normal concrete
+		//  type, you can do implicit 'conversions'
+		/*
+			fn f (x : Show) { ... }
+
+			let y = 4 : int
+			f(y) // unify(Show, int) => ok;
+		*/
+		dest = Type::poly({ dest });
+	}
+
 	switch (_unify(dest, src))
 	{
 	case UnifyOK: break;
@@ -96,6 +109,11 @@ int Analysis::_unify (TypePtr dest, TypePtr src)
 	if (dest->kind == Type::Poly && src->kind == Type::Poly)
 	{
 		// merge iface list when unifying two poly types
+		// e.g. unify(_1, _2) => ok; _1 <- _2
+		//      unify(_1(Ord), _2(Eq)) => ok;
+		//          _1 <- _3(Ord, Show)
+		//          _2 <- _3(Ord, Show)
+
 		if (!_mergePoly(dest, src))
 			return FailMerge;
 
@@ -103,44 +121,51 @@ int Analysis::_unify (TypePtr dest, TypePtr src)
 	}
 	else if (dest->kind == Type::Poly)
 	{
-		// prevent infinite types
-		/* example code:
-				let x = []   # x : list[_1]
-				x = [x]      # _1 <- list[_1]
-		*/
+		// set dest poly type to src
+		// e.g. unify(_1, int) => ok; _1 <- int
+
+		// type contains self: infinite type, e.g.
+		//    let x = []   # x : list[_1]
+		//    x = [x]      # _1 <- list[_1]
 		if (src->containsPoly(dest))
 			return FailInfinite;
 
-		// check if src type subscribes to ifaces in dest poly
+		// check if src type subscribes to all ifaces in dest poly
 		for (auto iface : dest->args)
 			if (!_subscribes(iface, src))
 				return FailSubscribe;
 		
+		// assign it
 		dest->set(src);
 		return UnifyOK;
 	}
-	else if (dest->kind == Type::Concrete && src->kind == Type::Concrete)
+	else if (dest->kind == Type::Concrete && src->kind == Type::Concrete &&
+				dest->base == src->base)
 	{
-		// ifaces TODO: implicit cast?
-		if (dest->base != src->base)
-			return FailBadMatch;
-		
-		int s;
+		// merge two concrete types of same base
+		// e.g. unify(list[int], list[_1]) => ok; _1 <- int
 
+		int err;
 		for (auto xs = dest->args, ys = src->args; !xs.nil(); ++xs, ++ys)
-			if ((s = _unify(xs.head(), ys.head())) != UnifyOK)
-				return s;
+			if ((err = _unify(xs.head(), ys.head())) != UnifyOK)
+				return err;
 
 		return UnifyOK;
 	}
 	else if (dest->kind == Type::Param && src->kind == Type::Param)
 	{
+		// two params types of the same id
+		// e.g. unify(#a, #b) => FAIL
+		//      unify(#a, #a) => ok
 		if (dest->id != src->id)
 			return FailBadMatch;
 		else
 			return UnifyOK;
 	}
 	else
+		// any other form is invalid
+		// e.g. unify(#a, int) => FAIL
+		//      unify(int, bool) => FAIL
 		return FailBadMatch;
 }
 bool Analysis::_subscribes (TypePtr iface, TypePtr type)
