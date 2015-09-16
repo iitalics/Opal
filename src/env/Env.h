@@ -40,6 +40,9 @@ public:
 	Function* getFunction (const std::string& type, const std::string& method) const;
 
 	Function* makeLambda (const Span& span = Span());
+	inline const std::vector<Function*> lambdas () const {
+		return _lambdas;
+	}
 
 	bool loaded;
 protected:

@@ -493,6 +493,32 @@ static void codeGenAll ()
 				codeGen(func);
 	}
 }
+static void releaseExpObjects (Function* func)
+{
+	if (func->kind == Function::CodeFunction)
+		func->body = nullptr;
+}
+static void releaseExpObjects ()
+{
+	while (Namespace::all() != nullptr)
+		delete Namespace::all();
+
+	for (auto mod = Module::all(); mod != nullptr; mod = mod->next())
+	{
+		// lambdas
+		for (auto func : mod->lambdas())
+			releaseExpObjects(func);
+
+		// globals
+		for (auto glob : mod->globals)
+			releaseExpObjects(glob->func);
+
+		// methods
+		for (auto ty : mod->types)
+			for (auto func : ty->methods)
+				releaseExpObjects(func);
+	}
+}
 
 
 void finishModuleLoad ()
@@ -514,7 +540,10 @@ void finishModuleLoad ()
 	// generate code
 	Run::Cell::initTypes();
 	codeGenAll();
-	// find entry point and execute
+
+	// find and release Exp objects now that we don't
+	//  need to use them anymore
+	releaseExpObjects();
 }
 
 
