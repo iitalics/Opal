@@ -213,12 +213,13 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 
 	// create model for function based on # arguments
 	std::vector<TypePtr> args;
+	auto ret = Type::poly();
 	size_t argc = e->children.size() - 1;
 
 	args.reserve(argc);
 	for (size_t i = 0; i < argc; i++)
 		args.push_back(Type::poly());
-	args.push_back(dest); // return value dest
+	args.push_back(ret);
 
 	// get argument types
 	auto fnmodel = Type::concrete(Env::Type::function(argc), TypeList(args));
@@ -228,6 +229,8 @@ void Analysis::_infer (AST::CallExp* e, TypePtr dest)
 	for (size_t i = 0; i < argc; i++)
 		infer(e->children[i + 1], args[i]);
 
+	// unify return value
+	unify(dest, ret, e->span);
 
 	// find out if we're calling a static function
 	auto fne = e->children[0];
