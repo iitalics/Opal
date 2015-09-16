@@ -500,8 +500,9 @@ static void releaseExpObjects (Function* func)
 }
 static void releaseExpObjects ()
 {
-	while (Namespace::all() != nullptr)
-		delete Namespace::all();
+	// no more declares
+	for (auto nm = Namespace::all(); nm != nullptr; nm = nm->next())
+		nm->decls.resize(0);
 
 	for (auto mod = Module::all(); mod != nullptr; mod = mod->next())
 	{
