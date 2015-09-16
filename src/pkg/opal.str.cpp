@@ -94,7 +94,7 @@ static void string_sub (Thread& th)
 	auto a = th.pop().dataInt;
 	auto str = pop_string(th);
 
-	if (b <= a || b >= Int_t(str.size()))
+	if (b <= a || a >= Int_t(str.size()))
 		th.push(Cell::String(""));
 	else
 		th.push(Cell::String(str.substr(a, b - a)));
