@@ -1,49 +1,45 @@
 use Core
 use Lang
-module Monad
 
-fn less? (a : #a(Ord), b : #a) { a < b }
+// method of approximating square roots
+fn sqrt (y : real) {
+	let x = 1.0
 
-impl list[#a] { fn part (f : fn(#a) -> bool) {
-	let xs = []
-	let ys = []
-	self.each <| fn (x) {
-		if f(x) {
-			xs = x $ xs
-		} else {
-			ys = x $ ys
-		}
+	{(0, 16)}.range <| fn (_) {
+		x = (x + y / x) / 2
 	}
-	; (xs, ys)
+
+	; x
+}
+
+// quadratic equation
+fn quadratic (a : real, b : real, c : real) {
+	let P = -b / (a * 2)
+	let Q = sqrt(b * b - a * c * 4) / (a * 2)
+
+	; (P + Q, P - Q)
+}
+
+impl n : real { fn sign_char () {
+	if n < 0.0 { '-' } else { '+' }
 }}
 
-impl list[#a(Ord)] { fn sort () {
-	match self {
-		[] -> self
-		x $ [] -> self
-		p $ xs {
-			let (left, right) = xs.part(less? |> p)
-			left.sort() + [p] + right.sort()
-		}
-	}
+impl n : real { fn abs () {
+	if n < 0.0 { -n } else { n }
 }}
-
-
-impl list[#a(Show)] { fn str () {
-	match self {
-		[] -> ""
-		x $ [] -> x.str()
-		x $ xs -> x.str() + ", " + xs.str()
-	}
-}}
-
-
 
 fn main () {
-	let name = "Bob"
-	let age = 24
+	// x^2 - x - 6 = 0
+	// (x - 3)(x + 2) = 0
 
-	"My name is {} and I am {} years old"
-		% [name, age]
+	let a = 1.0
+	let b = -1.0
+	let c = -6.0
+
+	let (ans1, ans2) = quadratic(a, b, c)
+
+	"(x {} {})(x {} {})" %
+		[(-ans1).sign_char(), ans1.abs(),
+		 (-ans2).sign_char(), ans2.abs()]
 }
 
