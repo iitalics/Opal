@@ -40,8 +40,10 @@ impl list[#a(Show)] { fn str () {
 
 
 fn main () {
-	let things = [1, 5, 3.2, "a"] : list[Show]
+	let name = "Bob"
+	let age = 24
 
-	things.str()
+	"My name is {} and I am {} years old"
+		% [name, age]
 }
 
