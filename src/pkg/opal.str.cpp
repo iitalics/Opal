@@ -1,136 +1,147 @@
 #include "../opal.h"
 #include "../env/Loader.h"
 #include "../runtime/Exec.h"
+#include <cmath>
+#include <string>
 
 using namespace Opal;
 using namespace Opal::Run;
 
+static std::string pop_string (Thread& th)
+{
+	auto a = th.pop();
 
-void string_len (Thread& th)
-{
-	auto a = th.pop();
-	Int_t result;
-	if (a.stringObj)
-		result = a.stringObj->string.size();
+	if (a.stringObj == nullptr)
+		return "";
 	else
-		result = 0;
-	th.push(Cell::Int(result));
-	a.release();
+	{
+		std::string res(a.stringObj->string);
+		a.release();
+		return res;
+	}
 }
-void string_add (Thread& th)
+
+
+
+static void string_of (Thread& th)
 {
-	auto b = th.pop();
-	auto a = th.pop();
-	th.push(Cell::String(
-		a.stringObj->string +
-		b.stringObj->string));
-	a.release();
-	b.release();
+	auto n = th.pop().dataInt;
+	auto c = th.pop().dataChar;
+	auto str =
+		(n > 0) ? std::string(n, c)
+		        : "";
+	th.push(Cell::String(str));
 }
-void string_get (Thread& th)
+static void string_len (Thread& th)
 {
-	auto b = th.pop();
-	auto a = th.pop();
-	auto str = a.stringObj->string;
-	auto idx = b.dataInt;
+	auto str = pop_string(th);
+	th.push(Cell::Int(str.size()));
+}
+static void string_add (Thread& th)
+{
+	auto str2 = pop_string(th);
+	auto str1 = pop_string(th);
+	th.push(Cell::String(str1 + str2));
+}
+static void string_get (Thread& th)
+{
+	auto idx = th.pop().dataInt;
+	auto str = pop_string(th);
 	if (idx < 0 || idx >= Int_t(str.size()))
 		th.die("OutOfRange");
 	th.push(Cell::Char(str[idx]));
-	a.release();
 }
-void string_cmp (Thread& th)
+static void string_cmp (Thread& th)
 {
+	auto str2 = pop_string(th);
+	auto str1 = pop_string(th);
 	Int_t result = 0;
-	auto b = th.pop();
-	auto a = th.pop();
-	auto len1 = a.stringObj ? a.stringObj->string.size() : 0;
-	auto len2 = b.stringObj ? b.stringObj->string.size() : 0;
 
-	for (size_t i = 0; i < len1 && i < len2; i++)
+	size_t min_len = std::min(str1.size(), str2.size());
+	for (size_t i = 0; i < min_len; i++)
 	{
-		result = (a.stringObj->string[i] - b.stringObj->string[i]);
+		result = (str1[i] - str2[i]);
 		if (result != 0)
 			break;
 	}
 	if (result == 0)
-		result = Int_t(len1 - len2);
+		result = (str1.size() - str2.size());
 
-	th.push(Cell::Int(result));
-	a.release();
-	b.release();
+	th.push(Cell::Int(
+		result < 0 ? -1 :
+		result > 0 ? 1 : 0));
 }
-void string_equal (Thread& th)
+static void string_equal (Thread& th)
 {
-	auto b = th.pop();
-	auto a = th.pop();
-	bool result;
-
-	if (a.stringObj && b.stringObj)
-		result =
-			(a.stringObj->string == b.stringObj->string);
-	else
-		result = (a.stringObj == b.stringObj);
-
-	th.push(Cell::Bool(result));
-	a.release();
-	b.release();
+	auto str2 = pop_string(th);
+	auto str1 = pop_string(th);
+	th.push(Cell::Bool(str1 == str2));
 }
-void string_find (Thread& th)
+static void string_find (Thread& th)
 {
-	auto b = th.pop();
-	auto a = th.pop();
-	Int_t result;
+	auto str2 = pop_string(th);
+	auto str1 = pop_string(th);
+	size_t pos = str1.find(str2);
 
-	if (b.stringObj == nullptr)
-		result = 0;
-	else if (a.stringObj)
-	{
-		auto pos = a.stringObj->string.find(b.stringObj->string);
-
-		if (pos == std::string::npos)
-			result = (-1);
-		else
-			result = Int_t(pos);
-	}
+	if (pos == std::string::npos)
+		th.push(Cell::Int(-1));
 	else
-		result = (-1);
-
-	th.push(Cell::Int(result));
-	a.release();
-	b.release();
+		th.push(Cell::Int(pos));
 }
-void string_sub (Thread& th)
+static void string_sub (Thread& th)
 {
-	auto c = th.pop();
-	auto b = th.pop();
-	auto a = th.pop();
+	auto b = th.pop().dataInt;
+	auto a = th.pop().dataInt;
+	auto str = pop_string(th);
 
-	auto min = b.dataInt;
-	auto max = c.dataInt;
-
-	std::string result;
-
-	if (max <= min || a.stringObj == nullptr)
-		result = "";
+	if (b <= a || b >= Int_t(str.size()))
+		th.push(Cell::String(""));
 	else
-		result = a.stringObj->string.substr(min, max - min);
-
-	th.push(Cell::String(result));
-	a.release();
+		th.push(Cell::String(str.substr(a, b - a)));
 }
+
+
+static void int_to_str (Thread& th)
+{
+	auto n = th.pop().dataInt;
+	std::ostringstream ss; ss << n;
+	th.push(Cell::String(ss.str()));
+}
+static void real_to_str (Thread& th)
+{
+	auto n = th.pop().dataReal;
+	std::ostringstream ss; ss << n;
+	if (n == Int_t(n))
+		ss << ".0";
+	th.push(Cell::String(ss.str()));
+}
+static void long_to_str (Thread& th)
+{
+	auto n = th.pop().dataLong;
+	std::ostringstream ss; ss << n;
+	th.push(Cell::String(ss.str()));
+}
+
 
 
 
 static void loadPackage (Env::Package& pkg)
 {
 	pkg
+	.put("string_of", string_of)
 	.put("string.len", string_len)
 	.put("string.add", string_add)
 	.put("string.get", string_get)
 	.put("string.cmp", string_cmp)
 	.put("string.equal", string_equal)
 	.put("string.find", string_find)
-	.put("string.sub", string_sub);
+	.put("string.sub", string_sub)
+	//.put("string.to_int", string_to_int)
+	//.put("string.to_real", string_to_real)
+	//.put("string.to_long", string_to_long)
+	.put("int.str", int_to_str)
+	.put("real.str", real_to_str)
+	.put("long.str", long_to_str);
 }
 
 static Env::PackageLoad _1("opal.str", loadPackage, { "Core" });

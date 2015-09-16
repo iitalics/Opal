@@ -40,6 +40,8 @@ impl list[#a(Show)] { fn str () {
 
 
 fn main () {
-	["a", "b", "c", "d"].str()
+	let things = [1, 5, 3.2, "a"] : list[Show]
+
+	things.str()
 }
 
