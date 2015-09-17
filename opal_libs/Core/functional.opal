@@ -1,5 +1,11 @@
 module Core
 
+impl f : fn() -> #a {
+	fn mod (g : fn(#a) -> #b) {
+		fn () { g(f()) }
+	}
+}
+
 impl f : fn(#a) -> #b {
 	// (f ^ g)(x)  =  f(g(x))
 	fn exp (g : fn(#c) -> #a) {

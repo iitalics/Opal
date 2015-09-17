@@ -53,9 +53,9 @@ impl x : char {
    fn to_int () extern("opal.prim") "char.to_int" -> int
 }
 impl x : bool {
-   fn inv ()         extern("opal.prim") "bool.inv" -> bool
-   fn equal ()       extern("opal.prim") "bool.equal" -> bool
-   fn exp (y : bool) extern("opal.prim") "bool.xor" -> bool
+   fn inv ()           extern("opal.prim") "bool.inv" -> bool
+   fn equal (y : bool) extern("opal.prim") "bool.equal" -> bool
+   fn exp (y : bool)   extern("opal.prim") "bool.xor" -> bool
    fn add (y : bool) { if x { x } else { y } }
    fn mul (y : bool) { if x { y } else { x } }
    fn to_int ()      { if x { 1 } else { 0 } }
