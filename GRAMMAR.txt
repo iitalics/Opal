@@ -187,7 +187,6 @@ stmt:
 	";"
 	condStmt
 	whileLoop
-	forLoop
 	letDecl
 	exp [assignment]
 
@@ -200,8 +199,6 @@ elseStmt:
 	"else" blockExp
 whileLoop:
 	"while" exp blockExp
-forLoop:
-	"for" pat "in" exp blockExp
 letDecl:
 	"let" pat "=" exp
 
