@@ -17,7 +17,7 @@ int main (int argc, char** argv)
 		Env::initSearchPaths(argv[0]);
 
 		// load some code
-		auto nm = Env::loadSource("tests/patterns.opal");
+		auto nm = Env::loadSource("tests/in_out.opal");
 		Env::finishModuleLoad();
 
 		// find 'main' function
@@ -28,18 +28,18 @@ int main (int argc, char** argv)
 		// execute it in a new thread
 		auto thread = Run::Thread::start();
 		thread->call(global_main->func);
-		std::cout << "executing main" << std::endl;
+//		std::cout << "executing main" << std::endl;
 
 		// run threads until completion
 		size_t count = 0;
 		while (Run::Thread::stepAny()) count++;
 
 		// log output
-		std::cout << "total commands: " << count << std::endl;
+//		std::cout << "total commands: " << count << std::endl;
 		if (thread->size() > 0)
 		{
 			auto res = thread->pop();
-			std::cout << "result: " << res.str() << std::endl;
+//			std::cout << "result: " << res.str() << std::endl;
 			res.release();
 		}
 		else

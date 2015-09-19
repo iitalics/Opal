@@ -73,8 +73,8 @@ void collect ()
 		}
 	}
 
-	if (ndeleted > 0)
-		std::cout << "[GC] collected " << ndeleted << " object(s)" << std::endl;
+//	if (ndeleted > 0)
+//		std::cout << "[GC] collected " << ndeleted << " object(s)" << std::endl;
 }
 void maybeCollect ()
 {
