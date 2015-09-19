@@ -25,12 +25,14 @@ static std::string pop_string (Thread& th)
 
 static void string_of (Thread& th)
 {
+	Cell res;
 	auto n = th.pop().dataInt;
 	auto c = th.pop().dataChar;
 	auto str =
 		(n > 0) ? std::string(n, c)
 		        : "";
-	th.push(Cell::String(str));
+	th.push(res = Cell::String(str));
+	res.release();
 }
 static void string_len (Thread& th)
 {
@@ -39,9 +41,11 @@ static void string_len (Thread& th)
 }
 static void string_add (Thread& th)
 {
+	Cell res;
 	auto str2 = pop_string(th);
 	auto str1 = pop_string(th);
-	th.push(Cell::String(str1 + str2));
+	th.push(res = Cell::String(str1 + str2));
+	res.release();
 }
 static void string_get (Thread& th)
 {
@@ -97,29 +101,39 @@ static void string_sub (Thread& th)
 	if (b <= a || a >= Int_t(str.size()))
 		th.push(Cell::String(""));
 	else
-		th.push(Cell::String(str.substr(a, b - a)));
+	{
+		Cell res;
+		th.push(res = Cell::String(str.substr(a, b - a)));
+		res.release();
+	}
 }
 
 
 static void int_to_str (Thread& th)
 {
+	Cell res;
 	auto n = th.pop().dataInt;
 	std::ostringstream ss; ss << n;
-	th.push(Cell::String(ss.str()));
+	th.push(res = Cell::String(ss.str()));
+	res.release();
 }
 static void real_to_str (Thread& th)
 {
+	Cell res;
 	auto n = th.pop().dataReal;
 	std::ostringstream ss; ss << n;
 	if (n == Int_t(n))
 		ss << ".0";
-	th.push(Cell::String(ss.str()));
+	th.push(res = Cell::String(ss.str()));
+	res.release();
 }
 static void long_to_str (Thread& th)
 {
+	Cell res;
 	auto n = th.pop().dataLong;
 	std::ostringstream ss; ss << n;
-	th.push(Cell::String(ss.str()));
+	th.push(res = Cell::String(ss.str()));
+	res.release();
 }
 
 
