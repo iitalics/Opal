@@ -51,6 +51,8 @@ static void string_get (Thread& th)
 {
 	auto idx = th.pop().dataInt;
 	auto str = pop_string(th);
+	if (idx < 0)
+		idx += str.size();
 	if (idx < 0 || idx >= Int_t(str.size()))
 		th.die("OutOfRange");
 	th.push(Cell::Char(str[idx]));
@@ -98,7 +100,14 @@ static void string_sub (Thread& th)
 	auto a = th.pop().dataInt;
 	auto str = pop_string(th);
 
-	if (b <= a || a >= Int_t(str.size()))
+	if (a < 0)
+		a += str.size();
+	if (b < 0)
+		b += str.size();
+	if (b < 0)
+		b = 0;
+
+	if (a < 0 || b <= a || a >= Int_t(str.size()))
 		th.push(Cell::String(""));
 	else
 	{

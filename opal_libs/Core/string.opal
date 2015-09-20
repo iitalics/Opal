@@ -13,6 +13,9 @@ impl string {
 //	fn to_real ()          extern("opal.str") "string.to_real" -> real
 //	fn to_bool ()          extern("opal.str") "string.to_bool" -> bool
 
+	fn from (n : int) { self.sub(n, self.len()) }
+	fn to (n : int) { self.sub(0, n) }
+
 	fn str () { self }
 }
 impl int {
