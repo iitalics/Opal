@@ -50,7 +50,9 @@ impl x : long {
    fn to_long () { x }
 }
 impl x : char {
-   fn to_int () extern("opal.prim") "char.to_int" -> int
+   fn to_int ()        extern("opal.prim") "char.to_int" -> int
+   fn cmp (y : char)   extern("opal.prim") "char.cmp" -> int
+   fn equal (y : char) extern("opal.prim") "char.equal" -> bool
 }
 impl x : bool {
    fn inv ()           extern("opal.prim") "bool.inv" -> bool
