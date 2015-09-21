@@ -18,6 +18,16 @@ impl list[#e] {
 			xs.get(i.pred())
 		}
 	}
+	fn slice_from (n : int) {
+		if n == 0 {
+			self
+		} else {
+			match self {
+				[] { [] }
+				x $ xs { xs.slice_from(n.pred()) }
+			}
+		}
+	}
 	fn nil? () {
 		match self {
 			[] { true }
