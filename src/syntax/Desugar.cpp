@@ -58,10 +58,28 @@ void desugar (AST::ExpPtr& e)
 	else if (auto mem = dynamic_cast<AST::MemberExp*>(e.get()))
 	{
 		auto obj = mem->children[0];
-		auto what = mem->children[1];
+		auto args = mem->children;
 
 		// a[b]   ->   a.get(b)
-		e = AST::methodCall(span, obj, Names::Get, { what });
+		// a[b,]  ->   a.sub_from(b)
+		// a[,b]  ->   a.sub_to(b)
+		// a[b,c] ->   a.sub(b, c)
+		switch (mem->kind)
+		{
+		case AST::MemberExp::Slice:
+			e = AST::methodCall(span, obj, Names::Slice, { args[1], args[2] });
+			break;
+		case AST::MemberExp::SliceFrom:
+			e = AST::methodCall(span, obj, Names::SliceFrom, { args[1] });
+			break;
+		case AST::MemberExp::SliceTo:
+			e = AST::methodCall(span, obj, Names::SliceTo, { args[1] });
+			break;
+		case AST::MemberExp::Get:
+		default:
+			e = AST::methodCall(span, obj, Names::Get, { args[1] });
+			break;
+		}
 	}
 	else if (auto cmp = dynamic_cast<AST::CompareExp*>(e.get()))
 	{

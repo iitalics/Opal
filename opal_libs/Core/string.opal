@@ -7,14 +7,15 @@ impl string {
 	fn cmp (x : string)    extern("opal.str") "string.cmp" -> int
 	fn equal (x : string)  extern("opal.str") "string.equal" -> bool
 	fn find (x : string)   extern("opal.str") "string.find" -> int
-	fn sub (start : int, end : int)
-	                       extern("opal.str") "string.sub" -> string
+	fn slice (start : int, end : int)
+	                       extern("opal.str") "string.slice" -> string
 //	fn to_int ()           extern("opal.str") "string.to_int" -> int
 //	fn to_real ()          extern("opal.str") "string.to_real" -> real
 //	fn to_bool ()          extern("opal.str") "string.to_bool" -> bool
 
-	fn from (n : int) { self.sub(n, self.len()) }
-	fn to (n : int) { self.sub(0, n) }
+	fn empty? () { self.len() == 0 }
+	fn slice_from (n : int) { self.slice(n, self.len()) }
+	fn slice_to (n : int) { self.slice(0, n) }
 
 	fn str () { self }
 }
@@ -38,14 +39,13 @@ pub fn string_of (c : char, n : int)
 	extern("opal.str") "string_of" -> string
 
 
-
 impl fmt : string { fn mod (args : list[Lang::Show]) {
 	match (fmt.find("{}"), args) {
 		(-1, _) { fmt }
 		(idx, x $ args') {
-			fmt.sub(0, idx) +
+			fmt[,idx] +
 			x.str() +
-			fmt.sub(idx + 2, fmt.len()).mod(args')
+			fmt[idx + 2,] % args'
 		}
 	}
 }}

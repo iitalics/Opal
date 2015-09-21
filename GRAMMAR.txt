@@ -141,8 +141,13 @@ prefixTerm:
 
 suffix:
 	"(" [exp {"," exp}] ")"
-	"[" exp "]"
 	"." ID
+	sliceSuffix
+sliceSuffix:
+	"[" "," exp "]"
+	"[" exp "," exp "]"
+	"[" exp "," "]"
+	"[" exp "]"
 typeHint:
 	":" type
 

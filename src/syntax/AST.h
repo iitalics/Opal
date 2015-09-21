@@ -229,8 +229,16 @@ public:
 class MemberExp : public Exp
 {
 public:
-	inline MemberExp (ExpPtr _a, ExpPtr _mem)
-		: Exp({ _a, _mem }) {}
+	enum Kind { Get, SliceFrom, SliceTo, Slice };
+
+	Kind kind;
+	inline MemberExp (ExpPtr _src, ExpPtr _mem)
+		: Exp({ _src, _mem }), kind(Get) {}
+	inline MemberExp (ExpPtr _src, ExpPtr _a, ExpPtr _b)
+		: Exp({ _src, _a, _b }), kind(Slice) {}
+
+	inline MemberExp (Kind k, ExpPtr _src, ExpPtr _a)
+		: Exp({ _src, _a }), kind(k) {}
 	virtual ~MemberExp ();
 };
 class CallExp : public Exp

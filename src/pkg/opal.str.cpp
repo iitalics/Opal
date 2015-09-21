@@ -94,7 +94,7 @@ static void string_find (Thread& th)
 	else
 		th.push(Cell::Int(pos));
 }
-static void string_sub (Thread& th)
+static void string_slice (Thread& th)
 {
 	auto b = th.pop().dataInt;
 	auto a = th.pop().dataInt;
@@ -158,7 +158,7 @@ static void loadPackage (Env::Package& pkg)
 	.put("string.cmp", string_cmp)
 	.put("string.equal", string_equal)
 	.put("string.find", string_find)
-	.put("string.sub", string_sub)
+	.put("string.slice", string_slice)
 	//.put("string.to_int", string_to_int)
 	//.put("string.to_real", string_to_real)
 	//.put("string.to_long", string_to_long)

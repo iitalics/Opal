@@ -24,6 +24,10 @@ std::string
 	Equal = "equal",
 	Get = "get",
 	Set = "set",
+	Slice = "slice",
+	SliceFrom = "slice_from",
+	SliceTo = "slice_to",
+
 	Cons = "Cons",
 	Nil = "Nil";
 

@@ -812,11 +812,50 @@ static ExpPtr parseConstant (Scanner& scan)
 /*
 suffix:
 	"(" [exp {"," exp}] ")"
-	"[" exp "]"
 	"." ID
+	sliceSuffix
+sliceSuffix:
+	"[" "," exp "]"
+	"[" exp "," exp "]"
+	"[" exp "," "]"
+	"[" exp "]"
 typeHint:
 	":" type
 */
+static ExpPtr parseSliceSuffix (Scanner& scan, ExpPtr e)
+{
+	ExpPtr res;
+	auto span = scan.shift().span;
+
+	if (scan.get() == COMMA)
+	{
+		scan.shift();
+		auto to = parseExp(scan);
+		res = ExpPtr(new MemberExp(MemberExp::SliceTo, e, to));
+	}
+	else
+	{
+		auto from = parseExp(scan);
+
+		if (scan.get() == COMMA)
+		{
+			scan.shift();
+			if (scan.get() != RBRACK)
+			{
+				auto to = parseExp(scan);
+				res = ExpPtr(new MemberExp(e, from, to)); // Slice
+			}
+			else
+				res = ExpPtr(new MemberExp(MemberExp::SliceFrom, e, from));
+		}
+		else
+			res = ExpPtr(new MemberExp(e, from)); // Get
+	}
+
+	scan.eat(RBRACK);
+	res->span = span;
+	return res;
+}
 static ExpPtr parseSuffix (Scanner& scan, ExpPtr e)
 {
 	switch (scan.get().kind)
@@ -840,11 +879,7 @@ static ExpPtr parseSuffix (Scanner& scan, ExpPtr e)
 		}
 	case LBRACK:
 		{
-			auto span = scan.shift().span;
-			auto mem = parseExp(scan);
-			scan.eat(RBRACK);
-			e = ExpPtr(new MemberExp(e, mem));
-			e->span = span;
+			e = parseSliceSuffix(scan, e);
 			break;
 		}
 	case COLON:
