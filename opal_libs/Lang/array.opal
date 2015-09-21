@@ -64,7 +64,7 @@ impl array[#e] {
 			n = n.pred()
 		}
 	}
-	fn from (a : int, b : int) {
+	fn slice (a : int, b : int) {
 		let res = array()
 		if a < b {
 			res.cap_set(b - a)
@@ -76,6 +76,8 @@ impl array[#e] {
 		}
 		; res
 	}
+	fn slice_from (a : int) { self.slice(a, self.len()) }
+	fn slice_to (b : int) { self.slice(0, b) }
 
 	fn to_list () {
 		let res = []

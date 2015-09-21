@@ -42,6 +42,7 @@ void desugar (AST::ExpPtr& e)
 	{
 		auto lh = assign->children[0];
 		auto rh = assign->children[1];
+		bool okay = false;
 
 		if (auto mem = dynamic_cast<AST::MemberExp*>(lh.get()))
 		{
@@ -49,10 +50,17 @@ void desugar (AST::ExpPtr& e)
 			auto what = mem->children[1];
 			auto span = assign->span;
 
-			// a[b] = c   ->   a.set(b, c)
-			e = AST::methodCall(span, obj, Names::Set, { what, rh });
+			if (mem->kind == AST::MemberExp::Get)
+			{
+				// a[b] = c   ->   a.set(b, c)
+				e = AST::methodCall(span, obj, Names::Set, { what, rh });
+				okay = true;
+			}
 		}
-		else if (!(lh->is<AST::VarExp>() || lh->is<AST::FieldExp>()))
+		else if (lh->is<AST::VarExp>() || lh->is<AST::FieldExp>())
+			okay = true;
+
+		if (!okay)
 			throw SourceError("invalid left-hand of assignment", lh->span);
 	}
 	else if (auto mem = dynamic_cast<AST::MemberExp*>(e.get()))
