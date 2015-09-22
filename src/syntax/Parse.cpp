@@ -22,6 +22,7 @@ static ExpPtr parseSuffix (Scanner& scan, ExpPtr e);
 static ExpPtr parseBlockExp (Scanner& scan);
 static ExpPtr parseCond (Scanner& scan, bool req_else);
 static ExpPtr parseLambda (Scanner& scan);
+static ExpPtr parseLambdaSuffix (Scanner& scan);
 static ExpPtr parseObject (Scanner& scan);
 static bool parseStmt (Scanner& scan, ExpList& exps, bool& unit);
 static bool parseFinalStmt (Scanner& scan, ExpList& exps);
@@ -814,6 +815,7 @@ suffix:
 	"(" [exp {"," exp}] ")"
 	"." ID
 	sliceSuffix
+	lambdaSuffix
 sliceSuffix:
 	"[" "," exp "]"
 	"[" exp "," exp "]"
@@ -880,6 +882,14 @@ static ExpPtr parseSuffix (Scanner& scan, ExpPtr e)
 	case LBRACK:
 		{
 			e = parseSliceSuffix(scan, e);
+			break;
+		}
+	case BAR:
+		{
+			auto span = e->span;
+			auto lam = parseLambdaSuffix(scan);
+			e = ExpPtr(new CallExp(e, { lam }));
+			e->span = span;
 			break;
 		}
 	case COLON:
@@ -1101,6 +1111,8 @@ lambdaExp:
 	"fn" "(" [lamVar {"," lamVar}] ")" blockExp
 lamVar:
 	ID [":" type]
+lambdaSuffix:
+	"|" [lamVar {"," lamVar}] "|" blockExp
 */
 static Var parseLambdaVar (Scanner& scan)
 {
@@ -1120,6 +1132,15 @@ static ExpPtr parseLambda (Scanner& scan)
 {
 	auto span = scan.shift().span;
 	auto args = commaList(scan, parseLambdaVar, LPAREN, RPAREN);
+	auto body = parseBlockExp(scan);
+	auto res = ExpPtr(new LambdaExp(args, body));
+	res->span = span;
+	return res;
+}
+static ExpPtr parseLambdaSuffix (Scanner& scan)
+{
+	auto span = scan.get().span;
+	auto args = commaList(scan, parseLambdaVar, BAR, BAR);
 	auto body = parseBlockExp(scan);
 	auto res = ExpPtr(new LambdaExp(args, body));
 	res->span = span;

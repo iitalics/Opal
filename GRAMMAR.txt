@@ -143,6 +143,7 @@ suffix:
 	"(" [exp {"," exp}] ")"
 	"." ID
 	sliceSuffix
+	lambdaSuffix
 sliceSuffix:
 	"[" "," exp "]"
 	"[" exp "," exp "]"
@@ -183,6 +184,8 @@ lambdaExp:
 	"fn" "(" [lamVar {"," lamVar}] ")" blockExp
 lamVar:
 	ID [":" type]
+lambdaSuffix:
+	"|" [lamVar {"," lamVar}] "|" blockExp
 
 // SYNTAX: statements
 blockExp:

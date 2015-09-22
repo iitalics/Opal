@@ -6,8 +6,8 @@ impl list[#a(Ord)] { fn sort () {
 		[] -> []
 		x $ [] -> [x]
 		p $ xs {
-			let left = xs.filter(fn (x) { x < p })
-			let right = xs.filter(fn (x) { x >= p })
+			let left = xs.filter |x| { x < p }
+			let right = xs.filter |x| { x >= p }
 			left.sort() + [p] + right.sort()
 		}
 	}
@@ -28,7 +28,7 @@ fn stem_leaf (items : list[int]) {
 	let max_stem = -9999
 
 	// find the minimum and maximum stems
-	; items.each <| fn (x) {
+	items.each |x| {
 		let stem = x / 10
 
 		if stem < min_stem {
@@ -40,12 +40,13 @@ fn stem_leaf (items : list[int]) {
 
 	// create the tree and "branches"
 	let tree = array()
-	; (min_stem, max_stem).range_incl <| fn (stem) {
+	; (min_stem, max_stem).range_incl |stem| {
 		tree.push([])
 	}
 
+
 	// add leaves to the tree
-	; items.each <| fn (x) {
+	items.each |x| {
 		let stem = x / 10
 		let leaf = x % 10
 		let i = stem - min_stem
@@ -55,12 +56,12 @@ fn stem_leaf (items : list[int]) {
 
 	// display the tree
 	IO::print("STEM | LEAF\n")
-	; tree.eachi <| fn (i, leafs) {
+	tree.eachi |i, leafs| {
 		let stem = i + min_stem
 
 		IO::print("{} |" % [stem.str().pre_pad(4)])
 
-		leafs.sort().each <| fn (leaf) {
+		leafs.sort().each |leaf| {
 			IO::print(" {}" % [leaf])
 		}
 

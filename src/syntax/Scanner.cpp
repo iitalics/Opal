@@ -55,6 +55,7 @@ static std::vector<Seq> seqs {
 	Seq("%",  MODULO),
 	Seq("^",  EXP),
 	Seq("$",  CONS),
+	Seq("|",  BAR),
 	Seq("|>", RBIND),
 	Seq(">|", RBLOCK),
 	Seq("<|", LBIND),
