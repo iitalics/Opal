@@ -170,7 +170,7 @@ public:
 		struct
 		{
 			Infer::Analysis* analysis;
-			Run::Code code;
+			Run::Code* code;
 			Infer::LocalEnv* localEnv;
 		};
 		Run::NativeFn_t nativeFunc;

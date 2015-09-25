@@ -38,6 +38,8 @@ struct Cell
 		};
 	};
 
+	Cell ();
+
 	void mark ();
 	Cell retain ();
 	void release ();
@@ -57,6 +59,10 @@ struct Cell
 	static Cell Box (const Cell& val);
 
 	std::string str () const;
+
+private:
+	inline Cell (Env::Type* _type)
+		: type(_type), obj(nullptr) {}
 };
 
 struct SimpleObject : public GC::Object

@@ -17,7 +17,7 @@ CodeGen::CodeGen (Env::Function* func)
 	{
 		auto arg = _localEnv->defs[i];
 		if (arg->needsBox())
-			add({ Cmd::Box, .var = var(arg) });
+			add(Cmd::Box).var = var(arg);
 	}
 
 	_patFail = -1;
@@ -28,7 +28,7 @@ CodeGen::CodeGen (Env::Function* func)
 	if (_patFail != -1)
 	{
 		place(Label(_patFail));
-		add({ Cmd::String, .string = new std::string("MatchFail") });
+		add(Cmd::String).string = new std::string("MatchFail");
 		add(Cmd::Throw);
 	}
 
@@ -36,7 +36,7 @@ CodeGen::CodeGen (Env::Function* func)
 }
 CodeGen::~CodeGen () {}
 
-Run::Code CodeGen::generate (Env::Function* func)
+Run::Code* CodeGen::generate (Env::Function* func)
 {
 	CodeGen codegen(func);
 	return codegen.output();
@@ -63,7 +63,7 @@ size_t CodeGen::var (Infer::LocalVar* var)
 {
 	return _localEnv->index(var);
 }
-Run::Code CodeGen::output ()
+Run::Code* CodeGen::output ()
 {
 	auto prgm = new Cmd[_program.size()];
 
@@ -77,7 +77,7 @@ Run::Code CodeGen::output ()
 			prgm[i].dest_pc = _labels[_program[i].index];
 	}
 
-	return Run::Code(prgm,
+	return new Run::Code(prgm,
 		_localEnv->refs.size() + _nargs,
 		_localEnv->defs.size() - _nargs);
 }
@@ -120,11 +120,11 @@ void CodeGen::generate (AST::ExpPtr e)
 	else if (auto e2 = dynamic_cast<AST::TypeHintExp*>(e.get()))
 		generate(e2->children[0]);
 	else if (auto e2 = dynamic_cast<AST::StringExp*>(e.get()))
-		add({ Cmd::String, .string = new std::string(e2->value) });
+		add(Cmd::String).string = new std::string(e2->value);
 	else if (auto e2 = dynamic_cast<AST::BoolExp*>(e.get()))
 		add(e2->value ? Cmd::True : Cmd::False);
 	else if (auto e2 = dynamic_cast<AST::CharExp*>(e.get()))
-		add({ Cmd::Char, .char_val = e2->value });
+		add(Cmd::Char).char_val = e2->value;
 
 	else
 		throw unimplement(e->span);
@@ -161,29 +161,29 @@ void CodeGen::_generate (AST::VarExp* e)
 	{
 		if (e->global->isFunc)
 		{
-			add({ Cmd::Int, .int_val = 0 });
-			add({ Cmd::Func, .func = e->global->func });
+			add(Cmd::Int).int_val = 0;
+			add(Cmd::Func).func = e->global->func;
 		}
 		else
-			add({ Cmd::GetGlob, .global = e->global });
+			add(Cmd::GetGlob).global = e->global;
 	}
 	else
-		add({ loadCmd(e->var), .var = var(e->var) });
+		add(loadCmd(e->var)).var = var(e->var);
 }
 void CodeGen::_generate (AST::NumberExp* e)
 {
 	switch (e->kind)
 	{
 	case AST::NumberExp::Int:
-		add({ Cmd::Int, .int_val = e->intValue });
+		add(Cmd::Int).int_val = e->intValue;
 		break;
 
 	case AST::NumberExp::Real:
-		add({ Cmd::Real, .real_val = e->realValue });
+		add(Cmd::Real).real_val = e->realValue;
 		break;
 
 	case AST::NumberExp::Long:
-		add({ Cmd::Long, .long_val = e->longValue });
+		add(Cmd::Long).long_val = e->longValue;
 		break;
 
 	default:
@@ -210,9 +210,9 @@ void CodeGen::_generate (AST::CallExp* e)
 		generate(e->children[i]);
 
 	if (func == nullptr)
-		add({ Cmd::Apply, .count = e->children.size() - 1 });
+		add(Cmd::Apply).count = e->children.size() - 1;
 	else
-		add({ Cmd::Call, .func = func });
+		add(Cmd::Call).func = func;
 }
 void CodeGen::_generate (AST::LetExp* e)
 {
@@ -242,7 +242,7 @@ void CodeGen::_generate (AST::AssignExp* e)
 
 	if (auto fieldexp = dynamic_cast<AST::FieldExp*>(lh.get()))
 	{
-		add({ Cmd::Set, .index = size_t(fieldexp->index) });
+		add(Cmd::Set).index = size_t(fieldexp->index);
 	}
 	else if (auto varexp = dynamic_cast<AST::VarExp*>(lh.get()))
 	{
@@ -251,10 +251,10 @@ void CodeGen::_generate (AST::AssignExp* e)
 			if (varexp->global->isFunc)
 				throw SourceError("cannot assign to global function", e->span);
 
-			add({ Cmd::SetGlob, .global = varexp->global });
+			add(Cmd::SetGlob).global = varexp->global;
 		}
 		else
-			add({ storeCmd(varexp->var), .var = var(varexp->var) });
+			add(storeCmd(varexp->var)).var = var(varexp->var);
 	}
 	else
 		add(Cmd::Drop);
@@ -267,13 +267,13 @@ void CodeGen::_generate (AST::CondExp* e)
 	bool noValue = (e->children.size() == 2);
 
 	generate(cond);
-	add({ Cmd::Else, .index = labelElse });
+	add(Cmd::Else).index = labelElse;
 	generate(e->children[1]);
 
 	if (noValue)
 		add(Cmd::Drop);
 	else
-		add({ Cmd::Jump, .index = labelEnd });
+		add(Cmd::Jump).index = labelEnd;
 
 	place(labelElse);
 
@@ -293,13 +293,13 @@ void CodeGen::_generate (AST::LazyOpExp* e)
 	add(Cmd::Dupl);
 	if (e->kind == AST::LazyOpExp::And)
 	{
-		add({ Cmd::Else, .index = labelEnd });
-		//add({ Cmd::Jump, .index = labelThen });
+		add(Cmd::Else).index = labelEnd;
+		//add(Cmd::Jump).index = labelThen;
 	}
 	else
 	{
-		add({ Cmd::Else, .index = labelThen });
-		add({ Cmd::Jump, .index = labelEnd });
+		add(Cmd::Else).index = labelThen;
+		add(Cmd::Jump).index = labelEnd;
 	}
 	place(labelThen);
 	add(Cmd::Drop);
@@ -328,20 +328,20 @@ void CodeGen::_generate (AST::CompareExp* e)
 	default:
 		return;
 	}
-	add({ Cmd::Compare, .cmp_flags = flags });
+	add(Cmd::Compare).cmp_flags = flags;
 }
 void CodeGen::_generate (AST::FieldExp* e)
 {
 	if (e->method != nullptr)
 	{
 		generate(e->children[0]);
-		add({ Cmd::Int, .int_val = 1 });
-		add({ Cmd::Func, .func = e->method });
+		add(Cmd::Int).int_val = 1;
+		add(Cmd::Func).func = e->method;
 	}
 	else
 	{
 		generate(e->children[0]);
-		add({ Cmd::Get, .index = size_t(e->index) });
+		add(Cmd::Get).index = size_t(e->index);
 	}
 }
 void CodeGen::_generate (AST::ReturnExp* e)
@@ -359,19 +359,19 @@ void CodeGen::_generate (AST::TupleExp* e)
 
 	for (auto& e2 : e->children)
 		generate(e2);
-	add({ Cmd::Tuple, .count = e->children.size() });
+	add(Cmd::Tuple).count = e->children.size();
 }
 void CodeGen::_generate (AST::ObjectExp* e)
 {
 	auto base = e->base;
 	size_t nfields = base->data.nfields;
 
-	add({ Cmd::Object, .type = base });
+	add(Cmd::Object).type = base;
 	for (size_t i = 0; i < nfields; i++)
 	{
 		add(Cmd::Dupl);
 		generate(e->children[i]);
-		add({ Cmd::Set, .index = size_t(e->index[i]) });
+		add(Cmd::Set).index = size_t(e->index[i]);
 	}
 }
 void CodeGen::_generate (AST::LambdaExp* e)
@@ -392,14 +392,14 @@ void CodeGen::_generate (AST::LambdaExp* e)
 
 	// generate code to make the lambda
 	for (auto ref : lamEnv->refs)
-		add({ Cmd::Load, .var = var(ref) });
-	add({ Cmd::Int, .int_val = Int_t(lamEnv->refs.size()) });
-	add({ Cmd::Func, .func = fn });
+		add(Cmd::Load).var = var(ref);
+	add(Cmd::Int).int_val = Int_t(lamEnv->refs.size());
+	add(Cmd::Func).func = fn;
 }
 void CodeGen::_generate (AST::MethodExp* e)
 {
-	add({ Cmd::Int, .int_val = 0 });
-	add({ Cmd::Func, .func = e->method });
+	add(Cmd::Int).int_val = 0;
+	add(Cmd::Func).func = e->method;
 }
 void CodeGen::_generate (AST::MatchExp* e)
 {
@@ -425,7 +425,7 @@ void CodeGen::_generate (AST::MatchExp* e)
 		generate(e->patterns[i], next);
 		generate(e->children[i + 1]);
 		if (i < (ncases - 1))
-			add({ Cmd::Jump, .index = end });
+			add(Cmd::Jump).index = end;
 	}
 	place(end);
 }
@@ -436,11 +436,11 @@ void CodeGen::_generate (AST::WhileExp* e)
 
 	place(cond);
 	generate(e->children[0]);
-	add({ Cmd::Else, .index = end });
+	add(Cmd::Else).index = end;
 
 	generate(e->children[1]);
 	add(Cmd::Drop);
-	add({ Cmd::Jump, .index = cond });
+	add(Cmd::Jump).index = cond;
 	place(end);
 }
 
@@ -457,42 +457,42 @@ void CodeGen::_generate (AST::ConstPat* p, Label _else)
 		add(Cmd::Dupl);
 	generate(p->exp);
 
-	add({ Cmd::Call, .func = p->equals });
-	add({ Cmd::Else, .index = _else });
+	add(Cmd::Call).func = p->equals;
+	add(Cmd::Else).index = _else;
 
 	if (p->rootPosition)
 		add(Cmd::Drop);
 }
 void CodeGen::_generate (AST::BindPat* p, Label _else)
 {
-	add({ Cmd::Store, .var = var(p->var) });
+	add(Cmd::Store).var = var(p->var);
 	if (p->var->needsBox())
-		add({ Cmd::Box, .var = var(p->var) });
+		add(Cmd::Box).var = var(p->var);
 }
 void CodeGen::_generate (AST::EnumPat* p, Label _else)
 {
 	if (p->var != nullptr)
-		add({ Cmd::Store, .var = var(p->var) });
+		add(Cmd::Store).var = var(p->var);
 
 	if (p->ctor != nullptr)
 	{
 		if (p->var != nullptr)
-			add({ Cmd::Load, .var = var(p->var) });
+			add(Cmd::Load).var = var(p->var);
 		else if (p->rootPosition)
 			add(Cmd::Dupl);
 		
-		add({ Cmd::IsEnum, .func = p->ctor });
-		add({ Cmd::Else, .index = _else });
+		add(Cmd::IsEnum).func = p->ctor;
+		add(Cmd::Else).index = _else;
 	}
 
 	for (size_t i = 0, len = p->args.size(); i < len; i++)
 	{
 		if (p->var != nullptr)
-			add({ Cmd::Load, .var = var(p->var) });
+			add(Cmd::Load).var = var(p->var);
 		else if (p->rootPosition)
 			add(Cmd::Dupl);
 
-		add({ Cmd::Get, .index = i });
+		add(Cmd::Get).index = i;
 		generate(p->args[i], _else);
 	}
 

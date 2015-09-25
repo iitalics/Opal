@@ -62,7 +62,7 @@ struct Cmd
 struct Code
 {
 	Code (Cmd* program, size_t nargs, size_t nvars);
-	void destroy ();
+	~Code ();
 
 	Cmd* program;
 	size_t nargs;

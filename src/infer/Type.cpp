@@ -324,10 +324,12 @@ void Type::Ctx::locateParams (TypePtr type)
 {
 	if (type->kind == Type::Param)
 	{
-		while (params.size() <= type->id)
+		size_t idx = type->id;
+
+		while (params.size() <= idx)
 			params.push_back(nullptr);
 
-		params[type->id] = type;
+		params[idx] = type;
 	}
 	else
 		for (auto ty : type->args)

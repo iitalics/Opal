@@ -11,13 +11,15 @@ TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
 
 	if (ty->kind == Type::Param)
 	{
-		while (with.size() <= ty->id)
+		size_t idx = ty->id;
+
+		while (with.size() <= idx)
 			with.push_back(nullptr);
 
-		if (with[ty->id] == nullptr)
-			with[ty->id] = Type::poly(newArgs);
-		
-		return with[ty->id];
+		if (with[idx] == nullptr)
+			return (with[idx] = Type::poly(newArgs));
+		else	
+			return with[idx];
 	}
 
 	if (ty->kind == Type::Concrete)

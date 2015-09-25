@@ -6,7 +6,7 @@ namespace Opal { namespace Run {
 
 Code::Code (Cmd* _program, size_t _nargs, size_t _nvars)
 	: program(_program), nargs(_nargs), nvars(_nvars) {}
-void Code::destroy ()
+Code::~Code ()
 {
 	delete[] program;
 	program = nullptr;
@@ -138,7 +138,7 @@ void Thread::call (Env::Function* func)
 	switch (func->kind)
 	{
 	case Env::Function::CodeFunction:
-		call(func->code);
+		call(*func->code);
 		_calls.back().caller = func;
 		break;
 

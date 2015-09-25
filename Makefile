@@ -1,4 +1,4 @@
-CXX = clang++
+CXX = g++
 CXXFLAGS = -std=c++0x -Wall -g -O1 -Isrc
 
 LINK = $(CXX)

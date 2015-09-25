@@ -19,20 +19,47 @@ void Cell::initTypes ()
 }
 
 // constructors
+Cell::Cell () : type(core_unit), obj(nullptr) {}
+
 Cell Cell::Unit ()
-{ return Cell { core_unit, .obj = nullptr }; }
+{ return Cell(core_unit); }
 Cell Cell::Int (Int_t n)
-{ return Cell { core_int, .dataInt = n }; }
+{
+	auto res = Cell(core_int);
+	res.dataInt = n;
+	return res;
+}
 Cell Cell::Real (Real_t n)
-{ return Cell { core_real, .dataReal = n }; }
+{
+	auto res = Cell(core_real);
+	res.dataReal = n;
+	return res;
+}
 Cell Cell::Long (Long_t n)
-{ return Cell { core_long, .dataLong = n }; }
+{
+	auto res = Cell(core_long);
+	res.dataLong = n;
+	return res;
+}
 Cell Cell::Bool (bool b)
-{ return Cell { core_bool, .dataBool = b }; }
+{
+	auto res = Cell(core_bool);
+	res.dataBool = b;
+	return res;
+}
 Cell Cell::Char (Char_t c)
-{ return Cell { core_char, .dataChar = c }; }
+{
+	auto res = Cell(core_char);
+	res.dataChar = c;
+	return res;
+}
 Cell Cell::Object (Env::Type* type, GC::Object* obj, Env::Function* ctor)
-{ return Cell { type, .obj = obj, .ctor = ctor }; }
+{
+	auto res = Cell(type);
+	res.obj = obj;
+	res.ctor = ctor;
+	return res;
+}
 Cell Cell::String (const std::string& s)
 {
 	return Cell::Object(core_string,

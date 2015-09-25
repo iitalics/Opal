@@ -13,21 +13,18 @@ public:
 	CodeGen (Env::Function* func);
 	~CodeGen ();
 
-	static Run::Code generate (Env::Function* func);
+	static Run::Code* generate (Env::Function* func);
 
-	inline void add (int cmd)
+	inline Run::Cmd& add (int cmd)
 	{
 		_program.push_back(Run::Cmd { cmd });
-	}
-	inline void add (const Run::Cmd& cmd)
-	{
-		_program.push_back(cmd);
+		return _program.back();
 	}
 	Label label ();
 	Label patFail ();
 	void place (Label label);
 	size_t var (Infer::LocalVar* var);
-	Run::Code output ();
+	Run::Code* output ();
 	void generate (AST::ExpPtr e);
 	void generate (AST::PatPtr p, Label _else);
 

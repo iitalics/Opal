@@ -132,7 +132,7 @@ Function::Function (Kind _kind, const std::string& _name, Module* _mod,
 	if (kind == CodeFunction)
 	{
 		analysis = nullptr;
-		code.program = nullptr;
+		code = nullptr;
 		localEnv = nullptr;
 	}
 }
@@ -246,7 +246,7 @@ Function::~Function ()
 {
 	if (kind == CodeFunction)
 	{
-		code.destroy();
+		delete code;
 		delete localEnv;
 	}
 }
