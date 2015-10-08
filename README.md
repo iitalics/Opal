@@ -2,7 +2,7 @@
 
 Opal is a type inferred language that aims to be expressive and comfortable to use.
 
-See the [SYNTAX.md](syntax run-down) for a basic Opal reference.
+See the [syntax run-down](SYNTAX.md) for a basic Opal reference.
 
 ### Goals
 * Powerful, expressive and safe type inference system
