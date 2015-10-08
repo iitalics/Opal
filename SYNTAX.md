@@ -3,11 +3,11 @@ Opal Syntax
 
 This text assumes that the reader has experience with other programming languages, such as C++ or Java.
 
-* [Scope](#--scope)
-* [Types](#--types)
-* [Functions](#--functions)
-* [Expressions](#--expressions)
-* [Objects and Interfaces](#--objects-and-interfaces)
+* [Scope](#scope)
+* [Types](#types)
+* [Functions](#functions)
+* [Expressions](#expressions)
+* [Objects and Interfaces](#objects-and-interfaces)
 
 ### Comments ###
 
@@ -169,7 +169,7 @@ We've already seen blocks in function declarations.
 
 ### Operators ###
     
-Opal uses infix notation, and has 27 total operators ([reference](#--operator-reference)).
+Opal uses infix notation, and has 27 total operators ([reference](#operator-reference)).
 It supports all of the common operators: `+`, `-`, `*`, `/`, `%` *etc*.
 
     1 + 1          // = 2
@@ -367,7 +367,7 @@ exactly equivalent to `x.inv()`. Below lists some common operators and their cor
     *          =>  .mul
     ^          =>  .exp
 
-*entire reference: [here](#--operator-reference)*
+*entire reference: [here](#operator-reference)*
 
 Comparison operators work differently from operators such as those listed above. Equality comparison
 operators call the `.equal` method, while ordered comparison operators call the `.cmp` method, as described below:
