@@ -3,18 +3,18 @@ Opal Syntax
 
 This text assumes that the reader has experience with other programming languages, such as C++ or Java.
 
-* [Scope](#section-scope)
-* [Types](#section-types)
-* [Functions](#section-functions)
-* [Expressions](#section-expressions)
-* [Objects and Interfaces](#section-objects)
+* [Scope](#--scope)
+* [Types](#--types)
+* [Functions](#--functions)
+* [Expressions](#--expressions)
+* [Objects and Interfaces](#--objects-and-interfaces)
 
 ### Comments ###
 
     // double-forward-slash indicates a comment
     // comments will be used throughout this document to describe syntax & behavior
 
-<a name="section-scope"></a>  Scope
+Scope
 ----------------------------------------
 
 Code in Opal is broken into two "scopes": toplevel scope and function scope.
@@ -31,7 +31,7 @@ Function scope is within functions and contains most of the Opal code
         IO::println("Hello, world!")
     }
 
-<a name="section-types"></a>  Types
+Types
 ----------------------------------------
 
 Opal has a static type system, like in Java or Haskell. 
@@ -83,7 +83,7 @@ Concrete types may contain parameter types as arguments.
                         //  data of that type
 
 
-<a name="section-functions"></a>  Functions
+Functions
 ----------------------------------------
 
 Functions are defined in the toplevel scope using the `fn` keyword.
@@ -111,7 +111,7 @@ This means that a function (or variable) and a type with the same name do not co
 therefore possible to name functions `int` or `char`, without causing any issues, even though
 types the same name exist. 
 
-<a name="section-expressions"></a>  Expressions
+Expressions
 ----------------------------------------
 
 In Opal, most code in the "function scope" is made up of expressions.
@@ -169,7 +169,7 @@ We've already seen blocks in function declarations.
 
 ### Operators ###
     
-Opal uses infix notation, and has 27 total operators ([reference](#section-opref)).
+Opal uses infix notation, and has 27 total operators ([reference](#--operator-reference)).
 It supports all of the common operators: `+`, `-`, `*`, `/`, `%` *etc*.
 
     1 + 1          // = 2
@@ -292,7 +292,7 @@ and pass a lambda:
 
     zero |x| { x + 1 }    eqv. to    zero(fn (x) { x + 1 })
 
-<a name="section-objects"></a>  Objects and Interfaces
+Objects and Interfaces
 ----------------------------------------
 
 ### Structure types ###
@@ -367,7 +367,7 @@ exactly equivalent to `x.inv()`. Below lists some common operators and their cor
     *          =>  .mul
     ^          =>  .exp
 
-*entire reference: [here](#section-opref)*
+*entire reference: [here](#--operator-reference)*
 
 Comparison operators work differently from operators such as those listed above. Equality comparison
 operators call the `.equal` method, while ordered comparison operators call the `.cmp` method, as described below:
@@ -448,7 +448,7 @@ The [standard library](opal_libs/Lang/ifaces.opal) defines some interfaces for
 common use.
 
 
-<a name="section-opsref"></a>  Operator Reference
+Operator Reference
 ---------------------
 
     Operator  Precedence  Associativity  Method
