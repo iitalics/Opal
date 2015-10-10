@@ -11,7 +11,7 @@ This text assumes that the reader has experience with other programming language
 
 See also
 
-* [Nore Advanced Features](MoreSyntax.md)
+* [More Advanced Features](MoreSyntax.md)
 
 ### Comments ###
 
@@ -69,7 +69,7 @@ The following types are used to handle primitive data: `int`, `long`, `real`, `b
 ### Parameter ###
 Parameter types represent a generic type, meaning some data of any single type.
 Similar to "generics" in Java and "polymorphic types" in Haskell.
-Parameter types are named, and are bound across the function or type in which they are defined (more on that later).
+Parameter types are named, and are bound across the function or type in which they are defined (more on that [later](#interfaces)).
 Concrete types may contain parameter types as arguments.
 
     // syntax:

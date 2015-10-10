@@ -49,7 +49,7 @@ using the `use` syntax.
     ...
     thing()
 
-Modules are imported by looking in the [opal_libs](opal_libs) folder and finding
+Modules are imported by looking in the [opal_libs](../opal_libs) folder and finding
 a sub-folder with the same name as the module name, and then loading every source
 code file (`.opal`) within that folder.
 
@@ -65,7 +65,7 @@ code file (`.opal`) within that folder.
 
     // "./main.opal"
     fn main () {
-        MyModule::do_a_thing(4) // = 7
+        MyModule::do_a_thing(4)
     }
 
 ## Standard Library ##
