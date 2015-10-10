@@ -443,7 +443,7 @@ of the parameter type.
     fn max (x : #a, y ; #a(Ordered))
     // are both invalid
 
-The [standard library](opal_libs/Lang/ifaces.opal) defines some interfaces for
+The [standard library](../opal_libs/Lang/ifaces.opal) defines some interfaces for
 common use.
 
 
