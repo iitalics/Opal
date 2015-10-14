@@ -14,7 +14,7 @@ static void usage ()
 		<< "    <file>            opal file to execute, containing main() function" << std::endl
 		<< "    <files>...        additional opal files to execute" << std::endl
 		<< "    -h, --help        show this help text" << std::endl
-		<< "    -m <Module>       require module <Module>" << std::endl
+//		<< "    -m <Module>       require module <Module>" << std::endl
 		<< "    -P <path>         search '<path>/opal_libs' for modules" << std::endl
 		;
 		/*
@@ -66,7 +66,7 @@ int main (int argc, char** argv)
 		{ "-h",     false, OptHelp },
 		{ "--help", false, OptHelp },
 		{ "-P",     true,  OptPath },
-		{ "-m",     true,  OptModule }
+//		{ "-m",     true,  OptModule }
 	};
 
 	size_t i = 0;
