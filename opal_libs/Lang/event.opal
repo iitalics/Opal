@@ -1,4 +1,3 @@
-use Core
 module Lang
 
 pub type event[#c] { @cbs : array[fn(#c) -> unit] }

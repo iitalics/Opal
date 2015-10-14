@@ -1,5 +1,4 @@
 module Lang
-use Core
 
 pub type opt[#a] = Some(#a) or None()
 pub type err[#a] = Ok(#a) or Error(string)

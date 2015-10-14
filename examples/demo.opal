@@ -1,4 +1,4 @@
-use Core
+module Examples
 
 fn main () {
     // get a object for the console
@@ -34,4 +34,8 @@ fn main () {
         };
         console.write("\n");
     };
+}
+
+pub fn demo () {
+    "it works!"
 }

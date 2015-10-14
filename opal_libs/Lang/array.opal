@@ -1,4 +1,3 @@
-use Core
 module Lang
 
 pub type array[#e] extern true

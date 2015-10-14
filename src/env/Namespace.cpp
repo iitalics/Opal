@@ -10,6 +10,7 @@ Namespace::Namespace (Module* priv, Module* publ)
 	_all = this;
 	imports.insert(priv);
 	imports.insert(publ);
+	imports.insert(Module::getCore());
 }
 Namespace::~Namespace ()
 {

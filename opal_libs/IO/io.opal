@@ -1,5 +1,4 @@
 module IO
-use Core
 
 pub type console {}
 pub type in_file extern true

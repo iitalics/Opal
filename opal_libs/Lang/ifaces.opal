@@ -1,5 +1,4 @@
 module Lang
-use Core
 
 pub iface Show { fn str () -> string }
 pub iface ToInt { fn to_int () -> int }

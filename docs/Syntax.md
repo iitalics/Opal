@@ -27,12 +27,12 @@ Toplevel scope contains declarations of types, functions and module includes.
 Function scope is within functions and contains most of the Opal code
 
     // this is toplevel scope
-    use Core
+    use IO
 
     // function declaration in 'toplevel scope'
     fn main () {
         // code in 'function scope'
-        IO::println("Hello, world!")
+        print("Hello, world!\n")
     }
 
 Types
@@ -353,7 +353,7 @@ Methods add functionality that is specific to data of a certain type.
     }
 
     4.twice()          // = 8
-    some_plany.grow()  // = 4.1
+    some_plant.grow()  // = 4.1
 
 ### Operator Methods ###
 
@@ -396,9 +396,9 @@ Interfaces are used to "constrain" parameter types to a subset that is garunteed
 a specified set of methods. To demonstrate:
 
 >  Suppose you want to write a generic function `max` that takes two inputs, and returns the larger
->  of the two. Concrete types are too specific; we don't want to have to define a different
->  function for every comparable type (`int`, `real`, `char`...). However, parameter type could
->  represent any data, which is certainly not garunteed to be of a type that can be "ordered".
+>  of the two. Concrete types are too specific; we don't want to have to define a different function
+>  for every comparable type (`int`, `real`, `char`...). However, a parameter type could represent
+>  any data, including data that is certainly not garunteed to be of a type that can be "ordered".
 
 The code
 
@@ -436,12 +436,9 @@ of the parameter type.
     fn max (x : #a(Ordered), y : #a) {
         if x > y { x } else { y }
     }
-
-    // note:
-    fn max (x : #a(Ordered), y : #a(Ordered))
-    // and
-    fn max (x : #a, y ; #a(Ordered))
-    // are both invalid
+    ...
+    max(5, 8)      // = 8
+    max('i', 'h')  // = 'i'
 
 The [standard library](../opal_libs/Lang/ifaces.opal) defines some interfaces for
 common use.

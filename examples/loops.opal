@@ -1,4 +1,4 @@
-use Core
+module Examples
 use Lang
 use Math
 
