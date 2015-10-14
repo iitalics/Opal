@@ -20,7 +20,7 @@ struct LocalEnv
 {
 	LocalEnv ();
 	~LocalEnv ();
-	bool isLambda;
+	LocalEnv* containing;
 
 	// variables defined in this environment
 	std::vector<LocalVar*> defs;

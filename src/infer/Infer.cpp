@@ -428,6 +428,7 @@ void Analysis::_infer (AST::LambdaExp* e, TypePtr dest)
 
 	// create new environemnt
 	env = e->env = new LocalEnv();
+	env->containing = oldEnv;
 	for (size_t i = 0, len = e->args.size(); i < len; ++args, i++)
 		let(e->args[i].name, args.head());
 

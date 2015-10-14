@@ -137,7 +137,8 @@ void Analysis::stackRestore (size_t n)
 
 
 // LocalEnv
-LocalEnv::LocalEnv () {}
+LocalEnv::LocalEnv ()
+	: containing(nullptr) {}
 LocalEnv::~LocalEnv ()
 {
 	for (auto var : defs)
@@ -162,6 +163,9 @@ void LocalEnv::ref (LocalVar* var)
 			return;
 	refs.push_back(var);
 	var->didRef = true;
+
+	if (containing != nullptr)
+		containing->ref(var);
 }
 size_t LocalEnv::index (LocalVar* var) const
 {
