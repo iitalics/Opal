@@ -5,6 +5,8 @@
 #include "runtime/Exec.h"
 using namespace Opal;
 
+#define VERSION_STRING "0.9.2"
+
 static std::string prgmName = "opal";
 static void usage ()
 {
@@ -16,12 +18,16 @@ static void usage ()
 		<< "    -h, --help        show this help text" << std::endl
 		<< "    -m <Module>       require module <Module>" << std::endl
 		<< "    -P <path>         search '<path>/opal_libs' for modules" << std::endl
+		<< "    --repl            use interactive prompt" << std::endl
 		<< "    --nocolor         disable colored error messages" << std::endl
-		;
+
 		/*
 		<< "    --debug           enable debug mode" << std::endl
 		<< "    --docs <path>     generate documentation files in <path>" << std::endl
 		*/
+
+		<< std::endl
+		<< "Opal " << VERSION_STRING << ", github.com/iitalics/Opal" << std::endl;
 }
 
 
@@ -48,6 +54,11 @@ static bool OptModule (const std::string& name)
 static bool OptNoColor (const std::string& _)
 { SourceError::color = false; return false; }
 
+static bool interactive = false;
+extern void runRepl (Run::ThreadPtr thread);
+
+static bool OptInteractive (const std::string& _)
+{ interactive = true; return false; }
 
 
 
@@ -72,6 +83,7 @@ static bool parseOptions (const std::vector<std::string>& args, size_t& i)
 		{ "--help",    false, OptHelp },
 		{ "-P",        true,  OptPath },
 		{ "-m",        true,  OptModule },
+		{ "--repl",    false, OptInteractive },
 		{ "--nocolor", false, OptNoColor },
 	};
 
@@ -108,6 +120,22 @@ static bool parseOptions (const std::vector<std::string>& args, size_t& i)
 
 
 
+static void runMain (Env::Namespace* nm, Run::ThreadPtr thread)
+{
+	// find 'main' function
+	auto globMain = nm->getGlobal(AST::Name("main"));
+	if (globMain == nullptr || !globMain->isFunc)
+		throw SourceError("no main function defined");
+
+	thread->call(globMain->func);
+
+	// run threads until completion
+	size_t count = 0;
+	while (Run::Thread::stepAny()) count++;
+
+	if (thread->size() == 0)
+		std::cout << "empty stack!" << std::endl;
+}
 
 
 // main function here
@@ -134,28 +162,20 @@ int main (int argc, char** argv)
 
 		// load the source files
 		auto nmMain = loadSources(args, i);
-		if (nmMain == nullptr)
+		if (nmMain == nullptr && !interactive)
 		{
 			usage();
 			return 0;
 		}
 		Env::finishModuleLoad();
 
-		// find 'main' function
-		auto globMain = nmMain->getGlobal(AST::Name("main"));
-		if (globMain == nullptr || !globMain->isFunc)
-			throw SourceError("no main function defined");
-
 		// execute it in a new thread
 		auto thread = Run::Thread::start();
-		thread->call(globMain->func);
 
-		// run threads until completion
-		size_t count = 0;
-		while (Run::Thread::stepAny()) count++;
-
-		if (thread->size() == 0)
-			std::cout << "empty stack!" << std::endl;
+		if (interactive)
+			runRepl(thread);
+		else
+			runMain(nmMain, thread);
 
 		// bye
 		// TODO: destroy everything?
