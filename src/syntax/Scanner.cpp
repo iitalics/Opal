@@ -315,7 +315,7 @@ void Scanner::_readId (Token& out)
 
 	size_t len;
 	std::ostringstream ss;
-	for (len = 0; !eof() && is_ident(at(len)); len++)
+	for (len = 0; len < left() && is_ident(at(len)); len++)
 		ss << at(len);
 	adv(len);
 
@@ -369,9 +369,9 @@ Example		Type
 void Scanner::_readNumber (Token& out)
 {
 	// read identifiers in a row
-	size_t len = 0;
-	while (is_ident(at(len)))
-		len++;
+	size_t len;
+	for (len = 0; len < left() && is_ident(at(len)); len++)
+		;
 
 	int kind = INT;
 	long long int num = 0;
@@ -418,7 +418,7 @@ void Scanner::_readNumber (Token& out)
 		adv(1);
 
 		double n = 0, d = 1;
-		while (is_ident(at(0)))
+		while (!eof() && is_ident(at(0)))
 		{
 			auto dig = digit(at(0), 10);
 			if (dig == BAD_DIGIT)
