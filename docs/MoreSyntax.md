@@ -21,7 +21,7 @@ A file may only belong to a single module.
     //   module <module name>
 
 Export a function or type for use in other files by making it "public", using the `pub` keyword.
-Non-public functions and types are not immediately accessable by and other files.
+Non-public functions and types are not immediately accessable by any other files.
 
     // syntax:
     //   pub fn <name> ...
@@ -70,10 +70,10 @@ code file (`.opal`) within that folder.
 
 ## Standard Library ##
 
-The standard library for Opal is broken up into three main modules
+The standard library for Opal is broken up into four main modules
 
 There currently isn't full documentation for the standard library, but that
-will likely change soon.
+will likely change soon. For now, see [examples](../examples)
 
 ### `Core` ###
 
@@ -116,6 +116,15 @@ The `IO` module provides an interface to the filesystem, as well standard in/out
     let ifs = IO::open_in("test.txt");
     let line = ifs.read_line();
     IO::console().write("data: '" + line + "'\n")
+
+### `Math` ###
+
+The `Math` module contains some common mathematical functions.
+
+    Math::sin(0.0)        // = 0.0
+    Math::cos(Math::PI()) // = -1.0
+    Math::rand()          // = {random: 0.0 <= x < 1.0}
+    (1, 12).rand_incl()   // = {random: 1 <= x <= 12}
 
 ## Enum Types ##
 

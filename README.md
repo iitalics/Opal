@@ -4,7 +4,7 @@ Opal is a type inferred language that aims to be expressive and comfortable to u
 
 * [Syntax and Features](docs/Syntax.md)
 * [More Advanced Features](docs/MoreSyntax.md)
-* Example Programs
+* [Example Programs](examples)
 * Standard Library API
 
 ### Goals

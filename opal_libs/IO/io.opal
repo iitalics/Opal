@@ -11,6 +11,11 @@ impl console {
 	fn read_line ()       extern("opal.io") "console.read_line" -> string
 	fn eof? ()            extern("opal.io") "console.eof?" -> bool
 	fn write (x : string) extern("opal.io") "console.write" -> unit
+
+	fn prompt (s : string) {
+		self.write(s);
+		self.read_line()
+	}
 }
 pub fn console () { new console {} }
 
