@@ -5,7 +5,7 @@
 #include "runtime/Exec.h"
 using namespace Opal;
 
-static std::string prgmName;
+static std::string prgmName = "opal";
 static void usage ()
 {
 	std::cout
@@ -14,8 +14,9 @@ static void usage ()
 		<< "    <file>            opal file to execute, containing main() function" << std::endl
 		<< "    <files>...        additional opal files to execute" << std::endl
 		<< "    -h, --help        show this help text" << std::endl
-//		<< "    -m <Module>       require module <Module>" << std::endl
+		<< "    -m <Module>       require module <Module>" << std::endl
 		<< "    -P <path>         search '<path>/opal_libs' for modules" << std::endl
+		<< "    --nocolor         disable colored error messages" << std::endl
 		;
 		/*
 		<< "    --debug           enable debug mode" << std::endl
@@ -24,14 +25,34 @@ static void usage ()
 }
 
 
+
+using OptHandler = bool (*)(const std::string&);
+struct Opt
+{
+	std::string flag;
+	bool takesArg;
+	OptHandler handler;
+};
+
+
+
 static bool OptHelp (const std::string& _)
 { usage(); return true; }
+
 static bool OptPath (const std::string& path)
 { Env::searchPaths.insert(path); return false; }
+
 static bool OptModule (const std::string& name)
 { Env::loadModule(name); return false; }
 
-static Env::Namespace* loadSources (const std::vector<std::string>& args, size_t& i) {
+static bool OptNoColor (const std::string& _)
+{ SourceError::color = false; return false; }
+
+
+
+
+static Env::Namespace* loadSources (const std::vector<std::string>& args, size_t& i)
+{
 	Env::Namespace* nmMain = nullptr;
 
 	for (; i < args.size(); i++)
@@ -44,73 +65,79 @@ static Env::Namespace* loadSources (const std::vector<std::string>& args, size_t
 	return nmMain;
 }
 
-using OptHandler = bool (*)(const std::string&);
-struct Opt
+static bool parseOptions (const std::vector<std::string>& args, size_t& i)
 {
-	std::string flag;
-	bool takesArg;
-	OptHandler handler;
-};
+	static std::vector<Opt> opts {
+		{ "-h",        false, OptHelp },
+		{ "--help",    false, OptHelp },
+		{ "-P",        true,  OptPath },
+		{ "-m",        true,  OptModule },
+		{ "--nocolor", false, OptNoColor },
+	};
 
+	while (i < args.size() && args[i][0] == '-')
+	{
+		auto opt = opts.begin();
+		auto flag = args[i++];
+
+		// find flag
+		for (; opt != opts.end(); ++opt)
+			if (opt->flag == flag)
+				break;
+
+		if (opt == opts.end())
+			throw std::runtime_error("invalid option '" + flag + "'");
+
+		// maybe read an argument
+		std::string arg = "";
+		if (opt->takesArg)
+		{
+			if (i >= args.size())
+				throw std::runtime_error("option '" + flag + "' expects an argument");
+
+			arg = args[i++];
+		}
+
+		// handle it appropriately
+		if (opt->handler(arg))
+			return true;
+	}
+
+	return false;
+}
+
+
+
+
+
+// main function here
 int main (int argc, char** argv)
 {
 	if (argc < 1) return 2;
 
 	SourceError::color = true;
 
+	// convert c-strings into std::strings
 	std::vector<std::string> args;
 	for (int j = 1; j < argc; j++)
 		args.push_back(std::string(argv[j]));
-
-	std::vector<Opt> opts {
-		{ "-h",     false, OptHelp },
-		{ "--help", false, OptHelp },
-		{ "-P",     true,  OptPath },
-//		{ "-m",     true,  OptModule }
-	};
-
-	size_t i = 0;
-	while (i < args.size() && args[i][0] == '-')
-	{
-		auto opt = opts.begin();
-		auto flag = args[i++];
-
-		for (; opt != opts.end(); ++opt)
-			if (opt->flag == flag)
-				break;
-
-		if (opt == opts.end())
-		{
-			std::cout << "invalid option '" << flag << "'" << std::endl;
-			return 1;
-		}
-
-		std::string arg = "";
-		if (opt->takesArg)
-		{
-			if (i >= args.size())
-			{
-				std::cout << "option '" << flag << "' expects an argument" << std::endl;
-				return 1;
-			}
-			arg = args[i++];
-		}
-
-		if (opt->handler(arg))
-			return 0;
-	}
 
 	try
 	{
 		// look for modules in the current directory
 		Env::initSearchPaths(argv[0]);
 
-		// load some code
+		// parse command line options
+		size_t i = 0;
+		if (parseOptions(args, i))
+			return 0;
+
+		// load the source files
 		auto nmMain = loadSources(args, i);
 		if (nmMain == nullptr)
 		{
 			usage();
-			return 1;
+			return 0;
 		}
 		Env::finishModuleLoad();
 
@@ -122,21 +149,12 @@ int main (int argc, char** argv)
 		// execute it in a new thread
 		auto thread = Run::Thread::start();
 		thread->call(globMain->func);
-//		std::cout << "executing main" << std::endl;
 
 		// run threads until completion
 		size_t count = 0;
 		while (Run::Thread::stepAny()) count++;
 
-		// log output
-//		std::cout << "total commands: " << count << std::endl;
-		if (thread->size() > 0)
-		{
-			auto res = thread->pop();
-//			std::cout << "result: " << res.str() << std::endl;
-			res.release();
-		}
-		else
+		if (thread->size() == 0)
 			std::cout << "empty stack!" << std::endl;
 
 		// bye
