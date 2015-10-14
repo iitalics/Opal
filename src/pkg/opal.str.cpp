@@ -2,6 +2,7 @@
 #include "../env/Loader.h"
 #include "../runtime/Exec.h"
 #include <cmath>
+#include <cstdlib>
 #include <string>
 
 using namespace Opal;
@@ -140,6 +141,26 @@ static void long_to_str (Thread& th)
 }
 
 
+static void string_to_int (Thread& th)
+{
+	auto str = pop_string(th);
+	auto n = strtoll(str.c_str(), nullptr, 0);
+	th.push(Cell::Int(Int_t(n)));
+}
+static void string_to_long (Thread& th)
+{
+	auto str = pop_string(th);
+	auto n = strtoll(str.c_str(), nullptr, 0);
+	th.push(Cell::Long(Long_t(n)));
+}
+static void string_to_real (Thread& th)
+{
+	auto str = pop_string(th);
+	auto n = strtold(str.c_str(), nullptr);
+	th.push(Cell::Real(Real_t(n)));
+}
+
+
 
 
 static void loadPackage (Env::Package& pkg)
@@ -153,9 +174,9 @@ static void loadPackage (Env::Package& pkg)
 	.put("string.equal", string_equal)
 	.put("string.find", string_find)
 	.put("string.slice", string_slice)
-	//.put("string.to_int", string_to_int)
-	//.put("string.to_real", string_to_real)
-	//.put("string.to_long", string_to_long)
+	.put("string.to_int", string_to_int)
+	.put("string.to_real", string_to_real)
+	.put("string.to_long", string_to_long)
 	.put("int.str", int_to_str)
 	.put("real.str", real_to_str)
 	.put("long.str", long_to_str);

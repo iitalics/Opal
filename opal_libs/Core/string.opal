@@ -9,9 +9,9 @@ impl string {
 	fn find (x : string)   extern("opal.str") "string.find" -> int
 	fn slice (start : int, end : int)
 	                       extern("opal.str") "string.slice" -> string
-//	fn to_int ()           extern("opal.str") "string.to_int" -> int
-//	fn to_real ()          extern("opal.str") "string.to_real" -> real
-//	fn to_bool ()          extern("opal.str") "string.to_bool" -> bool
+	fn to_int ()           extern("opal.str") "string.to_int" -> int
+	fn to_long ()          extern("opal.str") "string.to_long" -> long
+	fn to_real ()          extern("opal.str") "string.to_real" -> real
 
 	fn empty? () { self.len() == 0 }
 	fn slice_from (n : int) { self.slice(n, self.len()) }
