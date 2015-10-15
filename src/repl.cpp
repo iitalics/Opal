@@ -34,13 +34,19 @@ static Env::Function* replGenerate (const std::string& string,
 
 void runRepl (Run::ThreadPtr thread)
 {
-	std::cout << "@@@  Opal interactive prompt  @@@"
-	          << std::endl << std::endl;
+	if (SourceError::color)
+		std::cout << "\x1b[1m";
+	std::cout << "@@@  Opal interactive prompt  @@@" << std::endl;
+	if (SourceError::color)
+		std::cout << "\x1b[0m";
+	std::cout << "  enter !types to display value types" << std::endl
+	          << std::endl;
 
 	// create a namespace and private module
-	auto module = new Env::Module();
+	auto module = new Env::Module("(input)");
 	auto nm = new Env::Namespace(module, module);
 	Env::Function* fn;
+	bool showTypes = false;
 
 	while (!std::cin.eof())
 	{
@@ -51,6 +57,12 @@ void runRepl (Run::ThreadPtr thread)
 		std::string input;
 		std::getline(std::cin, input);
 
+		if (input == "!types")
+		{
+			showTypes = !showTypes;
+			continue;
+		}
+
 		try
 		{
 			// Eval
@@ -59,7 +71,6 @@ void runRepl (Run::ThreadPtr thread)
 
 			thread->call(fn);
 			while (thread->step()) ;
-			delete fn;
 		}
 		catch (std::exception& err)
 		{
@@ -69,8 +80,13 @@ void runRepl (Run::ThreadPtr thread)
 
 		// Print
 		auto res = thread->pop();
-		std::cout << res.str(SourceError::color) << std::endl;
+		std::cout << res.str(SourceError::color);
+		if (showTypes)
+			std::cout << " : " << fn->ret->str();
+		std::cout << std::endl;
+
 		res.release();
+		delete fn;
 
 		// Loop
 	}
