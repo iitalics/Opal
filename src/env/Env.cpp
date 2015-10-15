@@ -1,5 +1,6 @@
 #include "Env.h"
 #include "../infer/Analysis.h"
+#include "../code/CodeGen.h"
 #include <map>
 namespace Opal { namespace Env {
 ;
@@ -128,6 +129,7 @@ Function::Function (Kind _kind, const std::string& _name, Module* _mod,
 {
 	parent = nullptr;
 	ret = nullptr;
+	codegen = nullptr;
 
 	if (kind == CodeFunction)
 	{
@@ -244,6 +246,7 @@ Global::~Global ()
 }
 Function::~Function ()
 {
+	delete codegen;
 	if (kind == CodeFunction)
 	{
 		delete code;

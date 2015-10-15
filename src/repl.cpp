@@ -32,6 +32,26 @@ static Env::Function* replGenerate (const std::string& string,
 	return fn;
 }
 
+static void codeDump (const Run::Cell& data)
+{
+	auto fn = data.ctor;
+	auto obj = data.simple;
+
+	std::cout << "=== Code Dump ===" << std::endl;
+
+	if (obj != nullptr && !obj->children.empty())
+	{
+		std::cout << "  closure:" << std::endl;
+		for (auto& val : obj->children)
+			std::cout << "    " << val.str(SourceError::color) << std::endl;
+	}
+
+	if (fn->codegen)
+		fn->codegen->showCode();
+	else
+		std::cout << "<no code available>" << std::endl;
+}
+
 void runRepl (Run::ThreadPtr thread)
 {
 	if (SourceError::color)
@@ -39,14 +59,16 @@ void runRepl (Run::ThreadPtr thread)
 	std::cout << "@@@  Opal interactive prompt  @@@" << std::endl;
 	if (SourceError::color)
 		std::cout << "\x1b[0m";
-	std::cout << "  enter !types to display value types" << std::endl
+	std::cout << "  enter !help for a list of commands" << std::endl
 	          << std::endl;
 
 	// create a namespace and private module
 	auto module = new Env::Module("(input)");
 	auto nm = new Env::Namespace(module, module);
 	Env::Function* fn;
-	bool showTypes = false;
+
+	bool opt_types = false;
+	bool opt_codedump = false;
 
 	while (!std::cin.eof())
 	{
@@ -57,9 +79,22 @@ void runRepl (Run::ThreadPtr thread)
 		std::string input;
 		std::getline(std::cin, input);
 
+		if (input == "!help")
+		{
+			std::cout << "commands: " << std::endl
+			          << "  !help       show this help text" << std::endl
+			          << "  !types      show expression types" << std::endl
+			          << "  !dump       dump function byte code" << std::endl;
+			continue;
+		}
 		if (input == "!types")
 		{
-			showTypes = !showTypes;
+			opt_types = !opt_types;
+			continue;
+		}
+		if (input == "!dump")
+		{
+			opt_codedump = !opt_codedump;
 			continue;
 		}
 
@@ -81,9 +116,11 @@ void runRepl (Run::ThreadPtr thread)
 		// Print
 		auto res = thread->pop();
 		std::cout << res.str(SourceError::color);
-		if (showTypes)
+		if (opt_types)
 			std::cout << " : " << fn->ret->str();
 		std::cout << std::endl;
+		if (res.type->isFunction() && opt_codedump)
+			codeDump(res);
 
 		res.release();
 		delete fn;

@@ -8,6 +8,7 @@ namespace Infer {
 class Analysis;
 struct LocalEnv;
 }
+namespace Code { class CodeGen; }
 namespace Env {
 ;
 
@@ -164,6 +165,7 @@ public:
 
 	Namespace* nm;
 	AST::ExpPtr body;
+	Code::CodeGen* codegen;
 
 	union
 	{

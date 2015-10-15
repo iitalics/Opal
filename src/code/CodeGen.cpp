@@ -32,14 +32,14 @@ CodeGen::CodeGen (Env::Function* func)
 		add(Cmd::Throw);
 	}
 
+	func->codegen = this;
 //	showCode();
 }
 CodeGen::~CodeGen () {}
 
 Run::Code* CodeGen::generate (Env::Function* func)
 {
-	CodeGen codegen(func);
-	return codegen.output();
+	return (new CodeGen(func))->output();
 }
 
 CodeGen::Label CodeGen::label ()
