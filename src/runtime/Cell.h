@@ -58,7 +58,7 @@ struct Cell
 		Env::Function* ctor = nullptr);
 	static Cell Box (const Cell& val);
 
-	std::string str () const;
+	std::string str (bool color = false) const;
 
 private:
 	inline Cell (Env::Type* _type)

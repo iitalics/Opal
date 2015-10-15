@@ -105,7 +105,7 @@ void Cell::release ()
 	}
 }
 
-std::string Cell::str () const
+std::string Cell::str (bool col) const
 {
 	/*
 		5
@@ -116,10 +116,25 @@ std::string Cell::str () const
 	*/
 	std::ostringstream ss;
 
+	bool uncolor = col;
+	if (col)
+	{
+		if (type == core_int || type == core_long ||
+				type == core_real || type == core_char ||
+				type == core_bool)
+			ss << "\x1b[33m";
+		else if (type == core_string)
+			ss << "\x1b[32m";
+		else if (type->isFunction())
+			ss << "\x1b[36m";
+		else
+			ss << "\x1b[1m";
+	}
+
 	if (type == core_unit)
-		return "()";
+		ss << "()";
 	else if (type == core_bool)
-		return dataBool ? "true" : "false";
+		ss << (dataBool ? "true" : "false");
 	else if (type == core_int)
 		ss << dataInt;
 	else if (type == core_long)
@@ -140,17 +155,21 @@ std::string Cell::str () const
 		else
 			ss << "\"" << stringObj->string << "\"";
 	}
-	else if (type == core_box)
-	{
-		ss << "<box: " << simple->get(0).str() << ">";
-	}
 	else if (type->isFunction())
 	{
-		ss << "<function> " << ctor->fullname().str();
+		ss << "<function> ";
+		if (col)
+			ss << "\x1b[0;1m";
+		ss << ctor->fullname().str();
 	}
 	else
 	{
 		ss << "<" << type->name << ">";
+		if (col)
+		{
+			ss << "\x1b[0m";
+			uncolor = false;
+		}
 		if (type->userCreate && type->data.nfields > 0)
 		{
 			ss << " [";
@@ -159,11 +178,14 @@ std::string Cell::str () const
 				if (i > 0)
 					ss << ", ";
 				ss << type->data.fields[i].name << " = "
-				   << simple->get(i).str();
+				   << simple->get(i).str(col);
 			}
 			ss << "]";
 		}
 	}
+
+	if (uncolor)
+		ss << "\x1b[0m";
 	return ss.str();
 }
 

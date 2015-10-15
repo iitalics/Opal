@@ -6,14 +6,14 @@
 #include "runtime/Exec.h"
 using namespace Opal;
 
-static void replEvaluate (const std::string& string,
+static Env::Function* replGenerate (const std::string& string,
 		Env::Namespace* nm, Env::Module* module,
 		Run::ThreadPtr thread)
 {
 	// parse
 	Scanner scan(string, "<input>");
 	if (scan.get() == Tokens::END_OF_FILE)
-		return;
+		return nullptr;
 
 	auto ast = Parse::parseExp(scan);
 	scan.expect(Tokens::END_OF_FILE);
@@ -29,11 +29,7 @@ static void replEvaluate (const std::string& string,
 	fn->infer();
 	fn->code = Code::CodeGen::generate(fn);
 
-	// execute
-	thread->call(fn);
-	while (thread->step()) ;
-
-	delete fn;
+	return fn;
 }
 
 void runRepl (Run::ThreadPtr thread)
@@ -44,6 +40,7 @@ void runRepl (Run::ThreadPtr thread)
 	// create a namespace and private module
 	auto module = new Env::Module();
 	auto nm = new Env::Namespace(module, module);
+	Env::Function* fn;
 
 	while (!std::cin.eof())
 	{
@@ -57,7 +54,12 @@ void runRepl (Run::ThreadPtr thread)
 		try
 		{
 			// Eval
-			replEvaluate(input, nm, module, thread);
+			fn = replGenerate(input, nm, module, thread);
+			if (fn == nullptr) continue;
+
+			thread->call(fn);
+			while (thread->step()) ;
+			delete fn;
 		}
 		catch (std::exception& err)
 		{
@@ -67,7 +69,7 @@ void runRepl (Run::ThreadPtr thread)
 
 		// Print
 		auto res = thread->pop();
-		std::cout << res.str() << std::endl;
+		std::cout << res.str(SourceError::color) << std::endl;
 		res.release();
 
 		// Loop
