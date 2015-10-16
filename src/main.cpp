@@ -55,7 +55,7 @@ static bool OptNoColor (const std::string& _)
 { SourceError::color = false; return false; }
 
 static bool interactive = false;
-extern void runRepl (Run::ThreadPtr thread);
+extern void runRepl ();
 
 static bool OptInteractive (const std::string& _)
 { interactive = true; return false; }
@@ -120,13 +120,14 @@ static bool parseOptions (const std::vector<std::string>& args, size_t& i)
 
 
 
-static void runMain (Env::Namespace* nm, Run::ThreadPtr thread)
+static void runMain (Env::Namespace* nm)
 {
 	// find 'main' function
 	auto globMain = nm->getGlobal(AST::Name("main"));
 	if (globMain == nullptr || !globMain->isFunc)
 		throw SourceError("no main function defined");
 
+	auto thread = Run::Thread::start();
 	thread->call(globMain->func);
 
 	// run threads until completion
@@ -169,13 +170,11 @@ int main (int argc, char** argv)
 		}
 		Env::finishModuleLoad();
 
-		// execute it in a new thread
-		auto thread = Run::Thread::start();
-
+		// execute!
 		if (interactive)
-			runRepl(thread);
+			runRepl();
 		else
-			runMain(nmMain, thread);
+			runMain(nmMain);
 
 		// bye
 		// TODO: destroy everything?

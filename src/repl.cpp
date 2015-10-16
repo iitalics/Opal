@@ -52,7 +52,7 @@ static void codeDump (const Run::Cell& data)
 		std::cout << "<no code available>" << std::endl;
 }
 
-void runRepl (Run::ThreadPtr thread)
+void runRepl ()
 {
 	if (SourceError::color)
 		std::cout << "\x1b[1m";
@@ -98,20 +98,26 @@ void runRepl (Run::ThreadPtr thread)
 			continue;
 		}
 
+		Run::ThreadPtr thread(nullptr);
+
 		try
 		{
 			// Eval
 			fn = replGenerate(input, nm, module, thread);
-			if (fn == nullptr) continue;
-
-			thread->call(fn);
-			while (thread->step()) ;
+			if (fn != nullptr)
+			{
+				thread = Run::Thread::start();
+				thread->call(fn);
+				while (Run::Thread::stepAny()) ;
+			}
 		}
 		catch (std::exception& err)
 		{
 			std::cerr << err.what() << std::endl;
 			continue;
 		}
+
+		if (!thread) continue;
 
 		// Print
 		auto res = thread->pop();

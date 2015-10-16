@@ -130,6 +130,10 @@ Cell Thread::make (Env::Type* ty, size_t nfields, Env::Function* ctor)
 }
 void Thread::call (const Code& code)
 {
+	if (_calls.size() >= 100000)
+	{
+		die("CallStackOverflow");
+	}
 	_calls.push_back(Exec());
 	_calls.back().begin(*this, code);
 }
