@@ -38,14 +38,3 @@ impl bool {
 pub fn string_of (c : char, n : int)
 	extern("opal.str") "string_of" -> string
 
-
-impl fmt : string { fn mod (args : list[Lang::Show]) {
-	match (fmt.find("{}"), args) {
-		(-1, _) { fmt }
-		(idx, x $ args') {
-			fmt[,idx] +
-			x.str() +
-			fmt[idx + 2,] % args'
-		}
-	}
-}}
