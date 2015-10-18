@@ -16,25 +16,41 @@ impl string {
 	fn empty? () { self.len() == 0 }
 	fn slice_from (n : int) { self.slice(n, self.len()) }
 	fn slice_to (n : int) { self.slice(0, n) }
+	fn mul (n : int) {
+		if n <= 0 { "" }
+		else if n == 1 { self }
+		else {
+			let res = "";
+			while n > 0 {
+				res = res + self;
+				n = n.pred();
+			}
+			res
+		}
+	}
 
 	fn str () { self }
 }
-impl int {
-	fn str () extern("opal.str") "int.str" -> string
-}
-impl real {
-	fn str () extern("opal.str") "real.str" -> string
-}
-impl long {
-	fn str () extern("opal.str") "long.str" -> string
-}
-impl char {
-	fn str () { string_of(self, 1) }
-}
-impl bool {
-	fn str () { if self { "true" } else { "false" } }
-}
+impl int {  fn str () extern("opal.str") "int.str"  -> string }
+impl real { fn str () extern("opal.str") "real.str" -> string }
+impl long { fn str () extern("opal.str") "long.str" -> string }
+impl char { fn str () { string_of(self, 1) }}
+impl bool { fn str () { if self { "true" } else { "false" } }}
 
 pub fn string_of (c : char, n : int)
 	extern("opal.str") "string_of" -> string
 
+
+impl char {
+	// TODO: add these
+//	fn space? () extern("opal.str") "char.space?" -> bool
+//	fn digit? () extern("opal.str") "char.digit?" -> bool
+//	fn alpha? () extern("opal.str") "char.alpha?" -> bool
+//	fn word? ()  extern("opal.str") "char.word?" -> bool
+//	fn upper ()  extern("opal.str") "char.upper" -> char
+//	fn lower ()  extern("opal.str") "char.loewr" -> char
+
+	fn add (n : int) { (self.to_int() + n).to_char() }
+	fn sub (c : char) { self.to_int() - c.to_int() }
+	fn mul (n : int) { string_of(self, n) }
+}

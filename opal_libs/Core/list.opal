@@ -19,7 +19,7 @@ impl list[#e] {
 		}
 	}
 	fn slice_from (n : int) {
-		if n == 0 {
+		if n <= 0 {
 			self
 		} else {
 			match self {
