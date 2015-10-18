@@ -1,4 +1,4 @@
-# Opal (version: 0.9.1)
+# Opal (version: 0.9.2)
 
 Opal is a type inferred language that aims to be expressive and comfortable to use.
 
