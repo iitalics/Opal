@@ -42,11 +42,11 @@ pub fn string_of (c : char, n : int)
 
 
 impl char {
+	fn space? () extern("opal.str") "char.space?" -> bool
+	fn digit? () extern("opal.str") "char.digit?" -> bool
+	fn alpha? () extern("opal.str") "char.alpha?" -> bool
+	fn ident? () extern("opal.str") "char.ident?" -> bool
 	// TODO: add these
-//	fn space? () extern("opal.str") "char.space?" -> bool
-//	fn digit? () extern("opal.str") "char.digit?" -> bool
-//	fn alpha? () extern("opal.str") "char.alpha?" -> bool
-//	fn word? ()  extern("opal.str") "char.word?" -> bool
 //	fn upper ()  extern("opal.str") "char.upper" -> char
 //	fn lower ()  extern("opal.str") "char.loewr" -> char
 

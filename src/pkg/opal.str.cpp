@@ -162,6 +162,47 @@ static void string_to_real (Thread& th)
 
 
 
+static int chars_lookup[128] =
+{
+	1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	1, 8, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0,
+	10,10,10,10,10,10,10,10,10,10,0, 0, 0, 0, 0, 8,
+	8, 12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	12,12,12,12,12,12,12,12,12,12,12,0, 0, 0, 0, 8,
+	0, 12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	12,12,12,12,12,12,12,12,12,12,12,0, 0, 0, 0, 0
+};
+static inline bool char_lookup (Char_t c, int flag)
+{
+	if (c >= 128 || c < 0)
+		return false;
+	else
+		return bool(chars_lookup[int(c)] & flag);
+}
+
+static void char_is_space (Thread& th)
+{
+	auto ch = th.pop().dataChar;
+	th.push(Cell::Bool(char_lookup(ch, 1)));
+}
+static void char_is_digit (Thread& th)
+{
+	auto ch = th.pop().dataChar;
+	th.push(Cell::Bool(char_lookup(ch, 2)));
+}
+static void char_is_alpha (Thread& th)
+{
+	auto ch = th.pop().dataChar;
+	th.push(Cell::Bool(char_lookup(ch, 4)));
+}
+static void char_is_ident (Thread& th)
+{
+	auto ch = th.pop().dataChar;
+	th.push(Cell::Bool(char_lookup(ch, 8)));
+}
+
+
 
 static void loadPackage (Env::Package& pkg)
 {
@@ -179,7 +220,11 @@ static void loadPackage (Env::Package& pkg)
 	.put("string.to_long", string_to_long)
 	.put("int.str", int_to_str)
 	.put("real.str", real_to_str)
-	.put("long.str", long_to_str);
+	.put("long.str", long_to_str)
+	.put("char.space?", char_is_space)
+	.put("char.digit?", char_is_digit)
+	.put("char.alpha?", char_is_alpha)
+	.put("char.ident?", char_is_ident);
 }
 
 static Env::PackageLoad _1("opal.str", loadPackage, { "Core" });
