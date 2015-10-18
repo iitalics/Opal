@@ -287,23 +287,27 @@ void CodeGen::_generate (AST::LazyOpExp* e)
 	auto a = e->children[0];
 	auto b = e->children[1];
 	auto labelEnd = label();
-	auto labelThen = label();
+	auto labelElse = label();
+
+	// a and b  =>  if a { b } else { false }
+	// a or  b  =>  if a { true } else { b }
 
 	generate(a);
-	add(Cmd::Dupl);
+	add(Cmd::Else).index = labelElse;
+
 	if (e->kind == AST::LazyOpExp::And)
-	{
-		add(Cmd::Else).index = labelEnd;
-		//add(Cmd::Jump).index = labelThen;
-	}
+		generate(b);
 	else
-	{
-		add(Cmd::Else).index = labelThen;
-		add(Cmd::Jump).index = labelEnd;
-	}
-	place(labelThen);
-	add(Cmd::Drop);
-	generate(b);
+		add(Cmd::True);
+
+	add(Cmd::Jump).index = labelEnd;
+	place(labelElse);
+
+	if (e->kind == AST::LazyOpExp::And)
+		add(Cmd::False);
+	else
+		generate(b);
+
 	place(labelEnd);
 }
 void CodeGen::_generate (AST::CompareExp* e)
