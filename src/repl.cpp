@@ -114,6 +114,7 @@ void runRepl ()
 		catch (std::exception& err)
 		{
 			std::cerr << err.what() << std::endl;
+			Run::Thread::stop(thread);
 			continue;
 		}
 
