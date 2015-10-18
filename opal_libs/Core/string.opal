@@ -36,6 +36,8 @@ impl real { fn str () extern("opal.str") "real.str" -> string }
 impl long { fn str () extern("opal.str") "long.str" -> string }
 impl char { fn str () { string_of(self, 1) }}
 impl bool { fn str () { if self { "true" } else { "false" } }}
+impl unit { fn str () { "()" }}
+// TODO: tuple(n).str
 
 pub fn string_of (c : char, n : int)
 	extern("opal.str") "string_of" -> string

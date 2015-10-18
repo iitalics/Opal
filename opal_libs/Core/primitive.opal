@@ -63,3 +63,10 @@ impl x : bool {
    fn to_int ()      { if x { 1 } else { 0 } }
    fn to_long ()     { if x { 1L } else { 0L } }
 }
+impl unit {
+   fn equal (x : unit) { true }
+   fn cmp (x : unit) { 0 }
+   fn to_int () { 0 }
+   fn to_real () { 0.0 }
+   fn to_long () { 0L }
+}
