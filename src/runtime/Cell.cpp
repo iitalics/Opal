@@ -127,6 +127,8 @@ std::string Cell::str (bool col) const
 			ss << "\x1b[32m";
 		else if (type->isFunction())
 			ss << "\x1b[36m";
+		else if (type->isTuple())
+			uncolor = false;
 		else
 			ss << "\x1b[1m";
 	}
@@ -161,6 +163,34 @@ std::string Cell::str (bool col) const
 		if (col)
 			ss << "\x1b[0;1m";
 		ss << ctor->fullname().str();
+	}
+	else if (type->isTuple())
+	{
+		ss << "(";
+		for (size_t i = 0; i < type->nparams; i++)
+		{
+			if (i > 0)
+				ss << ", ";
+			ss << simple->get(i).str(col);;
+		}
+		ss << ")";
+	}
+	else if (ctor != nullptr)
+	{
+		ss << ctor->fullname().str();
+		if (col)
+		{
+			ss << "\x1b[0m";
+			uncolor = false;
+		}
+		ss << "(";
+		for (size_t i = 0; i < ctor->args.size(); i++)
+		{
+			if (i > 0)
+				ss << ", ";
+			ss << simple->get(i).str(col);;
+		}
+		ss << ")";
 	}
 	else
 	{
