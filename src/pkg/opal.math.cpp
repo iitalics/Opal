@@ -98,7 +98,7 @@ static void loadPackage (Env::Package& pkg)
 	.put("sqrt",   math_sqrt)
 	.put("rand",   math_rand);
 }
-static Env::PackageLoad _1("opal.math", loadPackage, { "Core" });
+static Env::PackageLoad _1("opal.math", loadPackage, { "Core", "Math" });
 
 
 };
