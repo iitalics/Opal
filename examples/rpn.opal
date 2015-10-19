@@ -1,7 +1,7 @@
 module RPN
 use Lang
 
-pub type RPNCmd
+pub type rpn_cmd
 	=  CmdConst(int)
 	or CmdDrop()
 	or CmdDup()
@@ -9,7 +9,7 @@ pub type RPNCmd
 	or CmdFn1(fn(int) -> int)
 	or CmdFn2(fn(int, int) -> int)
 
-impl array[int] { fn exec (cmd : RPNCmd) {
+impl array[int] { fn exec (cmd : rpn_cmd) {
 	match cmd {
 		CmdConst(n) {
 			self.push(n)
@@ -42,18 +42,6 @@ impl array[int] { fn exec (cmd : RPNCmd) {
 		}
 	}
 }}
-impl char {
-	fn space? () {
-		match self {
-			' ' -> true
-			'\n' -> true
-			_ -> false
-		}
-	}
-	fn digit? () {
-		(self >= '0') and (self <= '9')
-	}
-}
 
 impl string {
 	fn triml () {
@@ -117,6 +105,7 @@ pub fn main () {
 	let going = true;
 
 	while going {
+		console.write("\n");
 		if stack.empty?() {
 			console.write("(none)");
 		} else {
