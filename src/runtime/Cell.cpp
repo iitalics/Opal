@@ -127,7 +127,7 @@ std::string Cell::str (bool col) const
 			ss << "\x1b[32m";
 		else if (type->isFunction())
 			ss << "\x1b[36m";
-		else if (type->isTuple())
+		else if (type->isTuple() || type == Env::Type::core("list"))
 			uncolor = false;
 		else
 			ss << "\x1b[1m";
@@ -175,6 +175,23 @@ std::string Cell::str (bool col) const
 		}
 		ss << ")";
 	}
+	else if (type == Env::Type::core("list"))
+	{
+		ss << "[";
+		auto obj = simple;
+		while (obj)
+		{
+			auto hd = obj->get(0);
+			auto tl = obj->get(1);
+
+			ss << hd.str(col);
+			if (tl.obj)
+				ss << ", ";
+
+			obj = tl.simple;
+		}
+		ss << "]";
+	}
 	else if (ctor != nullptr)
 	{
 		ss << ctor->fullname().str();
@@ -188,7 +205,7 @@ std::string Cell::str (bool col) const
 		{
 			if (i > 0)
 				ss << ", ";
-			ss << simple->get(i).str(col);;
+			ss << simple->get(i).str(col);
 		}
 		ss << ")";
 	}
