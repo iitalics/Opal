@@ -111,7 +111,9 @@ impl array[#e] {
 void array_ctor (Thread& th)
 {
 	auto obj = new Array();
-	th.push(Cell::Object(Array::type, obj));
+	auto self = Cell::Object(Array::type, obj);
+	th.push(self);
+	self.release();
 }
 void array_len (Thread& th)
 {
