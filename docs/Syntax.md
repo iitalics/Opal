@@ -398,7 +398,7 @@ a specified set of methods. To demonstrate:
 >  Suppose you want to write a generic function `max` that takes two inputs, and returns the larger
 >  of the two. Concrete types are too specific; we don't want to have to define a different function
 >  for every comparable type (`int`, `real`, `char`...). However, a parameter type could represent
->  any data, including data that is certainly not garunteed to be of a type that can be "ordered".
+>  any data, including data that is not garunteed to be of a type that can be "ordered".
 
 The code
 
@@ -409,7 +409,7 @@ The code
 fails to compile.
 
 To solve this problem, we create an "interface" that specifies types that support the `.cmp` method.
-Now, we change the parameter type `#a` to be *constained* by this new interface, which makes it only
+Next, we change the parameter type `#a` to be *constained* by this new interface, which makes it only
 valid to pass data into the function if that data correctly supports the `.cmp` method.
 
     // syntax:
