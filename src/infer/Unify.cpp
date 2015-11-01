@@ -178,18 +178,18 @@ bool Analysis::_subscribes (TypePtr iface, TypePtr type)
 	for (size_t i = 0; i < base->iface.nfuncs; i++)
 	{
 		Env::Function* _dummy;
-		auto& fn = base->iface.funcs[i];
+		auto& method = base->iface.funcs[i];
 
 		// find and inst the methods
-		auto dest = _inst(iface, fn.getType(), type);
-		auto src = _findMethod(type, fn.name, _dummy);
+		auto dest = _inst(iface, method.type, type);
+		auto src = _findMethod(type, method.name, _dummy);
 
 		// see if they are compatible
 		if (src == nullptr || _unify(dest, src) != UnifyOK)
 		{
 			_failType = type;
 			_failIFace = iface;
-			_failName = fn.name;
+			_failName = method.name;
 			return false;
 		}
 	}

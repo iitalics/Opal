@@ -202,11 +202,13 @@ TypePtr Analysis::_getFuncType (Env::Function* func)
 		// descend call stack and make everything dependent
 		//  on us
 		auto top = _calledBy;
-		for (; top != nullptr; top = top->_calledBy)
+		while (top != nullptr)
 		{
 			top->dependOn(this);
 			if (top == func->analysis)
 				break;
+			else
+				top = top->_calledBy
 		}
 	}
 
@@ -308,7 +310,7 @@ TypePtr Analysis::_findIFaceFunc (TypePtr obj, TypePtr iface, const std::string&
 		if (base->iface.funcs[i].name == name)
 		{
 			out = base->methods[i];
-			return _inst(obj, base->iface.funcs[i].getType(), obj);
+			return _inst(obj, base->iface.funcs[i].type, obj);
 		}
 
 	return nullptr;

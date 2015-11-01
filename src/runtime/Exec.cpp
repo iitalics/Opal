@@ -153,7 +153,7 @@ void Thread::call (Env::Function* func)
 	case Env::Function::IFaceFunction:
 		{
 			auto name = func->ifaceSig->name;
-			auto argc = func->ifaceSig->argc;
+			auto argc = func->ifaceSig->argc();
 
 			auto self = get(size() - argc - 1);
 			auto actualType = self.type;

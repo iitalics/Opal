@@ -63,15 +63,11 @@ struct DataType
 
 struct IFaceSignature
 {
-	~IFaceSignature ();
-
 	std::string name;
 	Span declSpan;
-	Infer::TypePtr* args;
-	size_t argc;
-	Infer::TypePtr ret;
+	Infer::TypePtr type;
 
-	Infer::TypePtr getType ();
+	size_t argc () const;
 };
 
 struct IFaceType

@@ -112,6 +112,14 @@ Function* Type::getMethod (const std::string& name) const
 			return fn;
 	return nullptr;
 }
+size_t IFaceSignature::argc () const
+{
+	if (type->kind != Infer::Type::Concrete ||
+			!type->base->isFunction())
+		return 0;
+	else
+		return type->base->nparams - 1;
+}
 
 
 Infer::TypePtr Global::getType ()
@@ -184,15 +192,6 @@ Infer::TypePtr Function::getType ()
 
 	return Infer::Type::concrete(Type::function(argc), types);
 }
-Infer::TypePtr IFaceSignature::getType ()
-{
-	Infer::TypeList types(ret);
-
-	for (int i = argc; i-- > 0; )
-		types = Infer::TypeList(args[i], types);
-	
-	return Infer::Type::concrete(Type::function(argc), types);
-}
 
 
 AST::Name Type::fullname () const { return AST::Name(name, module->name); }
@@ -215,10 +214,6 @@ void DataType::destroy ()
 void IFaceType::destroy ()
 {
 	delete[] funcs;
-}
-IFaceSignature::~IFaceSignature ()
-{
-	delete[] args;
 }
 Module::~Module ()
 {

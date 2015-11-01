@@ -274,10 +274,11 @@ static void createIFace (Namespace* nm, Module* mod, AST::IFaceDecl* ifdecl)
 	ctx.createParam(ifdecl->selfParam, {});
 	for (auto& arg : ifdecl->args)
 		ctx.createParam(arg, {});
+	ctx.allowNewTypes = false;
 
 	size_t nfuncs = ifdecl->funcs.size();
 	type->iface.nfuncs = nfuncs;
-	type->iface.funcs = new Env::IFaceSignature[nfuncs];
+	type->iface.funcs = new IFaceSignature[nfuncs];
 
 	// create methods
 	for (size_t i = 0; i < nfuncs; i++)
@@ -289,32 +290,33 @@ static void createIFace (Namespace* nm, Module* mod, AST::IFaceDecl* ifdecl)
 					ifdecl->funcs[j].span,
 					ifdecl->funcs[i].span);
 
+		auto& methoddecl = ifdecl->funcs[i];
 		auto& fnsig = type->iface.funcs[i];
-		auto& fn = ifdecl->funcs[i];
 
-		// new context for each function
-		Infer::Type::Ctx ctx2(ctx);
-		ctx.allowNewTypes = false;
+		// create method from AST
+		fnsig.name = methoddecl.name;
+		fnsig.declSpan = methoddecl.span;
 
-		// create arguments from AST
-		fnsig.name = fn.name;
-		fnsig.declSpan = fn.span;
-		fnsig.argc = fn.args.size();
-		fnsig.args = new Infer::TypePtr[fnsig.argc];
-		for (size_t j = 0; j < fnsig.argc; j++)
-			fnsig.args[j] = Infer::Type::fromAST(fn.args[j], ctx);
-
-		fnsig.ret = Infer::Type::fromAST(fn.ret, ctx);
+		auto ret = Infer::Type::fromAST(methoddecl.ret, ctx);
+		Infer::TypeList args(ret);
+		for (auto it = methoddecl.args.rbegin(); it != methoddecl.args.rend(); ++it)
+		{
+			auto ty = Infer::Type::fromAST(*it, ctx);
+			args = Infer::TypeList(ty, args);
+		}
+		fnsig.type = Infer::Type::concrete(
+			Type::function(methoddecl.args.size()),
+			args);
 
 		// create callable method
 		// ++ memory allocated here ++
 		auto method = new Function(
 			Function::IFaceFunction,
-			fn.name,
+			fnsig.name,
 			mod,
 			ifdecl->span);
 		method->nm = nm;
-		method->ret = fnsig.ret;
+		method->ret = ret;
 		method->ifaceSig = &fnsig;
 		method->parent = type;
 		type->methods.push_back(method);
