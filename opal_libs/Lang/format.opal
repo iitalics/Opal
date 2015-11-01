@@ -25,3 +25,18 @@ impl list[#a(Lang::Show)] { fn str () {
 		x $ xs -> xs.foldl(x.str(), fn (z, y) { z + ", " + y.str() })
 	} + "]"
 }}
+
+
+impl string {
+	fn strip () {
+		let i = 0;
+		let j = self.len();
+		while i < j and self[i].space?() {
+			i = i.succ();
+		}
+		while j >= i and self[j].space?() {
+			j = j.pred();
+		}
+		self[i,j]
+	}
+}

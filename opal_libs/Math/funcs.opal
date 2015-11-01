@@ -26,3 +26,4 @@ impl (int, int) {
 		x + (rand() * (y - x).succ().to_real()).to_int()
 	}
 }
+pub fn rand_signed () { rand() * 2.0 - 1.0 }
