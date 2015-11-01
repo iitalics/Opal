@@ -49,6 +49,7 @@ private:
 	void _generate (AST::LazyOpExp* e);
 	void _generate (AST::CompareExp* e);
 	void _generate (AST::FieldExp* e);
+	void _generate (AST::PropertyExp* e);
 	void _generate (AST::ReturnExp* e);
 	void _generate (AST::TupleExp* e);
 	void _generate (AST::ObjectExp* e);

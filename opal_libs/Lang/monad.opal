@@ -12,12 +12,12 @@ pub type box[#a] { val : #a }
 pub fn box (v : #a) { new box[#a] { val = v } }
 pub fn box_copy (v : #a(Lang::Copy)) { new box[#a] { val = v.copy() } }
 impl box[#a] {
-	fn get () { self.val }
+	fn get () { self.(val) }
 }
-impl box[#a(Lang::Show)] { fn str () { self.val.str() }}
+impl box[#a(Lang::Show)] { fn str () { self.(val).str() }}
 impl box[#a(Lang::Step)] {
-	fn incr () { self.val = self.val.succ() }
-	fn decr () { self.val = self.val.pred() }
+	fn incr () { self.(val) = self.(val).succ() }
+	fn decr () { self.(val) = self.(val).pred() }
 }
 
 impl opt[#a] {

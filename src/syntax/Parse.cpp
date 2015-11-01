@@ -812,10 +812,17 @@ static ExpPtr parseConstant (Scanner& scan)
 
 /*
 suffix:
-	"(" [exp {"," exp}] ")"
-	"." ID
+	callSuffix
+	fieldSuffix
+	propertySuffix
 	sliceSuffix
 	lambdaSuffix
+callSuffix:
+	"(" [exp {"," exp}] ")"
+fieldSuffix:
+	"." ID
+propertySuffix:
+	"." "(" ID ")"
 sliceSuffix:
 	"[" "," exp "]"
 	"[" exp "," exp "]"
@@ -871,11 +878,22 @@ static ExpPtr parseSuffix (Scanner& scan, ExpPtr e)
 			break;
 		}
 	case DOT:
+		scan.shift();
+		scan.expect({ ID, LPAREN });
+		if (scan.get() == ID)
 		{
-			scan.shift();
 			auto span = scan.get().span;
 			auto field = scan.eat(ID).string;
 			e = ExpPtr(new FieldExp(e, field));
+			e->span = span;
+			break;
+		}
+		else
+		{
+			auto span = scan.shift().span;
+			auto prop = scan.eat(ID).string;
+			scan.eat(RPAREN);
+			e = ExpPtr(new PropertyExp(e, prop));
 			e->span = span;
 			break;
 		}

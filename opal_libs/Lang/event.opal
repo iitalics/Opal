@@ -1,12 +1,12 @@
 module Lang
 
-pub type event[#c] { @cbs : array[fn(#c) -> unit] }
+pub type event[#c] { callbacks : array[fn(#c) -> unit] }
 impl event[#c] {
 	fn bind (f : fn(#c) -> unit) {
-		self.@cbs.push(f)
+		self.(callbacks).push(f)
 	}
 	fn fire (a : #c) {
-		self.@cbs.each(fn (f) {
+		self.(callbacks).each(fn (f) {
 			f(a)
 		})
 	}
@@ -15,4 +15,4 @@ impl event[#c] {
 	fn lbind (f : fn(#c) -> unit) { self.bind(f) }
 	fn lshift (a : #c) { self.fire(a) ; self }
 }
-pub fn event () { new event[#_] { @cbs = array() } }
+pub fn event () { new event[#_] { callbacks = array() } }

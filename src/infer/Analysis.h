@@ -108,7 +108,7 @@ private:
 	TypePtr _getFuncType (Env::Function* func);
 
 	// find fields and methods from a type
-	TypePtr _findField (TypePtr obj,
+	TypePtr _findProperty (TypePtr obj,
 		const std::string& name, int& out);
 	TypePtr _findMethod (TypePtr obj,
 		const std::string& name, Env::Function*& out);
@@ -123,6 +123,7 @@ private:
 	void _infer (AST::VarExp* e, TypePtr dest);
 	void _infer (AST::NumberExp* e, TypePtr dest);
 	void _infer (AST::FieldExp* e, TypePtr dest);
+	void _infer (AST::PropertyExp* e, TypePtr dest);
 	void _infer (AST::CallExp* e, TypePtr dest);
 	void _infer (AST::TypeHintExp* e, TypePtr dest);
 	void _infer (AST::BlockExp* e, TypePtr dest);

@@ -208,7 +208,7 @@ TypePtr Analysis::_getFuncType (Env::Function* func)
 			if (top == func->analysis)
 				break;
 			else
-				top = top->_calledBy
+				top = top->_calledBy;
 		}
 	}
 
@@ -263,7 +263,7 @@ TypePtr Analysis::_instMethod (TypePtr obj, Env::Function* fn)
 
 	return replaceParams(_getFuncType(fn), with);
 }
-TypePtr Analysis::_findField (TypePtr obj, const std::string& name, int& out)
+TypePtr Analysis::_findProperty (TypePtr obj, const std::string& name, int& out)
 {
 	auto base = obj->base;
 

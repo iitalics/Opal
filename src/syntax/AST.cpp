@@ -66,6 +66,7 @@ LetExp::~LetExp () {}
 LazyOpExp::~LazyOpExp () {}
 CompareExp::~CompareExp () {}
 FieldExp::~FieldExp () {}
+PropertyExp::~PropertyExp () {}
 MethodExp::~MethodExp () {}
 MemberExp::~MemberExp () {}
 CallExp::~CallExp () {}

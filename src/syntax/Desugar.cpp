@@ -57,7 +57,7 @@ void desugar (AST::ExpPtr& e)
 				okay = true;
 			}
 		}
-		else if (lh->is<AST::VarExp>() || lh->is<AST::FieldExp>())
+		else if (lh->is<AST::VarExp>() || lh->is<AST::PropertyExp>())
 			okay = true;
 
 		if (!okay)

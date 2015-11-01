@@ -296,7 +296,7 @@ and pass a lambda:
 Objects and Interfaces
 ----------------------------------------
 
-### Structure types ###
+### Structures ###
 
 New types may be defined in the type level using the `type` keyword.
 
@@ -331,9 +331,9 @@ field of the new object are required, but the order does not matter.
 Members (or methods) of data can be accessed using `.`, such as in languages like Java, C++ and Python.
 
     // syntax:
-    //   <expression> . <name>
+    //   <expression> . ( <name> )
 
-    some_plant.species        // = "Sunflower"
+    some_plant.(species)        // = "Sunflower"
 
 ### Methods ###
 Methods are functions that are fields of a type, may be defined using `impl` syntax.
@@ -347,8 +347,8 @@ Methods add functionality that is specific to data of a certain type.
     }
     impl self : plant {
         fn grow () {
-            self.height = self.height + 0.1;
-            self.height
+            self.(height) = self.(height) + 0.1;
+            self.(height)
         }
     }
 

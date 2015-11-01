@@ -40,6 +40,7 @@ void Analysis::infer (AST::ExpPtr e, TypePtr dest)
 	else if (auto e2 = dynamic_cast<AST::VarExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::NumberExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get())) _infer(e2, dest);
+	else if (auto e2 = dynamic_cast<AST::PropertyExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::CallExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::TypeHintExp*>(e.get())) _infer(e2, dest);
 	else if (auto e2 = dynamic_cast<AST::BlockExp*>(e.get())) _infer(e2, dest);
@@ -131,7 +132,6 @@ void Analysis::_infer (AST::NumberExp* e, TypePtr dest)
 
 void Analysis::_infer (AST::FieldExp* e, TypePtr dest)
 {
-	TypePtr res = nullptr;
 	auto obj = Type::poly();
 	infer(e->children[0], obj);
 
@@ -139,37 +139,42 @@ void Analysis::_infer (AST::FieldExp* e, TypePtr dest)
 	//  and then fails
 	auto typeName = obj->str();
 
-	// look for fields
-	if (obj->kind == Type::Concrete &&
-			!obj->base->isIFace)
+	// look for method
+	Env::Function* fn;
+	auto res = _findMethod(obj, e->name, fn);
+	if (res != nullptr)
+	{
+		e->method = fn;
+		unify(dest, res, e->span);
+		return;
+	}
+
+	std::ostringstream ss;
+	ss << "undefined field '" << e->name << "'";
+	throw SourceError(ss.str(),
+		{ "type: " + typeName }, e->span);
+}
+void Analysis::_infer (AST::PropertyExp* e, TypePtr dest)
+{
+	auto obj = Type::poly();
+	infer(e->children[0], obj);
+
+	if (obj->kind == Type::Concrete && !obj->base->isIFace)
 	{
 		int index;
-		if ((res = _findField(obj, e->name, index)))
+		auto res = _findProperty(obj, e->name, index);
+		if (res != nullptr)
 		{
 			e->index = index;
-			e->method = nullptr;
+			unify(dest, res, e->span);
+			return;
 		}
 	}
 
-	// look for methods
-	if (res == nullptr)
-	{
-		Env::Function* fn;
-		if ((res = _findMethod(obj, e->name, fn)))
-			e->method = fn;
-	}
-
-	// no luck.
-	if (res == nullptr)
-	{
-		std::ostringstream ss;
-		ss << "undefined field '" << e->name << "'";
-		throw SourceError(ss.str(),
-			{ "type: " + typeName }, e->span);
-	}
-
-	unify(dest, res, e->span);
-	return;
+	std::ostringstream ss;
+	ss << "undefined property '" << e->name << "'";
+	throw SourceError(ss.str(),
+		{ "type: " + obj->str() }, e->span);
 }
 
 void Analysis::_infer (AST::CallExp* e, TypePtr dest)
@@ -358,11 +363,11 @@ void Analysis::_infer (AST::ObjectExp* e, TypePtr dest)
 			}
 
 		int index;
-		auto fieldType = _findField(type, name, index);
+		auto fieldType = _findProperty(type, name, index);
 		if (fieldType == nullptr)
 		{
 			std::ostringstream ss;
-			ss << "undefined field '" << name << "'";
+			ss << "undefined property '" << name << "'";
 			throw SourceError(ss.str(), e->span);
 		}
 
@@ -385,7 +390,7 @@ void Analysis::_infer (AST::ObjectExp* e, TypePtr dest)
 			if (!found)
 			{
 				std::ostringstream ss;
-				ss << "field '"
+				ss << "property '"
 				   << type->base->data.fields[i].name
 				   << "' requires initialization";
 				throw SourceError(ss.str(), e->span);
@@ -453,14 +458,15 @@ void Analysis::_infer (AST::MethodExp* e, TypePtr dest)
 	if (!selfty)
 		selfty = Type::poly();
 
+	// in case something goes wrong and changes 'selfty'
 	auto typeName = selfty->str();
 
 	Env::Function* fn;
 	auto fnty = _findMethod(selfty, e->name, fn);
 
 	// no such method
-	// TODO: this will happen often if 'selfty' is completely unknown
-	//       show a more helpful error message?
+	// TODO: show a better error message cause this happens
+	//       very often with 'selfty' is polytype
 	if (fnty == nullptr)
 	{
 		std::ostringstream ss;

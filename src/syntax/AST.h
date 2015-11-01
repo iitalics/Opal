@@ -209,12 +209,21 @@ class FieldExp : public Exp
 {
 public:
 	std::string name;
-	int index;
 	Env::Function* method;
 
 	inline FieldExp (ExpPtr _a, const std::string& _name)
-		: Exp({ _a }), name(_name), index(-1), method(nullptr) {}
+		: Exp({ _a }), name(_name), method(nullptr) {}
 	virtual ~FieldExp ();
+};
+class PropertyExp : public Exp
+{
+public:
+	std::string name;
+	int index;
+
+	inline PropertyExp (ExpPtr _a, const std::string& _name)
+		: Exp({ _a }), name(_name), index(-1) {}
+	virtual ~PropertyExp ();
 };
 class MethodExp : public Exp
 {

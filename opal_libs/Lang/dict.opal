@@ -8,9 +8,9 @@ pub type dict[#k, #v] {
 impl dict[#k(Eq), #v] {
 	fn index (key : #k) {
 		let i = 0;
-		let len = self.keys.len();
+		let len = self.(keys).len();
 		while i < len {
-			if self.keys[i] == key {
+			if self.(keys)[i] == key {
 				return i
 			} else {
 				i = i.succ()
@@ -21,25 +21,25 @@ impl dict[#k(Eq), #v] {
 	fn find (key : #k) {
 		match self.index(key) {
 			-1 { None() }
-			idx { Some(self.vals[idx]) }
+			idx { Some(self.(vals)[idx]) }
 		}
 	}
 	fn get_or (key : #k, val : #v) {
 		match self.index(key) {
 			-1 { val }
-			idx { self.vals[idx] }
+			idx { self.(vals)[idx] }
 		}
 	}
 	fn get (key : #k) {
-		self.vals[self.index(key)]
+		self.(vals)[self.index(key)]
 	}
 	fn set (key : #k, val : #v) {
 		let idx = self.index(key);
 		if idx == -1 {
-			self.keys.push(key);
-			self.vals.push(val);
+			self.(keys).push(key);
+			self.(vals).push(val);
 		} else {
-			self.vals[idx] = val;
+			self.(vals)[idx] = val;
 		}
 	}
 }
@@ -52,8 +52,8 @@ impl list[(#k, #v)] {
 		let res = dict();
 		self.each |pair| {
 			let (k, v) = pair;
-			res.keys.push(k);
-			res.vals.push(v);
+			res.(keys).push(k);
+			res.(vals).push(v);
 		};
 		res
 	}

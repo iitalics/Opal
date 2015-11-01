@@ -109,6 +109,7 @@ void CodeGen::generate (AST::ExpPtr e)
 	else if (auto e2 = dynamic_cast<AST::LazyOpExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::CompareExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::FieldExp*>(e.get())) _generate(e2);
+	else if (auto e2 = dynamic_cast<AST::PropertyExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::ReturnExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::TupleExp*>(e.get())) _generate(e2);
 	else if (auto e2 = dynamic_cast<AST::ObjectExp*>(e.get())) _generate(e2);
@@ -240,9 +241,9 @@ void CodeGen::_generate (AST::AssignExp* e)
 
 	generate(e->children[1]);
 
-	if (auto fieldexp = dynamic_cast<AST::FieldExp*>(lh.get()))
+	if (auto propexp = dynamic_cast<AST::PropertyExp*>(lh.get()))
 	{
-		add(Cmd::Set).index = size_t(fieldexp->index);
+		add(Cmd::Set).index = size_t(propexp->index);
 	}
 	else if (auto varexp = dynamic_cast<AST::VarExp*>(lh.get()))
 	{
@@ -336,17 +337,14 @@ void CodeGen::_generate (AST::CompareExp* e)
 }
 void CodeGen::_generate (AST::FieldExp* e)
 {
-	if (e->method != nullptr)
-	{
-		generate(e->children[0]);
-		add(Cmd::Int).int_val = 1;
-		add(Cmd::Func).func = e->method;
-	}
-	else
-	{
-		generate(e->children[0]);
-		add(Cmd::Get).index = size_t(e->index);
-	}
+	generate(e->children[0]);
+	add(Cmd::Int).int_val = 1;
+	add(Cmd::Func).func = e->method;
+}
+void CodeGen::_generate (AST::PropertyExp* e)
+{
+	generate(e->children[0]);
+	add(Cmd::Get).index = size_t(e->index);
 }
 void CodeGen::_generate (AST::ReturnExp* e)
 {

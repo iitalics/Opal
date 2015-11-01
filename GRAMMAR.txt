@@ -140,10 +140,17 @@ prefixTerm:
 	matchExp
 
 suffix:
-	"(" [exp {"," exp}] ")"
-	"." ID
+	callSuffix
+	fieldSuffix
+	propertySuffix
 	sliceSuffix
 	lambdaSuffix
+callSuffix:
+	"(" [exp {"," exp}] ")"
+fieldSuffix:
+	"." ID
+propertySuffix:
+	"." "(" ID ")"
 sliceSuffix:
 	"[" "," exp "]"
 	"[" exp "," exp "]"
