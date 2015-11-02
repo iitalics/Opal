@@ -1,6 +1,7 @@
 #include "Analysis.h"
 #include "../env/Env.h"
 #include "../env/Namespace.h"
+#include <algorithm>
 namespace Opal { namespace Infer {
 ;
 
@@ -94,7 +95,9 @@ void Type::_set (TypePtr other)
 
 
 
-static std::string functionTypeStr (const Type* type)
+static std::string typeStr (std::vector<const Type*>& history, const Type* type);
+
+static std::string functionTypeStr (std::vector<const Type*>& history, const Type* type)
 {
 	std::ostringstream ss;
 	auto xs = type->args;
@@ -106,7 +109,7 @@ static std::string functionTypeStr (const Type* type)
 
 		if (xs.tail().nil())
 		{
-			ss << ") -> " << ty->str();
+			ss << ") -> " << typeStr(history, ty.get());
 			break;
 		}
 
@@ -114,11 +117,11 @@ static std::string functionTypeStr (const Type* type)
 			first = false;
 		else
 			ss << ", ";
-		ss << ty->str();
+		ss << typeStr(history, ty.get());
 	}
 	return ss.str();
 }
-static std::string tupleTypeStr (const Type* type)
+static std::string tupleTypeStr (std::vector<const Type*>& history, const Type* type)
 {
 	std::ostringstream ss;
 	bool first = true;
@@ -129,12 +132,12 @@ static std::string tupleTypeStr (const Type* type)
 			first = false;
 		else
 			ss << ", ";
-		ss << ty->str();
+		ss << typeStr(history, ty.get());
 	}
 	ss << ")";
 	return ss.str();
 }
-static std::string concreteTypeStr (const Type* type)
+static std::string concreteTypeStr (std::vector<const Type*>& history, const Type* type)
 {
 	std::ostringstream ss;
 	ss << type->base->fullname().str();
@@ -150,36 +153,47 @@ static std::string concreteTypeStr (const Type* type)
 			first = false;
 		else
 			ss << ", ";
-		ss << ty->str();
+		ss << typeStr(history, ty.get());
 	}
 	ss << "]";
 	return ss.str();
 }
-static std::string paramTypeStr (const Type* type, const std::string& prefix)
+static std::string paramTypeStr (std::vector<const Type*>& history, const Type* type, const std::string& prefix)
 {
+	for (auto t : history)
+		if (t == type)
+			return prefix;
+
+	history.push_back(type);
+
 	if (type->args.nil())
 		return prefix;
 	else
-		return prefix + tupleTypeStr(type);
+		return prefix + tupleTypeStr(history, type);
 }
-std::string Type::str() const
+static std::string typeStr (std::vector<const Type*>& history, const Type* type)
 {
-	if (kind == Concrete)
+	if (type->kind == Type::Concrete)
 	{
-		if (base->isFunction())
-			return functionTypeStr(this);
-		else if (base->isTuple())
-			return tupleTypeStr(this);
+		if (type->base->isFunction())
+			return functionTypeStr(history, type);
+		else if (type->base->isTuple())
+			return tupleTypeStr(history, type);
 		else
-			return concreteTypeStr(this);
+			return concreteTypeStr(history, type);
 	}
 	else
 	{
-		if (kind == Param)
-			return paramTypeStr(this, "#" + paramName);
+		if (type->kind == Type::Param)
+			return paramTypeStr(history, type, "#" + type->paramName);
 		else
-			return paramTypeStr(this, "_" + paramName);
+			return paramTypeStr(history, type, "_" + type->paramName);
 	}
+}
+std::string Type::str() const
+{
+	std::vector<const Type*> history;
+	return typeStr(history, this);
 }
 
 

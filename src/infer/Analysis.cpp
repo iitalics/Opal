@@ -62,11 +62,6 @@ TypePtr Analysis::polyToParam (TypePtr type)
 TypePtr Analysis::polyToParam (TypePtr type,
 		std::map<TypeWeakList*, TypePtr>& with)
 {
-	auto newArgs = type->args.map<TypePtr>([&] (TypePtr ty2)
-	{
-		return polyToParam(ty2, with);
-	});
-
 	if (type->kind == Type::Poly)
 	{
 		auto it = with.find(type->links);
@@ -74,17 +69,20 @@ TypePtr Analysis::polyToParam (TypePtr type,
 		{
 			std::ostringstream ss;
 			ss << "." << _ctx.params.size();
-			return
-				with[type->links] = _ctx.createParam(ss.str(), newArgs);
+			auto param = _ctx.createParam(ss.str(), TypeList());
+			with[type->links] = param;
+			param->args = type->args.map<TypePtr>([&] (TypePtr ty2) { return polyToParam(ty2, with); });
+			return param;
 		}
 		else
 			return it->second;
 	}
-	else if (newArgs.nil())
-	{
+	else if (type->args.nil())
 		return type;
-	}
-	else if (type->kind == Type::Concrete)
+
+	auto newArgs = type->args.map<TypePtr>([&] (TypePtr ty2) { return polyToParam(ty2, with); });
+
+	if (type->kind == Type::Concrete)
 	{
 		return Type::concrete(type->base, newArgs);
 	}
