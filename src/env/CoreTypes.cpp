@@ -13,23 +13,30 @@ static std::string specialName (const std::string& prefix, size_t n)
 	return ss.str();
 }
 
+
+static Module* _internal = nullptr;
+static Module* getInternal ()
+{
+	if (!_internal)
+		return (_internal = Module::get("(internal)"));
+	else
+		return _internal;
+}
+
+
 Type* Type::function (size_t argc)
 {
 	auto it = _functions.find(argc);
 	if (it != _functions.end())
 		return it->second;
 
-	auto coreMod = Module::getCore();
-	auto ty = new Type(
-		"fn",
-		coreMod,
-		argc + 1,
-		false);
+	auto mod = getInternal();
+	auto ty = new Type("fn", mod, argc + 1, false);
 	ty->_function = true;
 	ty->data.fields = nullptr;
 	ty->data.nfields = 0;
 	_functions[argc] = ty;
-	coreMod->types.push_back(ty);
+	mod->types.push_back(ty);
 	return ty;
 }
 Type* Type::tuple (size_t argc)
@@ -38,24 +45,39 @@ Type* Type::tuple (size_t argc)
 	if (it != _tuples.end())
 		return it->second;
 
-	auto coreMod = Module::getCore();
-	auto ty = new Type(
-		specialName("tuple", argc),
-		coreMod,
-		argc,
-		false);
+	auto mod = getInternal();
+	auto ty = new Type(specialName("tuple", argc), mod, argc, false);
 	ty->_tuple = true;
 	ty->data.nfields = 0;
 	ty->data.fields = nullptr;
 	_tuples[argc] = ty;
-	coreMod->types.push_back(ty);
+	mod->types.push_back(ty);
 	return ty;
 }
 Type* Type::core (const std::string& name)
 {
 	return Module::getCore()->getType(name);
 }
+Type* Type::anonIFace (const std::string& name, Infer::TypePtr fnty)
+{
+	auto mod = getInternal();
+	auto ty = new Type("." + name, mod, 0, true);
+	auto fnsigs = new IFaceSignature[1];
 
+	// iface method
+	ty->iface.nfuncs = 1;
+	ty->iface.funcs = fnsigs;
+	fnsigs[0].name = name;
+	fnsigs[0].type = fnty;
+
+	// env method (for runtime?)
+	auto method = new Function(Function::IFaceFunction, name, mod);
+	method->ifaceSig = &fnsigs[0];
+	method->parent = ty;
+	ty->methods.push_back(method);
+
+	return ty;
+}
 
 
 static void makePrimitives ()

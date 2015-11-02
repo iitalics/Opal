@@ -159,6 +159,8 @@ std::string Type::str() const
 			return functionTypeStr(this);
 		else if (base->isTuple())
 			return tupleTypeStr(this);
+		else if (base->name[0] == '.') // anonymous iface
+			return "<" + base->name + ">";
 		else
 			return concreteTypeStr(this);
 	}

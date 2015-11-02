@@ -85,6 +85,8 @@ public:
 	static Type* function (size_t argc);
 	static Type* tuple (size_t argc);
 	static Type* core (const std::string& name);
+	static Type* anonIFace (const std::string& name,
+			Infer::TypePtr ty = Infer::Type::poly());
 
 	// fields
 	Type (const std::string& name,
