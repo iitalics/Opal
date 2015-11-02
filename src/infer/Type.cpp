@@ -179,6 +179,8 @@ static std::string typeStr (std::vector<const Type*>& history, const Type* type)
 			return functionTypeStr(history, type);
 		else if (type->base->isTuple())
 			return tupleTypeStr(history, type);
+		else if (type->base->name[0] == '.')
+			return "<" + type->base->name + ">";
 		else
 			return concreteTypeStr(history, type);
 	}
