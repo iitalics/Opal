@@ -1,4 +1,4 @@
-#include "Type.h"
+#include "Analysis.h"
 #include "../env/Env.h"
 #include "../env/Namespace.h"
 namespace Opal { namespace Infer {
@@ -25,6 +25,13 @@ TypePtr Type::poly (const TypeList& ifaces)
 	auto ty = std::make_shared<Type>(Poly);
 	ty->links = new TypeWeakList { ty.get() };
 	ty->args = ifaces;
+
+	static int k = 0;
+	std::ostringstream ss;
+	k++;
+	if (Analysis::debuggingEnabled)
+		ss << ++k;
+	ty->paramName = ss.str();
 	return ty;
 }
 
@@ -50,6 +57,9 @@ void Type::set (TypePtr other)
 {
 	if (kind == Poly)
 	{
+		if (Analysis::debuggingEnabled)
+			std::cout << str() << " {<- set} " << other->str() << std::endl;
+
 		auto _links = links;
 		for (auto ty : *links)
 			ty->_set(other);
@@ -71,6 +81,7 @@ void Type::_set (TypePtr other)
 	}
 	else
 	{
+		paramName = other->paramName;
 		links = other->links;
 		if (kind == Poly)
 			links->push_back(this);
@@ -159,8 +170,6 @@ std::string Type::str() const
 			return functionTypeStr(this);
 		else if (base->isTuple())
 			return tupleTypeStr(this);
-		else if (base->name[0] == '.') // anonymous iface
-			return "<" + base->name + ">";
 		else
 			return concreteTypeStr(this);
 	}
@@ -169,7 +178,7 @@ std::string Type::str() const
 		if (kind == Param)
 			return paramTypeStr(this, "#" + paramName);
 		else
-			return paramTypeStr(this, "_");
+			return paramTypeStr(this, "_" + paramName);
 	}
 }
 

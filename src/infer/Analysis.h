@@ -37,6 +37,8 @@ struct LocalEnv
 class Analysis
 {
 public:
+	static bool debuggingEnabled;
+
 	Analysis (Env::Function* parent, Analysis* calledBy);
 	~Analysis ();
 

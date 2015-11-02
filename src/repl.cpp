@@ -84,7 +84,8 @@ void runRepl ()
 			std::cout << "commands: " << std::endl
 			          << "  !help       show this help text" << std::endl
 			          << "  !types      show expression types" << std::endl
-			          << "  !dump       dump function byte code" << std::endl;
+			          << "  !dump       dump function byte code" << std::endl
+			          << "  !debug      enable some debug printing" << std::endl;
 			continue;
 		}
 		if (input == "!types")
@@ -95,6 +96,12 @@ void runRepl ()
 		if (input == "!dump")
 		{
 			opt_codedump = !opt_codedump;
+			continue;
+		}
+		if (input == "!debug")
+		{
+			Infer::Analysis::debuggingEnabled =
+				!Infer::Analysis::debuggingEnabled;
 			continue;
 		}
 

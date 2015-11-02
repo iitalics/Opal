@@ -58,17 +58,17 @@ Type* Type::core (const std::string& name)
 {
 	return Module::getCore()->getType(name);
 }
-Type* Type::anonIFace (const std::string& name, Infer::TypePtr fnty)
+Type* Type::anonIFace (const std::string& name)
 {
 	auto mod = getInternal();
-	auto ty = new Type("." + name, mod, 0, true);
+	auto ty = new Type("." + name, mod, 1, true);
 	auto fnsigs = new IFaceSignature[1];
 
 	// iface method
 	ty->iface.nfuncs = 1;
 	ty->iface.funcs = fnsigs;
 	fnsigs[0].name = name;
-	fnsigs[0].type = fnty;
+	fnsigs[0].type = Infer::Type::param(1, "-");
 
 	// env method (for runtime?)
 	auto method = new Function(Function::IFaceFunction, name, mod);

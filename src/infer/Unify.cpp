@@ -6,6 +6,8 @@ namespace Opal { namespace Infer {
 
 #define UNIFY_FAIL "type matching failed: "
 
+bool Analysis::debuggingEnabled = false;
+
 static Span ifaceFuncSpan (TypePtr iface, const std::string& name)
 {
 	auto base = iface->base;
@@ -80,6 +82,9 @@ int Analysis::_unify (TypePtr dest, TypePtr src)
 		dest = src;
 		src = t;
 	}
+
+	if (debuggingEnabled)
+		std::cout << "" << dest->str() << " {<- unify} " << src->str() << std::endl;
 
 	if (dest->kind == Type::Poly && src->kind == Type::Poly)
 	{
@@ -186,17 +191,23 @@ bool Analysis::_merge (TypePtr a, TypePtr b)
 		return true;
 	}
 
-	// shitty merges
-	std::cout << "merge " << a->str() << " | " << b->str() << std::endl;
+	// complicated merge
+	if (debuggingEnabled)
+		std::cout << a->str() << " {merge} " << b->str() << std::endl;
 
 	// accumulate each iface
 	// TODO: sort by # of methods?
 	//       ideally we want to eliminate anon ifaces ASAP
+
+	auto argsA = a->args;
+	auto argsB = b->args;
+
 	Merge merge;
-	for (auto iface : a->args)
+
+	for (auto iface : argsA)
 		if (!merge.addIFace(a, iface))
 			return false;
-	for (auto iface : b->args)
+	for (auto iface : argsB)
 		if (!merge.addIFace(b, iface))
 			return false;
 
@@ -204,7 +215,8 @@ bool Analysis::_merge (TypePtr a, TypePtr b)
 	a->set(result);
 	b->set(result);
 
-	std::cout << "merge => " << result->str() << std::endl;
+	if (debuggingEnabled)
+		std::cout << "{merge =>} " << result->str() << std::endl;
 
 	return true;
 }
