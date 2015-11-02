@@ -41,14 +41,15 @@ void Analysis::unify (TypePtr dest, TypePtr src, const Span& span)
 
 	case FailSubscribe:
 		{
-			std::ostringstream ss1, ss2;
+			std::ostringstream ss1, ss2, ss3;
 
 			Env::Function* fn;
 			auto expectType = _findIFaceFunc(_failType, _failIFace, _failName, fn);
 
-			ss1 << UNIFY_FAIL "type incompatible with iface '" << _failIFace->str() << "'";
-			ss2 << "expected " << _failType->str() << "." << _failName << " : " << expectType->str();
-			throw SourceError(ss1.str(), { ss2.str() },
+			ss1 << UNIFY_FAIL "incompatible with iface '" << _failIFace->str() << "'";
+			ss2 << "type: " << _failType->str();
+			ss3 << "invalid method '" << _failName << "' : " << expectType->str();
+			throw SourceError(ss1.str(), { ss2.str(), ss3.str() },
 				{ span, ifaceFuncSpan(_failIFace, _failName) });
 		}
 
@@ -110,13 +111,14 @@ int Analysis::_unify (TypePtr dest, TypePtr src)
 		if (src->containsPoly(dest))
 			return FailInfinite;
 
+		// assign it
+		auto ifaces = dest->args;
+		dest->set(src);
+
 		// check if src type subscribes to all ifaces in dest poly
-		for (auto iface : dest->args)
+		for (auto iface : ifaces)
 			if (!_subscribes(iface, src))
 				return FailSubscribe;
-		
-		// assign it
-		dest->set(src);
 		return UnifyOK;
 	}
 	else if (dest->kind == Type::Concrete && src->kind == Type::Concrete &&
