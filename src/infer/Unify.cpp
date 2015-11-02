@@ -3,35 +3,6 @@
 namespace Opal { namespace Infer {
 ;
 
-TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
-{
-	auto newArgs = ty->args.map<TypePtr>([&] (TypePtr ty2) {
-		return replaceParams(ty2, with);
-	});
-
-	if (ty->kind == Type::Param)
-	{
-		size_t idx = ty->id;
-
-		while (with.size() <= idx)
-			with.push_back(nullptr);
-
-		if (with[idx] == nullptr)
-			return (with[idx] = Type::poly(newArgs));
-		else	
-			return with[idx];
-	}
-
-	if (ty->kind == Type::Concrete)
-	{
-		if (ty->args.nil())
-			return ty;
-		else
-			return Type::concrete(ty->base, newArgs);
-	}
-	else
-		return ty;
-}
 
 #define UNIFY_FAIL "type matching failed: "
 
@@ -70,10 +41,12 @@ void Analysis::unify (TypePtr dest, TypePtr src, const Span& span)
 		{
 			std::ostringstream ss1, ss2;
 
+			Env::Function* fn;
+			auto expectType = _findIFaceFunc(_failType, _failIFace, _failName, fn);
+
 			ss1 << UNIFY_FAIL "type incompatible with iface '" << _failIFace->str() << "'";
-			ss2 << "expected method: '" << _failName << "'";
-			throw SourceError(ss1.str(),
-				{ "type: " + _failType->str(), ss2.str() },
+			ss2 << "expected " << _failType->str() << "." << _failName << " : " << expectType->str();
+			throw SourceError(ss1.str(), { ss2.str() },
 				{ span, ifaceFuncSpan(_failIFace, _failName) });
 		}
 
@@ -113,10 +86,10 @@ int Analysis::_unify (TypePtr dest, TypePtr src)
 		// merge iface list when unifying two poly types
 		// e.g. unify(_1, _2) => ok; _1 <- _2
 		//      unify(_1(Ord), _2(Eq)) => ok;
-		//          _1 <- _3(Ord, Show)
-		//          _2 <- _3(Ord, Show)
+		//          _1 <- _3(Ord, Eq)
+		//          _2 <- _3(Ord, Eq)
 
-		if (!_mergePoly(dest, src))
+		if (!_merge(dest, src))
 			return FailMerge;
 
 		return UnifyOK;
@@ -195,29 +168,13 @@ bool Analysis::_subscribes (TypePtr iface, TypePtr type)
 	}
 	return true;
 }
-bool Analysis::_mergePolyAdd (TypeList& list, TypePtr iface)
+bool Analysis::_merge (TypePtr a, TypePtr b)
 {
-	// TODO: make this better
-	for (auto iface2 : list)
-		if (iface2->base == iface->base)
-		{
-			for (auto xs = iface->args, ys = iface2->args; !xs.nil(); ++xs, ++ys)
-				if (_unify(xs.head(), ys.head()) != UnifyOK)
-				{
-					_failIFace = iface2;
-					_failIFace2 = iface;
-					return false;
-				}
-
-			return true;
-		}
-	list = TypeList(iface, list);
-	return true;
-}
-bool Analysis::_mergePoly (TypePtr a, TypePtr b)
-{
+	// simple merges that don't require a lot of thought
 	if (a->isPoly(b))
+	{
 		return true;
+	}
 	else if (a->args.nil())
 	{
 		a->set(b);
@@ -229,19 +186,78 @@ bool Analysis::_mergePoly (TypePtr a, TypePtr b)
 		return true;
 	}
 
-	TypeList args;
+	// shitty merges
+	std::cout << "merge " << a->str() << " | " << b->str() << std::endl;
+
+	// accumulate each iface
+	// TODO: sort by # of methods?
+	//       ideally we want to eliminate anon ifaces ASAP
+	Merge merge;
 	for (auto iface : a->args)
-		if (!_mergePolyAdd(args, iface))
+		if (!merge.addIFace(a, iface))
 			return false;
 	for (auto iface : b->args)
-		if (!_mergePolyAdd(args, iface))
+		if (!merge.addIFace(b, iface))
 			return false;
 
-	auto res = Type::poly(args);
-	a->set(res);
-	b->set(res);
+	auto result = merge.finish();
+	a->set(result);
+	b->set(result);
+
+	std::cout << "merge => " << result->str() << std::endl;
+
 	return true;
 }
+Analysis::Merge::Merge () {}
+
+bool Analysis::Merge::addIFace (TypePtr obj, TypePtr iface)
+{
+	bool anyNew = false;
+
+	// merge ifaces by checking for method conflicts
+	auto base = iface->base;
+	for (size_t i = 0; i < base->iface.nfuncs; i++)
+	{
+		auto name = base->iface.funcs[i].name;
+		auto ty = base->iface.funcs[i].type;
+		ty = _inst(iface, ty, obj);
+
+		auto find = methods.find(name);
+		if (find == methods.end())
+		{
+			// no conflict, add to the list
+			anyNew = true;
+			methods[name] = ty;
+		}
+		else
+		{
+			// conflict????
+			// TODO: check conflicts and resolve ugly conflict problems
+			return false;
+		}
+	}
+
+	// this check reduces SOME redundant ifaces
+	if (anyNew)
+		ifaces.push_back(iface);
+
+	/* (maybe) TODO: solve the "merge problem"
+		"merge three sets together by finding the smallest combination
+		 of set unions that represent the super set."
+
+		A : {a, b}
+		B : {b, c}
+		C : {c, d}
+		super set : {a, b, c, d}
+
+		merge(A, B, C) = (A + C)
+		 ^               ^
+		 TODO: make this algorithm
+	*/
+	return true;
+}
+TypePtr Analysis::Merge::finish ()
+{ return Type::poly(TypeList(ifaces)); }
 
 
 }}

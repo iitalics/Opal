@@ -95,6 +95,35 @@ TypePtr Analysis::polyToParam (TypePtr type,
 	else
 		return type;
 }
+TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
+{
+	auto newArgs = ty->args.map<TypePtr>([&] (TypePtr ty2) {
+		return replaceParams(ty2, with);
+	});
+
+	if (ty->kind == Type::Param)
+	{
+		size_t idx = ty->id;
+
+		while (with.size() <= idx)
+			with.push_back(nullptr);
+
+		if (with[idx] == nullptr)
+			return (with[idx] = Type::poly(newArgs));
+		else
+			return with[idx];
+	}
+
+	if (ty->kind == Type::Concrete)
+	{
+		if (ty->args.nil())
+			return ty;
+		else
+			return Type::concrete(ty->base, newArgs);
+	}
+	else
+		return ty;
+}
 
 
 // local scope variables
@@ -300,7 +329,17 @@ TypePtr Analysis::_findMethod (TypePtr obj, const std::string& name, Env::Functi
 		if (res)
 			return res;
 	}
-	return nullptr;
+
+	// create anonymous iface
+	auto ty = Type::poly();
+	auto iface = Env::Type::anonIFace(name, ty);
+	auto ifaceTy = Type::concrete(iface, {});
+	auto withPoly = Type::poly(TypeList(ifaceTy));
+	if (_unify(obj, withPoly) != UnifyOK) // this SHOULD always be ok
+		return nullptr;
+
+	out = iface->methods[0];
+	return ty;
 }
 TypePtr Analysis::_findIFaceFunc (TypePtr obj, TypePtr iface, const std::string& name, Env::Function*& out)
 {
@@ -310,7 +349,7 @@ TypePtr Analysis::_findIFaceFunc (TypePtr obj, TypePtr iface, const std::string&
 		if (base->iface.funcs[i].name == name)
 		{
 			out = base->methods[i];
-			return _inst(obj, base->iface.funcs[i].type, obj);
+			return _inst(iface, base->iface.funcs[i].type, obj);
 		}
 
 	return nullptr;

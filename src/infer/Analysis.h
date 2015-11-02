@@ -59,7 +59,7 @@ public:
 	void stackRestore (size_t n);
 
 	// poly <-> param  type conversion utilities
-	TypePtr replaceParams (TypePtr ty, std::vector<TypePtr>& with);
+	static TypePtr replaceParams (TypePtr ty, std::vector<TypePtr>& with);
 	TypePtr polyToParam (TypePtr type);
 
 	// type inference here
@@ -100,8 +100,17 @@ private:
 	//  based on Hindly-Milner
 	int _unify (TypePtr dest, TypePtr src);
 	bool _subscribes (TypePtr iface, TypePtr type);
-	bool _mergePoly (TypePtr a, TypePtr b);
-	bool _mergePolyAdd (TypeList& list, TypePtr iface);
+
+	// merging ifaces from polytype lists
+	struct Merge {
+		std::vector<TypePtr> ifaces;
+		std::map<std::string, TypePtr> methods;
+
+		Merge ();
+		bool addIFace (TypePtr obj, TypePtr iface);
+		TypePtr finish ();
+	};
+	bool _merge (TypePtr a, TypePtr b);
 
 	// get function type and do circular inference
 	//  shenanigans if required
@@ -115,8 +124,7 @@ private:
 	TypePtr _findIFaceFunc (TypePtr obj, TypePtr iface,
 		const std::string& name, Env::Function*& out);
 	// replace params from 'type' using 'obj' and 'self'
-	TypePtr _inst (TypePtr obj, TypePtr type,
-					TypePtr self = nullptr);
+	static TypePtr _inst (TypePtr obj, TypePtr type, TypePtr self = nullptr);
 	TypePtr _instMethod (TypePtr obj, Env::Function* fn);
 
 	// OOP is for losers
