@@ -167,7 +167,7 @@ void Function::_endInfer ()
 }
 void Function::endInfer ()
 {
-	ret = analysis->polyToParam(ret);
+	analysis->polyToParamArgs();
 
 	delete analysis;
 	analysis = nullptr;

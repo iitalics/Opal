@@ -63,6 +63,7 @@ public:
 	// poly <-> param  type conversion utilities
 	static TypePtr replaceParams (TypePtr ty, std::vector<TypePtr>& with);
 	TypePtr polyToParam (TypePtr type);
+	void polyToParamArgs ();
 
 	// type inference here
 	void infer (AST::ExpPtr e, TypePtr dest);
