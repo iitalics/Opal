@@ -363,11 +363,6 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 		implBase = impl.type->base;
 
 		// duplicate?
-		for (size_t i = 0; i < implBase->data.nfields; i++)
-			if (implBase->data.fields[i].name == fndecl->name)
-				throw DupError("field", fndecl->name,
-					implBase->data.fields[i].declSpan,
-					fndecl->span);
 		for (auto& fn : implBase->methods)
 			if (fn->name == fndecl->name)
 				throw DupError("method", fndecl->name,
@@ -408,6 +403,7 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 	if (implBase != nullptr)
 		fn->args.push_back(impl);
 
+	// create arguments
 	fn->args.reserve(fndecl->args.size() + 1);
 	for (auto& arg : fndecl->args)
 	{
@@ -415,6 +411,7 @@ static void createFunc (Namespace* nm, Module* mod, AST::FuncDecl* fndecl)
 		fn->args.push_back(var);
 	}
 
+	// add to global scope, or make a method
 	if (global != nullptr)
 	{
 		global->func = fn;
