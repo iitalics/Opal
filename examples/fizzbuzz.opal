@@ -1,6 +1,6 @@
 module Examples
 
-pub fn fizzbuzz (n : int) {
+pub fn fizzbuzz (n) {
 	match (n % 3, n % 5) {
 		(0, 0) { "FizzBuzz" }
 		(0, _) { "Fizz" }
