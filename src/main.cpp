@@ -5,7 +5,7 @@
 #include "runtime/Exec.h"
 using namespace Opal;
 
-#define VERSION_STRING "0.9.2"
+#define VERSION_STRING "0.9.3"
 
 static std::string prgmName = "opal";
 static void usage ()

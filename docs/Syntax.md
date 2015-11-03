@@ -91,19 +91,21 @@ Functions
 ----------------------------------------
 
 Functions are defined in the toplevel scope using the `fn` keyword.
-Although Opal supports type inference, the types of each argument to the function must be specified.
-However, the return value will be automatically inferred.
+Opal supports type inference, but you can specify the argument types explicitly.
+Often, this type annotations help readability and code safety.
+The return value will always be automatically inferred.
 
     // syntax:
     //  function:
     //    fn <name> ( <arguments>, ... ) { <body> }
     //  argument:
+    //    <name>
     //    <name> : <type>
 
     // examples:
     fn pi () { 3.1415926535 }          // returns the mathematical constant "pi"
     fn twice (x : int) { x + x }       // takes an integer, 'x', and returns its double
-    fn identity (x : #a) { x }         // takes some data of any kind and returns it
+    fn identity (x) { x }              // takes some data of any kind and returns it
 
 The return value of a function is the result of the expression that immediately proceeds it, as shown
 in the examples above.
@@ -157,7 +159,7 @@ This section will list the most common kinds of expression.
 Example code:
     
     fn pi () { 3.1415926535 }
-    fn increment (x : int) { x + 1 }
+    fn increment (x) { x + 1 }
 
 ### Blocks ###
 
@@ -197,7 +199,7 @@ Function calls look like function calls in most popular languages (C, Python, Ja
     // syntax:
     //   <function> ( <arguments>, ... )
 
-    fn twice (x : int) { x + x }
+    fn twice (x) { x + x }
     ...
     twice(6)                       // = 12
 
@@ -264,14 +266,13 @@ Lists can also be destructed using `let`
 ### Lambdas ###
 
 Opal is a functional programming language, meaning it supports first class functions, lambdas and closures.
-Lambdas are defined using the `fn` keyword in an expression. Type annotations for arguments are optional; however
-without context the type inference algorithm may sometimes fail to infer types.
+Lambdas are defined using the `fn` keyword in an expression.
 
     // syntax:
     //   lambda:
     //     fn ( <arguments>, ... ) { <body> }
 
-    fn zero (f : fn(int) -> #t) { f(0) }s
+    fn zero (f) { f(0) }
     ...
     zero(fn (x : int) { x + 2 })   // = 2
     zero(fn (x) { x + x })         // = 0
@@ -279,10 +280,6 @@ without context the type inference algorithm may sometimes fail to infer types.
     let k = 3
     zero(fn (x) { x < k })         // = true
 
-    // example where the type inferer fails
-    let twice = fn (x) { x + x } ;
-    // solution:
-    let twice = fn (x : int) { x + x } ;
 
 A lot of code requires passing a lambda as the single argument to another function. 
 As a syntactic shorthand, you may use `||` after an expression to immediately create
