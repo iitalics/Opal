@@ -223,8 +223,13 @@ bool Type::containsParam (int _id)
 }
 bool Type::containsPoly (TypePtr poly)
 {
-	if (isPoly(poly))
-		return true;
+	if (kind == Poly) // IM NOT SURE ABOUT THIS
+		// the "better" solution would be to have a list of
+		//  types we've already looked at but that's really
+		//  space inefficient and this is very fast.
+		// I don't want this "faster" solution to also be
+		//  >incorrect< so I'm not sure if this code is ok.
+		return isPoly(poly);
 	for (auto ty : args)
 		if (ty->containsPoly(poly))
 			return true;
@@ -332,7 +337,9 @@ TypePtr Type::paramFromAST (AST::ParamType* pt, Ctx& ctx)
 
 TypePtr Type::fromAST (AST::TypePtr ty, Type::Ctx& ctx)
 {
-	if (auto ct = dynamic_cast<AST::ConcreteType*>(ty.get()))
+	if (ty == nullptr)
+		return poly();
+	else if (auto ct = dynamic_cast<AST::ConcreteType*>(ty.get()))
 		return concreteFromAST(ct, ctx);
 	else if (auto pt = dynamic_cast<AST::ParamType*>(ty.get()))
 		return paramFromAST(pt, ctx);

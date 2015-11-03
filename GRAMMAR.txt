@@ -29,6 +29,8 @@ name:
 	ID ["::" ID]
 var:
 	ID ":" type
+varOpt:
+	ID [":" type]
 
 // SYNTAX: declarations
 funcDecl:
@@ -188,11 +190,9 @@ init:
 	ID "=" exp
 
 lambdaExp:
-	"fn" "(" [lamVar {"," lamVar}] ")" blockExp
-lamVar:
-	ID [":" type]
+	"fn" "(" [varOpt {"," varOpt}] ")" blockExp
 lambdaSuffix:
-	"|" [lamVar {"," lamVar}] "|" blockExp
+	"|" [varOpt {"," varOpt}] "|" blockExp
 
 // SYNTAX: statements
 blockExp:

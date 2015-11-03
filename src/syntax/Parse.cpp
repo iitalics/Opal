@@ -91,6 +91,20 @@ static Var parseVar (Scanner& scan)
 	auto type = parseType(scan);
 	return Var { name, type, span };
 }
+static Var parseVarOpt (Scanner& scan)
+{
+	auto name = scan.eat(ID).string;
+	TypePtr type = nullptr;
+
+	// types optional
+	if (scan.get() == COLON)
+	{
+		scan.shift();
+		type = parseType(scan);
+	}
+
+	return Var { name, type };
+}
 
 /*
 name:
@@ -169,7 +183,7 @@ static DeclPtr parseFuncDecl (Scanner& scan, const Var& impl)
 {
 	auto span = scan.shift().span;
 	auto name = scan.eat(ID).string;
-	auto args = commaList<Var>(scan, parseVar, LPAREN, RPAREN);
+	auto args = commaList<Var>(scan, parseVarOpt, LPAREN, RPAREN);
 
 	auto fn = parseFuncBody(scan, name, args);
 	fn->impl = impl;
@@ -1132,24 +1146,10 @@ lamVar:
 lambdaSuffix:
 	"|" [lamVar {"," lamVar}] "|" blockExp
 */
-static Var parseLambdaVar (Scanner& scan)
-{
-	auto name = scan.eat(ID).string;
-	TypePtr type = nullptr;
-
-	// types optional
-	if (scan.get() == COLON)
-	{
-		scan.shift();
-		type = parseType(scan);
-	}
-
-	return Var { name, type };
-}
 static ExpPtr parseLambda (Scanner& scan)
 {
 	auto span = scan.shift().span;
-	auto args = commaList(scan, parseLambdaVar, LPAREN, RPAREN);
+	auto args = commaList(scan, parseVarOpt, LPAREN, RPAREN);
 	auto body = parseBlockExp(scan);
 	auto res = ExpPtr(new LambdaExp(args, body));
 	res->span = span;
@@ -1158,7 +1158,7 @@ static ExpPtr parseLambda (Scanner& scan)
 static ExpPtr parseLambdaSuffix (Scanner& scan)
 {
 	auto span = scan.get().span;
-	auto args = commaList(scan, parseLambdaVar, BAR, BAR);
+	auto args = commaList(scan, parseVarOpt, BAR, BAR);
 	auto body = parseBlockExp(scan);
 	auto res = ExpPtr(new LambdaExp(args, body));
 	res->span = span;

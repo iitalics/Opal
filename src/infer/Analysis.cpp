@@ -56,10 +56,6 @@ bool Analysis::allFinished () const
 // convert poly types into params
 TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
 {
-	auto newArgs = ty->args.map<TypePtr>([&] (TypePtr ty2) {
-		return replaceParams(ty2, with);
-	});
-
 	if (ty->kind == Type::Param)
 	{
 		size_t idx = ty->id;
@@ -68,10 +64,21 @@ TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
 			with.push_back(nullptr);
 
 		if (with[idx] == nullptr)
-			return (with[idx] = Type::poly(newArgs));
+		{
+			auto res = Type::poly();
+			with[idx] = res;
+			res->args = ty->args.map<TypePtr>([&] (TypePtr ty2) {
+				return replaceParams(ty2, with);
+			});
+			return res;
+		}
 		else
 			return with[idx];
 	}
+
+	auto newArgs = ty->args.map<TypePtr>([&] (TypePtr ty2) {
+		return replaceParams(ty2, with);
+	});
 
 	if (ty->kind == Type::Concrete)
 	{
@@ -126,6 +133,8 @@ void Analysis::polyToParamArgs ()
 {
 	std::map<TypeWeakList*, TypePtr> with;
 
+	for (auto& arg : parent->args)
+		arg.type = polyToParam(arg.type, with);
 	parent->ret = polyToParam(parent->ret, with);
 }
 
