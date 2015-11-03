@@ -48,7 +48,7 @@ void Analysis::unify (TypePtr dest, TypePtr src, const Span& span)
 
 			ss1 << UNIFY_FAIL "incompatible with iface '" << _failIFace->str() << "'";
 			ss2 << "type: " << _failType->str();
-			ss3 << "invalid method '" << _failName << "' : " << expectType->str();
+			ss3 << "no method '" << _failName << "' : " << expectType->str();
 			throw SourceError(ss1.str(), { ss2.str(), ss3.str() },
 				{ span, ifaceFuncSpan(_failIFace, _failName) });
 		}
