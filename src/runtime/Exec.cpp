@@ -137,7 +137,7 @@ void Thread::call (const Code& code)
 	_calls.push_back(Exec());
 	_calls.back().begin(*this, code);
 }
-void Thread::call (Env::Function* func)
+void Thread::call (Env::Function* func, size_t argc)
 {
 	switch (func->kind)
 	{
@@ -150,31 +150,31 @@ void Thread::call (Env::Function* func)
 		func->nativeFunc(*this);
 		break;
 
+
 	case Env::Function::IFaceFunction:
 		{
 			auto name = func->ifaceSig->name;
-			auto argc = func->ifaceSig->argc();
 
-			auto self = get(size() - argc - 1);
+			auto self = get(size() - argc);
 			auto actualType = self.type;
 
 			for (auto m : actualType->methods)
 				if (m->name == name)
 				{
-					call(m);
+					call(m, argc);
 					return;
 				}
 
 			// well formed native code should prevent this from
 			//  ever happening
-			throw SourceError("cannot find iface function: " + name,
+			throw SourceError("UNEXPECTED cannot find iface function: " + name,
 				{ "of type: " + actualType->fullname().str() },
 				func->declSpan);
 		}
 	case Env::Function::EnumFunction:
 		{
 			// just make an object
-			auto obj = make(func->enumType, func->args.size(), func);
+			auto obj = make(func->enumType, argc, func);
 			push(obj);
 			obj.release();
 		}

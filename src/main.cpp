@@ -128,7 +128,7 @@ static void runMain (Env::Namespace* nm)
 		throw SourceError("no main function defined");
 
 	auto thread = Run::Thread::start();
-	thread->call(globMain->func);
+	thread->call(globMain->func, 0);
 
 	// run threads until completion
 	size_t count = 0;

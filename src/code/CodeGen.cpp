@@ -196,6 +196,7 @@ void CodeGen::_generate (AST::CallExp* e)
 {
 	auto fne = e->children[0];
 	Env::Function* func = e->function;
+	int generated = 0;
 
 	if (func == nullptr)
 	{
@@ -205,15 +206,23 @@ void CodeGen::_generate (AST::CallExp* e)
 	else if (fne->is<AST::FieldExp>())
 	{
 		generate(fne->children[0]);
+		generated++;
 	}
 
 	for (size_t i = 1, len = e->children.size(); i < len; i++)
+	{
 		generate(e->children[i]);
+		generated++;
+	}
 
 	if (func == nullptr)
 		add(Cmd::Apply).count = e->children.size() - 1;
 	else
-		add(Cmd::Call).func = func;
+	{
+		Cmd& call = add(Cmd::Call);
+		call.func = func;
+		call.argc = generated;
+	}
 }
 void CodeGen::_generate (AST::LetExp* e)
 {
@@ -459,7 +468,9 @@ void CodeGen::_generate (AST::ConstPat* p, Label _else)
 		add(Cmd::Dupl);
 	generate(p->exp);
 
-	add(Cmd::Call).func = p->equals;
+	Cmd& call = add(Cmd::Call);
+	call.func = p->equals;
+	call.argc = 2;
 	add(Cmd::Else).index = _else;
 
 	if (p->rootPosition)

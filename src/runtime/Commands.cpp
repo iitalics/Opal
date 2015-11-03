@@ -92,12 +92,11 @@ void Exec::step (Thread& th)
 		a.release();
 		break;
 	case Cmd::Call: // easy pz
-		th.call(cur.func);
+		th.call(cur.func, cur.argc);
 		break;
 	case Cmd::Tail:
-		n = cur.func->args.size(); // argc
-		th.remove(frame_pos, th.size() - n);
-		th.call(cur.func);
+		th.remove(frame_pos, th.size() - cur.argc);
+		th.call(cur.func, cur.argc);
 		break;
 	case Cmd::Prelude:
 		a = th.pop();
@@ -113,7 +112,7 @@ void Exec::step (Thread& th)
 			size_t idx = th.size() - 1 - argc;
 			a = th.get(idx).retain();
 			th.remove(idx, idx + 1);
-			th.call(a.ctor);
+			th.call(a.ctor, argc);
 			a.release();
 			break;
 		}

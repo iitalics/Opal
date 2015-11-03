@@ -52,7 +52,10 @@ struct Cmd
 		size_t index; // Get, Set
 
 		std::string* string; // String
-		Env::Function* func; // Call, Tail, IsEnum, Func
+		struct {
+			Env::Function* func; // Call, Tail, IsEnum, Func
+			size_t argc;
+		};
 		Env::Type* type; // Object
 		Env::Global* global; // GetGlob, SetGlob
 	};
@@ -111,7 +114,7 @@ public:
 
 	// execution utilities
 	void call (const Code& code);
-	void call (Env::Function* func);
+	void call (Env::Function* func, size_t argc);
 	void ret ();
 	void die (const std::string& errName,
 		const std::vector<Cell>& args = {});

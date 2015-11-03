@@ -82,11 +82,14 @@ void CodeGen::showCode ()
 			std::cout << " <" << cmd.global->fullname().str() << ">" << std::endl;
 			break;
 
-		case Run::Cmd::Call:
-		case Run::Cmd::Tail:
 		case Run::Cmd::IsEnum:
 		case Run::Cmd::Func:
 			std::cout << " <" << cmd.func->fullname().str() << ">" << std::endl;
+			break;
+
+		case Run::Cmd::Call:
+		case Run::Cmd::Tail:
+			std::cout << " (" << cmd.argc << ") <" << cmd.func->fullname().str() << ">" << std::endl;
 			break;
 
 		case Run::Cmd::NoOp:

@@ -114,7 +114,7 @@ void runRepl ()
 			if (fn != nullptr)
 			{
 				thread = Run::Thread::start();
-				thread->call(fn);
+				thread->call(fn, 0);
 				while (Run::Thread::stepAny()) ;
 			}
 		}
