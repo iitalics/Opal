@@ -449,14 +449,23 @@ void Analysis::_infer (AST::MethodExp* e, TypePtr dest)
 {
 	TypePtr selfty = nullptr;
 
-	if (dest->kind == Type::Concrete)
+	if (e->hint != nullptr)
 	{
-		if (dest->base->isFunction() && dest->args.size() > 1)
-			selfty = dest->args[0];
+		selfty = Type::fromAST(e->hint, _ctx);
+	}
+	else if (dest->kind == Type::Concrete &&
+			dest->base->isFunction() &&
+			dest->args.size() > 1)
+	{
+		selfty = dest->args[0];
 	}
 
 	if (!selfty)
-		selfty = Type::poly();
+	{
+		std::ostringstream ss;
+		ss << "cannot determine method '" << e->name << "'";
+		throw SourceError(ss.str(), { "parent type is unknown" }, e->span);
+	}
 
 	// in case something goes wrong and changes 'selfty'
 	auto typeName = selfty->str();
@@ -472,7 +481,7 @@ void Analysis::_infer (AST::MethodExp* e, TypePtr dest)
 		std::ostringstream ss;
 		ss << "undefined method '" << e->name << "'";
 		throw SourceError(ss.str(),
-			{ "type: " + typeName }, e->span);
+			{ "of type: " + typeName }, e->span);
 	}
 
 	// reconstruct 'fnty' with 'selfty' prepended to arguments

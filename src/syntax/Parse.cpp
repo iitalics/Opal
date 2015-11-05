@@ -726,10 +726,18 @@ static ExpPtr parseTerm (Scanner& scan)
 			break;
 		}
 	case DOT:
-		scan.shift();
-		res = ExpPtr(new MethodExp(scan.eat(ID).string));
-		res->span = span;
-		break;
+		{
+			scan.shift();
+			auto method = new MethodExp(scan.eat(ID).string);
+			if (scan.get() == DOUBLECOLON)
+			{
+				scan.shift();
+				method->hint = parseType(scan);
+			}
+			res = ExpPtr(method);
+			res->span = span;
+			break;
+		}
 	case KW_fn:
 		res = parseLambda(scan);
 		break;

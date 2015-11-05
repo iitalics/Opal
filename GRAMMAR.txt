@@ -175,7 +175,7 @@ numberConstant:
 tupleExp:
 	"(" exp {"," exp} ")"
 fieldExp:
-	"." ID
+	"." ID ["::" type]
 condExp:
 	"if" exp blockExp elseExp
 elseExp:

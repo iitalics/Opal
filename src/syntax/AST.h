@@ -230,9 +230,10 @@ class MethodExp : public Exp
 public:
 	std::string name;
 	Env::Function* method;
+	TypePtr hint; // hint for self type
 
 	inline MethodExp (const std::string& _name)
-		: name(_name), method(nullptr) {}
+		: name(_name), method(nullptr), hint(nullptr) {}
 	virtual ~MethodExp ();
 };
 class MemberExp : public Exp
