@@ -66,8 +66,6 @@ struct IFaceSignature
 	std::string name;
 	Span declSpan;
 	Infer::TypePtr type;
-
-	size_t argc () const;
 };
 
 struct IFaceType

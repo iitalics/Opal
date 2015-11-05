@@ -112,14 +112,6 @@ Function* Type::getMethod (const std::string& name) const
 			return fn;
 	return nullptr;
 }
-size_t IFaceSignature::argc () const
-{
-	if (type->kind != Infer::Type::Concrete ||
-			!type->base->isFunction())
-		return 0;
-	else
-		return type->base->nparams - 1;
-}
 
 
 Infer::TypePtr Global::getType ()
