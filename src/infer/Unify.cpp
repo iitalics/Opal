@@ -204,7 +204,7 @@ bool Analysis::_merge (TypePtr a, TypePtr b)
 	auto argsA = a->args;
 	auto argsB = b->args;
 
-	Merge merge;
+	Merge merge(this);
 
 	for (auto iface : argsA)
 		if (!merge.addIFace(a, iface))
@@ -214,26 +214,32 @@ bool Analysis::_merge (TypePtr a, TypePtr b)
 			return false;
 
 	auto result = merge.finish();
-	a->set(result);
-	b->set(result);
-
 	if (debuggingEnabled)
 		std::cout << "{merge =>} " << result->str() << std::endl;
 
+	a->set(result);
+	b->set(result);
+
 	return true;
 }
-Analysis::Merge::Merge () {}
+Analysis::Merge::Merge (Analysis* _parent)
+	: parent(_parent) {}
 
 bool Analysis::Merge::addIFace (TypePtr obj, TypePtr iface)
 {
 	bool anyNew = false;
+	std::string name;
+	TypePtr ty;
+
+	if (debuggingEnabled)
+		std::cout << "{merge +} " << iface->str() << std::endl;
 
 	// merge ifaces by checking for method conflicts
 	auto base = iface->base;
 	for (size_t i = 0; i < base->iface.nfuncs; i++)
 	{
-		auto name = base->iface.funcs[i].name;
-		auto ty = base->iface.funcs[i].type;
+		name = base->iface.funcs[i].name;
+		ty = base->iface.funcs[i].type;
 		ty = _inst(iface, ty, obj);
 
 		auto find = methods.find(name);
@@ -247,7 +253,9 @@ bool Analysis::Merge::addIFace (TypePtr obj, TypePtr iface)
 		{
 			// conflict????
 			// TODO: check conflicts and resolve ugly conflict problems
-			return false;
+			auto methodty = find->second;
+			if (parent->_unify(ty, methodty) != UnifyOK)
+				goto fail;
 		}
 	}
 
@@ -269,6 +277,16 @@ bool Analysis::Merge::addIFace (TypePtr obj, TypePtr iface)
 		 TODO: make this algorithm
 	*/
 	return true;
+fail:
+	for (auto& iface1 : ifaces)
+		if (iface1->base->getMethod(name) != nullptr)
+		{
+			parent->_failIFace = iface1;
+			parent->_failIFace2 = iface;
+			break;
+		}
+
+	return false;
 }
 TypePtr Analysis::Merge::finish ()
 { return Type::poly(TypeList(ifaces)); }

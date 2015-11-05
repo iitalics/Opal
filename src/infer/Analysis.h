@@ -78,6 +78,7 @@ public:
 	bool allFinished () const;
 
 private:
+	friend struct Merge;
 	enum {
 		UnifyOK = 0,
 		FailBadMatch,
@@ -106,10 +107,11 @@ private:
 
 	// merging ifaces from polytype lists
 	struct Merge {
+		Analysis* parent;
 		std::vector<TypePtr> ifaces;
 		std::map<std::string, TypePtr> methods;
 
-		Merge ();
+		Merge (Analysis* _parent);
 		bool addIFace (TypePtr obj, TypePtr iface);
 		TypePtr finish ();
 	};
