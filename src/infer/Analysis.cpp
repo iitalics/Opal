@@ -41,10 +41,6 @@ void Analysis::dependOn (Analysis* other)
 		delete dep;
 	}
 }
-void Analysis::finish ()
-{
-	_finished = true;
-}
 bool Analysis::allFinished () const
 {
 	for (auto an : *depends)
@@ -52,8 +48,12 @@ bool Analysis::allFinished () const
 			return false;
 	return true;
 }
+void Analysis::finish ()
+{
+	_finished = true;
+}
 
-// convert poly types into params
+// convert param types into polys
 TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
 {
 	if (ty->kind == Type::Param)
@@ -75,21 +75,18 @@ TypePtr Analysis::replaceParams (TypePtr ty, std::vector<TypePtr>& with)
 		else
 			return with[idx];
 	}
-
-	auto newArgs = ty->args.map<TypePtr>([&] (TypePtr ty2) {
-		return replaceParams(ty2, with);
-	});
-
-	if (ty->kind == Type::Concrete)
+	else if (ty->kind == Type::Concrete && !ty->args.nil())
 	{
-		if (ty->args.nil())
-			return ty;
-		else
-			return Type::concrete(ty->base, newArgs);
+		auto newArgs = ty->args.map<TypePtr>([&] (TypePtr ty2) {
+			return replaceParams(ty2, with);
+		});
+		return Type::concrete(ty->base, newArgs);
 	}
 	else
 		return ty;
 }
+
+// convert poly types into params
 TypePtr Analysis::polyToParam (TypePtr type)
 {
 	std::map<TypeWeakList*, TypePtr> with;
@@ -103,8 +100,10 @@ TypePtr Analysis::polyToParam (TypePtr type,
 		auto it = with.find(type->links);
 		if (it == with.end())
 		{
+			// TODO: pretty names
 			std::ostringstream ss;
 			ss << "." << _ctx.params.size();
+
 			auto param = _ctx.createParam(ss.str(), TypeList());
 			with[type->links] = param;
 			param->args = type->args.map<TypePtr>([&] (TypePtr ty2) { return polyToParam(ty2, with); });
@@ -119,13 +118,9 @@ TypePtr Analysis::polyToParam (TypePtr type,
 	auto newArgs = type->args.map<TypePtr>([&] (TypePtr ty2) { return polyToParam(ty2, with); });
 
 	if (type->kind == Type::Concrete)
-	{
 		return Type::concrete(type->base, newArgs);
-	}
 	else if (type->kind == Type::Param)
-	{
 		return Type::param(type->id, type->paramName, newArgs);
-	}
 	else
 		return type;
 }
