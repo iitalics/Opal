@@ -70,3 +70,8 @@ impl unit {
    fn to_real () { 0.0 }
    fn to_long () { 0L }
 }
+
+impl (#a, #b) {
+   fn fst () { let (x, y) = self; x }
+   fn snd () { let (x, y) = self; y }
+}
