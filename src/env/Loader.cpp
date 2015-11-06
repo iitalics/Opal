@@ -546,5 +546,15 @@ void finishModuleLoad ()
 	releaseExpObjects();
 }
 
+void unloadModules ()
+{
+	while (Module::all() != nullptr)
+		delete Module::all();
+
+	while (Namespace::all() != nullptr)
+		delete Namespace::all();
+}
+
+
 
 }}

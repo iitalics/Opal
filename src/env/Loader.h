@@ -94,4 +94,6 @@ Namespace* loadSource (const std::string& path);
 
 void finishModuleLoad ();
 
+void unloadModules ();
+
 }}

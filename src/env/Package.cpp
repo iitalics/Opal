@@ -43,7 +43,9 @@ PackageLoad::~PackageLoad ()
 		if (r != this)
 			continue;
 
-		r->next->prev = prev;
+		if (r->next)
+			r->next->prev = prev;
+
 		if (prev == nullptr)
 			_reqs = r->next;
 		else

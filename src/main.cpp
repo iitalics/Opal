@@ -176,8 +176,7 @@ int main (int argc, char** argv)
 		else
 			runMain(nmMain);
 
-		// bye
-		// TODO: destroy everything?
+		Env::unloadModules();
 	}
 	catch (std::exception& err)
 	{
