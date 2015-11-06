@@ -95,9 +95,11 @@ void Type::_set (TypePtr other)
 
 
 
-static std::string typeStr (std::vector<const Type*>& history, const Type* type);
+using ConstTypes = std::vector<const Type*>;
 
-static std::string functionTypeStr (std::vector<const Type*>& history, const Type* type)
+static std::string typeStr (ConstTypes& history, const Type* type);
+
+static std::string functionTypeStr (ConstTypes& history, const Type* type)
 {
 	std::ostringstream ss;
 	auto xs = type->args;
@@ -121,7 +123,7 @@ static std::string functionTypeStr (std::vector<const Type*>& history, const Typ
 	}
 	return ss.str();
 }
-static std::string tupleTypeStr (std::vector<const Type*>& history, const Type* type)
+static std::string tupleTypeStr (ConstTypes& history, const Type* type)
 {
 	std::ostringstream ss;
 	bool first = true;
@@ -137,7 +139,7 @@ static std::string tupleTypeStr (std::vector<const Type*>& history, const Type* 
 	ss << ")";
 	return ss.str();
 }
-static std::string concreteTypeStr (std::vector<const Type*>& history, const Type* type)
+static std::string concreteTypeStr (ConstTypes& history, const Type* type)
 {
 	std::ostringstream ss;
 	ss << type->base->fullname().str();
@@ -158,7 +160,20 @@ static std::string concreteTypeStr (std::vector<const Type*>& history, const Typ
 	ss << "]";
 	return ss.str();
 }
-static std::string paramTypeStr (std::vector<const Type*>& history, const Type* type, const std::string& prefix)
+static std::string anonIFaceStr (ConstTypes& history, const Type* type)
+{
+	std::ostringstream ss;
+
+	auto full = type->base->fullname().name;
+	auto cl = full.front(), cr = full.back();
+
+	auto arg = type->args.head();
+
+	ss << cl << type->base->name << " "
+	   << typeStr(history, arg.get()) << cr;
+	return ss.str();
+}
+static std::string paramTypeStr (ConstTypes& history, const Type* type, const std::string& prefix)
 {
 	for (auto t : history)
 		if (t == type)
@@ -171,7 +186,7 @@ static std::string paramTypeStr (std::vector<const Type*>& history, const Type* 
 	else
 		return prefix + tupleTypeStr(history, type);
 }
-static std::string typeStr (std::vector<const Type*>& history, const Type* type)
+static std::string typeStr (ConstTypes& history, const Type* type)
 {
 	if (type->kind == Type::Concrete)
 	{
@@ -179,8 +194,8 @@ static std::string typeStr (std::vector<const Type*>& history, const Type* type)
 			return functionTypeStr(history, type);
 		else if (type->base->isTuple())
 			return tupleTypeStr(history, type);
-		else if (type->base->name[0] == '.')
-			return "<" + type->base->name + ">";
+		else if (type->base->isAnonIFace())
+			return anonIFaceStr(history, type);
 		else
 			return concreteTypeStr(history, type);
 	}
@@ -194,7 +209,7 @@ static std::string typeStr (std::vector<const Type*>& history, const Type* type)
 }
 std::string Type::str() const
 {
-	std::vector<const Type*> history;
+	ConstTypes history;
 	return typeStr(history, this);
 }
 

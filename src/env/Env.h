@@ -100,6 +100,9 @@ public:
 	inline bool isTuple () const {
 		return _tuple;
 	}
+	inline bool isAnonIFace () const {
+		return name[0] == '.';
+	}
 
 	Function* getMethod (const std::string& name) const;
 
