@@ -2,13 +2,13 @@ module Lang
 
 
 
-impl fmt : string { fn mod (args : list[Lang::Show]) {
-	match (fmt.find("{}"), args) {
-		(-1, _) { fmt }
+impl string { fn fmt (args : list[Lang::Show]) {
+	match (self.find("{}"), args) {
+		(-1, _) { self }
 		(idx, x $ args') {
-			fmt[,idx] +
+			self[,idx] +
 			x.str() +
-			fmt[idx + 2,] % args'
+			self[idx + 2,].fmt(args')
 		}
 	}
 }}
@@ -34,7 +34,7 @@ impl string {
 		while i < j and self[i].space?() {
 			i = i.succ();
 		}
-		while j >= i and self[j].space?() {
+		while j >= i and self[j.pred()].space?() {
 			j = j.pred();
 		}
 		self[i,j]

@@ -110,7 +110,7 @@ pub fn main () {
 			console.write("(none)");
 		} else {
 			stack.each |x| {
-				console.write("{} " % [x]);
+				console.write(x.str() + " ");
 			}
 		}
 		console.write("\n");

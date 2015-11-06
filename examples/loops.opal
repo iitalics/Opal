@@ -10,7 +10,7 @@ fn main () {
     (0, count).range |i| {
         let num = (1, 200).rand_incl();
         data.push(num);
-        IO::print("{} -> {}\n" % [i, num]);
+        IO::print("{} -> {}\n".fmt([i, num]));
     };
 
     // find the largest value
@@ -35,12 +35,12 @@ fn main () {
     }
 
     IO::print("----------\n");
-    IO::print("threshold: {}\n" % [threshold]);
-    IO::print("removed {} items\n" % [removed]);
+    IO::print("threshold: {}\n".fmt([threshold]));
+    IO::print("removed {} items\n".fmt([removed]));
     IO::print("----------\n");
 
     // display the new list
     data.eachi |i, num| {
-        IO::print("{} -> {}\n" % [i, num]);
+        IO::print("{} -> {}\n".fmt([i, num]));
     }
 }
