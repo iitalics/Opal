@@ -85,7 +85,8 @@ void runRepl ()
 			          << "  !help       show this help text" << std::endl
 			          << "  !types      show expression types" << std::endl
 			          << "  !dump       dump function byte code" << std::endl
-			          << "  !debug      enable some debug printing" << std::endl;
+			          << "  !use        import a module" << std::endl
+			          << "  !debug      enable ugly debug printing" << std::endl;
 			continue;
 		}
 		if (input == "!types")
@@ -102,6 +103,12 @@ void runRepl ()
 		{
 			Infer::Analysis::debuggingEnabled =
 				!Infer::Analysis::debuggingEnabled;
+			continue;
+		}
+		if (input.substr(0, 5) == "!use ")
+		{
+			auto modName = input.substr(5);
+			nm->imports.insert(Env::Module::get(modName));
 			continue;
 		}
 
