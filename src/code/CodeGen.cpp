@@ -240,13 +240,8 @@ void CodeGen::_generate (AST::AssignExp* e)
 	//   fully implemented features.
 	auto lh = e->children[0];
 
-	if (auto field = dynamic_cast<AST::FieldExp*>(lh.get()))
-	{
-		if (field->method != nullptr)
-			throw SourceError("cannot assign to method", e->span);
-
-		generate(field->children[0]);
-	}
+	if (auto propexp = dynamic_cast<AST::PropertyExp*>(lh.get()))
+		generate(propexp->children[0]);
 
 	generate(e->children[1]);
 
