@@ -42,6 +42,15 @@ impl dict[#k(Eq), #v] {
 			self.(vals)[idx] = val;
 		}
 	}
+
+	fn each (f : fn(#k, #v) -> unit) {
+		let i = 0;
+		let len = self.(keys).len();
+		while i < len {
+			f(self.(keys)[i], self.(vals)[i]);
+			i = i.succ()
+		}
+	}
 }
 
 pub fn dict () {

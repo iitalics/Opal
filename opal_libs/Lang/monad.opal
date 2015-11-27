@@ -13,6 +13,7 @@ pub fn box (v : #a) { new box[#a] { val = v } }
 pub fn box_copy (v : #a(Lang::Copy)) { new box[#a] { val = v.copy() } }
 impl box[#a] {
 	fn get () { self.(val) }
+	fn lshift (x : #a) { self.(val) = x; self }
 }
 impl box[#a(Lang::Show)] { fn str () { self.(val).str() }}
 impl box[#a(Lang::Step)] {
