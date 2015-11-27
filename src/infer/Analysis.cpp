@@ -338,16 +338,21 @@ TypePtr Analysis::_findMethod (TypePtr obj, const std::string& name, Env::Functi
 			return res;
 	}
 
-	// create anonymous iface
-	auto ty = Type::poly();
-	auto iface = Env::Type::anonIFace(name);
-	auto ifaceTy = Type::concrete(iface, { ty });
-	auto withPoly = Type::poly(TypeList(ifaceTy));
-	if (_unify(obj, withPoly) != UnifyOK) // this SHOULD always be ok
-		return nullptr;
+	if (obj->kind == Type::Poly)
+	{
+		// create anonymous iface
+		auto ty = Type::poly();
+		auto iface = Env::Type::anonIFace(name);
+		auto ifaceTy = Type::concrete(iface, { ty });
+		auto withPoly = Type::poly(TypeList(ifaceTy));
+		if (_unify(obj, withPoly) != UnifyOK) // this SHOULD always be ok
+			return nullptr;
 
-	out = iface->methods[0];
-	return ty;
+		out = iface->methods[0];
+		return ty;
+	}
+	else
+		return nullptr;
 }
 TypePtr Analysis::_findIFaceFunc (TypePtr obj, TypePtr iface, const std::string& name, Env::Function*& out)
 {
