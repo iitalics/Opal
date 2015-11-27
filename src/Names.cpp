@@ -1,4 +1,4 @@
-#include "names.h"
+#include "Names.h"
 namespace Opal { namespace Names {
 ;
 
