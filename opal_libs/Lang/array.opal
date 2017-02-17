@@ -78,6 +78,15 @@ impl array[#e] {
 	fn slice_from (a : int) { self.slice(a, self.len()) }
 	fn slice_to (b : int) { self.slice(0, b) }
 
+  fn map (f : fn(#e) -> #e') {
+    let res = array();
+    res.cap_set(self.len());
+    self.eachi |i, x| {
+      res.push(f(x))
+    };
+    res
+  }
+
 	fn to_list () {
 		let res = [];
 		let i = self.len();
